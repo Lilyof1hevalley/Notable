@@ -1,30 +1,256 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
+
+const API_BASE = 'http://localhost:3000/api'
 
 function ResetPassword() {
   const [email, setEmail] = useState('')
-  const navigate = useNavigate()
+  const [submitted, setSubmitted] = useState(false)
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
 
-  function handleReset(event) {
+  async function handleReset(event) {
     event.preventDefault()
-    navigate('/')
+    setError('')
+    setLoading(true)
+
+    try {
+      const res = await fetch(`${API_BASE}/auth/forgot-password`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      })
+      const data = await res.json()
+
+      if (!res.ok) {
+        setError(data.message || 'Something went wrong. Please try again.')
+      } else {
+        setSubmitted(true)
+      }
+    } catch {
+      setError('Unable to connect to server. Please try again.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
-    <main style={{ padding: '32px', maxWidth: '420px', margin: '0 auto' }}>
-      <h1>Reset Password</h1>
-      <form onSubmit={handleReset} style={{ display: 'grid', gap: '12px' }}>
-        <input
-          type="email"
-          placeholder="Enter your email"
-          value={email}
-          onChange={(event) => setEmail(event.target.value)}
-          required
-        />
-        <button type="submit">Reset Password</button>
-      </form>
-    </main>
+    <div style={styles.page}>
+      <nav style={styles.nav}>
+        <Link to="/" style={styles.navLink}>Home</Link>
+        <Link to="/register" style={styles.navLink}>Register</Link>
+        <Link to="/dashboard" style={styles.navLink}>Dashboard</Link>
+      </nav>
+
+      <div style={styles.content}>
+        <h1 style={styles.heading}>Password Reset</h1>
+
+        <div style={styles.card}>
+          {submitted ? (
+            <div style={styles.successBox}>
+              <div style={styles.successIcon}>✓</div>
+              <h2 style={styles.successTitle}>Check your email</h2>
+              <p style={styles.successText}>
+                If an account with <strong>{email}</strong> exists, we've sent a password reset link. Check your inbox and follow the instructions.
+              </p>
+              <Link to="/" style={styles.backBtn}>Back to Login</Link>
+            </div>
+          ) : (
+            <>
+              <h2 style={styles.cardTitle}>Reset Your Password</h2>
+              <p style={styles.cardSubtitle}>Enter your old email for us to send verification link</p>
+
+              {error && <div style={styles.errorBox}>{error}</div>}
+
+              <form onSubmit={handleReset} style={styles.form}>
+                <div style={styles.field}>
+                  <label style={styles.label} htmlFor="email">Email</label>
+                  <input
+                    id="email"
+                    type="email"
+                    placeholder="Enter your email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    style={styles.input}
+                  />
+                </div>
+
+                <button type="submit" style={styles.btn} disabled={loading}>
+                  {loading ? 'Sending...' : 'Send Verification Link'}
+                </button>
+              </form>
+
+              <p style={styles.switchText}>
+                Remember your password?{' '}
+                <Link to="/" style={styles.switchLink}>Log in</Link>
+              </p>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
   )
+}
+
+const styles = {
+  page: {
+    fontFamily: "'Inter', sans-serif",
+    minHeight: '100vh',
+    backgroundColor: '#F9F9F9',
+  },
+  nav: {
+    display: 'flex',
+    justifyContent: 'flex-end',
+    gap: 32,
+    padding: '14px 32px',
+    backgroundColor: '#FFFFFF',
+    borderBottom: '1px solid #E5E5E5',
+  },
+  navLink: {
+    textDecoration: 'none',
+    fontSize: 14,
+    color: '#1A1A1A',
+    fontFamily: "'Inria Sans', sans-serif",
+  },
+  content: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    paddingTop: 48,
+    paddingBottom: 48,
+  },
+  heading: {
+    fontFamily: "'Inria Sans', sans-serif",
+    fontSize: 36,
+    fontWeight: 700,
+    color: '#0D1B2A',
+    marginBottom: 24,
+    letterSpacing: '-0.5px',
+  },
+  card: {
+    backgroundColor: '#FFFFFF',
+    border: '1px solid #E5E5E5',
+    borderRadius: 12,
+    padding: '32px 36px',
+    width: '100%',
+    maxWidth: 440,
+    boxShadow: '0 2px 16px rgba(0,0,0,0.06)',
+  },
+  cardTitle: {
+    fontFamily: "'Inria Sans', sans-serif",
+    fontSize: 18,
+    fontWeight: 700,
+    color: '#0D1B2A',
+    margin: 0,
+    marginBottom: 4,
+  },
+  cardSubtitle: {
+    fontSize: 13,
+    color: '#888',
+    margin: '0 0 20px 0',
+  },
+  errorBox: {
+    backgroundColor: '#FEF2F2',
+    border: '1px solid #FCA5A5',
+    borderRadius: 6,
+    padding: '10px 14px',
+    fontSize: 13,
+    color: '#DC2626',
+    marginBottom: 16,
+  },
+  form: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 16,
+  },
+  field: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 6,
+  },
+  label: {
+    fontSize: 13,
+    fontWeight: 500,
+    color: '#374151',
+  },
+  input: {
+    padding: '10px 12px',
+    border: '1px solid #D1D5DB',
+    borderRadius: 6,
+    fontSize: 14,
+    color: '#1A1A1A',
+    outline: 'none',
+    backgroundColor: '#FAFAFA',
+    fontFamily: "'Inter', sans-serif",
+  },
+  btn: {
+    backgroundColor: '#0D1B2A',
+    color: '#FFFFFF',
+    border: 'none',
+    borderRadius: 6,
+    padding: '12px 0',
+    fontSize: 14,
+    fontWeight: 600,
+    cursor: 'pointer',
+    fontFamily: "'Inter', sans-serif",
+    marginTop: 4,
+  },
+  switchText: {
+    textAlign: 'center',
+    fontSize: 13,
+    color: '#6B7280',
+    marginTop: 20,
+    marginBottom: 0,
+  },
+  switchLink: {
+    color: '#0D1B2A',
+    fontWeight: 600,
+    textDecoration: 'none',
+  },
+  successBox: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    textAlign: 'center',
+    gap: 12,
+  },
+  successIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: '50%',
+    backgroundColor: '#D1FAE5',
+    color: '#059669',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontSize: 22,
+    fontWeight: 700,
+  },
+  successTitle: {
+    fontFamily: "'Inria Sans', sans-serif",
+    fontSize: 20,
+    fontWeight: 700,
+    color: '#0D1B2A',
+    margin: 0,
+  },
+  successText: {
+    fontSize: 14,
+    color: '#6B7280',
+    margin: 0,
+    lineHeight: 1.6,
+  },
+  backBtn: {
+    display: 'inline-block',
+    marginTop: 8,
+    backgroundColor: '#0D1B2A',
+    color: '#FFFFFF',
+    padding: '10px 24px',
+    borderRadius: 6,
+    textDecoration: 'none',
+    fontSize: 14,
+    fontWeight: 600,
+  },
 }
 
 export default ResetPassword

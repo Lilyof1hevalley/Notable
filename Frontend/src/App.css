@@ -1,145 +1,30 @@
 :root {
-  --bg-dark: #1e1e1e;
-  --card-bg: #e0e0e0;
-  --sidebar-bg: #d4d4d4;
-  --text-dark: #333;
+  --bg-dark: #121212;
+  --bg-card: #2a2a2a;
+  --bg-sidebar: #1e1e1e;
+  --accent: #008080;
+  --text-main: #ffffff;
+  --text-dim: #b3b3b3;
 }
 
 body {
   margin: 0;
   background-color: var(--bg-dark);
+  color: var(--text-main);
   font-family: 'Inter', sans-serif;
-  color: white;
 }
 
-.dashboard-container {
+.dashboard-layout {
   display: flex;
   flex-direction: column;
   height: 100vh;
   padding: 20px;
-  box-sizing: border-box;
 }
 
-/* HEADER */
-.header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 20px;
-}
-
-.header h1 {
-  font-family: 'Georgia', serif; /* Agar mirip gaya Hello, Nadira */
-  font-style: italic;
-  font-weight: 400;
-  margin: 0;
-}
-
-.search-bar {
-  display: flex;
-  align-items: center;
-  background: #d9d9d9;
-  padding: 8px 15px;
-  border-radius: 20px;
-  width: 300px;
-  gap: 10px;
-}
-
-.search-bar input {
-  border: none;
-  background: transparent;
-  outline: none;
-  width: 100%;
-}
-
-/* MAIN CONTENT LAYOUT */
-.main-layout {
+.main-content {
   display: flex;
   gap: 20px;
   flex: 1;
   overflow: hidden;
-}
-
-/* GRID KIRI */
-.content-grid {
-  flex: 3;
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 20px;
-  overflow-y: auto;
-  padding-right: 10px;
-}
-
-.card {
-  background: var(--card-bg);
-  border-radius: 15px;
-  height: 180px;
-  position: relative;
-  color: var(--text-dark);
-  padding: 15px;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-}
-
-/* Membuat bentuk Tab Folder di atas */
-.folder-tab {
-  position: absolute;
-  top: -10px;
-  left: 0;
-  width: 80px;
-  height: 20px;
-  background: var(--card-bg);
-  border-radius: 10px 10px 0 0;
-}
-
-.card-title { font-weight: bold; margin-bottom: 5px; }
-.card-sub { font-size: 12px; opacity: 0.7; }
-
-/* SIDEBAR KANAN */
-.right-sidebar {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.side-panel {
-  background: var(--sidebar-bg);
-  border-radius: 20px;
-  padding: 20px;
-  color: var(--text-dark);
-}
-
-.panel-title {
-  font-weight: bold;
-  margin-bottom: 15px;
-  font-style: italic;
-}
-
-.item-row {
-  background: white;
-  margin-bottom: 10px;
-  padding: 10px;
-  border-radius: 10px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 13px;
-}
-
-/* Floating Button */
-.fab {
-  position: fixed;
-  bottom: 40px;
-  right: 40px;
-  background: #008080;
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-  cursor: pointer;
+  margin-top: 20px;
 }
