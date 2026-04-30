@@ -1,11 +1,8 @@
 const Database = require('better-sqlite3');
 const path = require('path');
 
-// Database file will be made outomatically in database folder
-const db = new Database(path.join(__dirname, 'notable.db'), {
-});
+const db = new Database(path.join(__dirname, 'notable.db'));
 
-// Making table if it doesnt exist
 db.exec(`
   CREATE TABLE IF NOT EXISTS users (
     id TEXT PRIMARY KEY,
@@ -23,6 +20,7 @@ db.exec(`
     title TEXT NOT NULL,
     deadline DATETIME,
     academic_weight REAL DEFAULT 1.0,
+    estimated_effort REAL DEFAULT 1.0,
     is_completed INTEGER DEFAULT 0,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id)
