@@ -1,4 +1,4 @@
-function Dashboard() {
+export default function Dashboard() {
   return (
     <div style={{ display: 'flex', gap: '24px' }}>
       

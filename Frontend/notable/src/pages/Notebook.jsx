@@ -1,4 +1,4 @@
-function Notebook() {
+export default function Notebook() {
   return (
     <div style={{ display: 'flex', gap: '24px' }}>
       

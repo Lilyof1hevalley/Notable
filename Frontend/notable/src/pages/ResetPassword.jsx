@@ -1,3 +1,6 @@
+import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+
 function ResetPassword() {
   const [email, setEmail] = useState('')
   const navigate = useNavigate()
@@ -21,3 +24,5 @@ function ResetPassword() {
     </div>
   )
 }
+
+export default ResetPassword
