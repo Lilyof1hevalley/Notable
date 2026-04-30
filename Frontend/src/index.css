@@ -1,0 +1,26 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Georgia:ital@1&display=swap');
+
+:root {
+  --bg-main: #2D2D2D; 
+  --bg-panel: #D1D1D1; 
+  --bg-card: #E5E5E5; 
+  --accent: #008080;
+}
+
+body {
+  margin: 0;
+  background-color: var(--bg-main);
+  color: white;
+  font-family: 'Inter', sans-serif;
+  overflow-x: hidden;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
