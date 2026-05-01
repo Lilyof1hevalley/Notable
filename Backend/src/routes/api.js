@@ -9,8 +9,10 @@ const UserController = require('../controllers/userController');
 const FolderController = require('../controllers/folderController');
 const NotebookController = require('../controllers/notebookController');
 const ChapterController = require('../controllers/chapterController');
+const ResourceController = require('../controllers/resourceController');
 const GoogleCalendarController = require('../controllers/googleCalendarController');
 const authMiddleware = require('../utils/authMiddleware');
+const upload = require('../utils/uploadMiddleware');
 const { validate, registerRules, loginRules, todoRules, noteRules } = require('../utils/validator');
 const { authLimiter } = require('../utils/rateLimiter');
 
@@ -64,6 +66,14 @@ router.get('/notebooks/:notebookId/chapters', authMiddleware, ChapterController.
 router.post('/notebooks/:notebookId/chapters', authMiddleware, ChapterController.create);
 router.patch('/chapters/:id', authMiddleware, ChapterController.update);
 router.delete('/chapters/:id', authMiddleware, ChapterController.delete);
+
+// Resource routes (protected)
+router.get('/resources', authMiddleware, ResourceController.getAll);
+router.post('/resources', authMiddleware, upload.single('file'), ResourceController.upload);
+router.get('/resources/notebook/:notebookId', authMiddleware, ResourceController.getByNotebook);
+router.get('/resources/chapter/:chapterId', authMiddleware, ResourceController.getByChapter);
+router.get('/resources/:id/download', authMiddleware, ResourceController.download);
+router.delete('/resources/:id', authMiddleware, ResourceController.delete);
 
 // Google Calendar routes (protected)
 router.get('/calendar/auth', authMiddleware, GoogleCalendarController.getAuthUrl);

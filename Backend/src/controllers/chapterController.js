@@ -9,7 +9,6 @@ class ChapterController {
       if (!notebook) {
         return res.status(404).json({ message: 'Notebook not found!' });
       }
-
       const chapters = Chapter.findAllByNotebook(req.params.notebookId);
       res.json({ chapters });
     } catch (error) {
@@ -21,16 +20,13 @@ class ChapterController {
   static create(req, res) {
     try {
       const { title, content } = req.body;
-
       if (!title) {
         return res.status(400).json({ message: 'Title is required!' });
       }
-
       const notebook = Notebook.findById(req.params.notebookId);
       if (!notebook) {
         return res.status(404).json({ message: 'Notebook not found!' });
       }
-
       const chapterId = Chapter.create(req.params.notebookId, req.userId, title, content || '');
       res.status(201).json({ message: 'Chapter created!', chapterId });
     } catch (error) {
@@ -42,12 +38,10 @@ class ChapterController {
   static update(req, res) {
     try {
       const { title, content } = req.body;
-
       const chapter = Chapter.findById(req.params.id);
       if (!chapter) {
         return res.status(404).json({ message: 'Chapter not found!' });
       }
-
       Chapter.update(req.params.id, title, content);
       res.json({ message: 'Chapter updated!' });
     } catch (error) {
@@ -62,7 +56,6 @@ class ChapterController {
       if (!chapter) {
         return res.status(404).json({ message: 'Chapter not found!' });
       }
-
       Chapter.delete(req.params.id);
       res.json({ message: 'Chapter deleted!' });
     } catch (error) {

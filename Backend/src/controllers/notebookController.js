@@ -18,7 +18,6 @@ class NotebookController {
       if (!title) {
         return res.status(400).json({ message: 'Title is required!' });
       }
-
       const notebookId = Notebook.create(req.userId, title, folder_id || null);
       res.status(201).json({ message: 'Notebook created!', notebookId });
     } catch (error) {
@@ -34,7 +33,6 @@ class NotebookController {
       if (!notebook) {
         return res.status(404).json({ message: 'Notebook not found!' });
       }
-
       Notebook.update(req.params.id, title, folder_id || null);
       res.json({ message: 'Notebook updated!' });
     } catch (error) {
@@ -49,7 +47,6 @@ class NotebookController {
       if (!notebook) {
         return res.status(404).json({ message: 'Notebook not found!' });
       }
-
       Notebook.delete(req.params.id);
       res.json({ message: 'Notebook deleted!' });
     } catch (error) {

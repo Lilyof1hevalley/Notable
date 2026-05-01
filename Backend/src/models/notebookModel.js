@@ -27,7 +27,7 @@ class Notebook {
     return db.prepare('SELECT * FROM notebooks WHERE id = ?').get(id);
   }
 
-  // Update notebook title
+  // Update notebook
   static update(id, title, folderId) {
     db.prepare('UPDATE notebooks SET title = ?, folder_id = ? WHERE id = ?').run(title, folderId, id);
   }

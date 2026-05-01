@@ -19,7 +19,6 @@ class FolderController {
       if (!title) {
         return res.status(400).json({ message: 'Title is required!' });
       }
-
       const folderId = Folder.create(req.userId, title);
       res.status(201).json({ message: 'Folder created!', folderId });
     } catch (error) {
@@ -35,7 +34,6 @@ class FolderController {
       if (!folder) {
         return res.status(404).json({ message: 'Folder not found!' });
       }
-
       Folder.update(req.params.id, title);
       res.json({ message: 'Folder updated!' });
     } catch (error) {
@@ -50,7 +48,6 @@ class FolderController {
       if (!folder) {
         return res.status(404).json({ message: 'Folder not found!' });
       }
-
       Folder.delete(req.params.id);
       res.json({ message: 'Folder deleted!' });
     } catch (error) {
@@ -65,7 +62,6 @@ class FolderController {
       if (!folder) {
         return res.status(404).json({ message: 'Folder not found!' });
       }
-
       const notebooks = Notebook.findByFolder(req.params.id);
       res.json({ notebooks });
     } catch (error) {

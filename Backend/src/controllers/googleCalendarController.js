@@ -7,7 +7,7 @@ const oauth2Client = new google.auth.OAuth2(
 );
 
 class GoogleCalendarController {
-  // Step 1: Redirect user to Google login
+  // Step 1 — Redirect user to Google login
   static getAuthUrl(req, res) {
     const authUrl = oauth2Client.generateAuthUrl({
       access_type: 'offline',
@@ -16,16 +16,12 @@ class GoogleCalendarController {
     res.json({ authUrl });
   }
 
-  // Step 2: Handle Google callback, save tokens
+  // Step 2 — Handle Google callback, save tokens
   static async handleCallback(req, res) {
     try {
       const { code } = req.query;
       const { tokens } = await oauth2Client.getToken(code);
       oauth2Client.setCredentials(tokens);
-
-      // Save tokens to user session (simplified)
-      req.googleTokens = tokens;
-
       res.json({
         message: 'Google Calendar connected!',
         tokens
@@ -35,18 +31,13 @@ class GoogleCalendarController {
     }
   }
 
-  // Step 3: Get upcoming events from Google Calendar
+  // Step 3 — Get upcoming events from Google Calendar
   static async getEvents(req, res) {
     try {
       const { access_token, refresh_token } = req.query;
-
-      oauth2Client.setCredentials({
-        access_token,
-        refresh_token
-      });
+      oauth2Client.setCredentials({ access_token, refresh_token });
 
       const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
-
       const response = await calendar.events.list({
         calendarId: 'primary',
         timeMin: new Date().toISOString(),
