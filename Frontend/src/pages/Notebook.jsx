@@ -38,7 +38,7 @@ function AddNoteModal({ onClose, onAdd }) {
     <div style={modal.overlay} onClick={e => { if (e.target === e.currentTarget) onClose() }}>
       <div style={modal.box}>
         <div style={modal.header}>
-          <h2 style={modal.title}>New Note</h2>
+          <h2 style={modal.title}>New Chapter</h2>
           <button style={modal.closeBtn} onClick={onClose}>✕</button>
         </div>
 
@@ -69,7 +69,7 @@ function AddNoteModal({ onClose, onAdd }) {
 
           <div style={modal.actions}>
             <button type="button" style={modal.cancelBtn} onClick={onClose}>Cancel</button>
-            <button type="submit" style={modal.submitBtn}>ADD NOTE</button>
+            <button type="submit" style={modal.submitBtn}>ADD CHAPTER</button>
           </div>
         </form>
       </div>
@@ -128,7 +128,7 @@ export default function Notebook() {
             />
             {search && <button style={styles.searchClear} onClick={() => setSearch('')}>✕</button>}
           </div>
-          <button style={styles.addNoteBtn} onClick={() => setShowAddNote(true)}>+ Add Note</button>
+          <button style={styles.addNoteBtn} onClick={() => setShowAddNote(true)}>+ Add Chapter</button>
         </div>
       </nav>
 
@@ -247,7 +247,7 @@ const styles = {
   },
   backArrow: { fontSize: 18, color: '#888', lineHeight: 1 },
   notebookTitle: {
-    fontFamily: "'Georgia', serif",
+    fontFamily: "'Inria', serif",
     fontStyle: 'italic',
     fontSize: 18,
     fontWeight: 400,

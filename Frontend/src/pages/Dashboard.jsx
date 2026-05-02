@@ -234,7 +234,7 @@ const styles = {
     gap: 16,
   },
   greeting: {
-    fontFamily: "'Inria Sans', serif",
+    fontFamily: "'Inria', serif",
     fontStyle: 'italic',
     fontWeight: '400',
     fontSize: '26px',
@@ -369,7 +369,7 @@ const styles = {
     marginBottom: 4,
   },
   sideTitle: {
-    fontFamily: "'Inria Sans', serif",
+    fontFamily: "'Inter', sans-serif",
     fontSize: '14px',
     fontWeight: '700',
     color: '#1A1A1A',
