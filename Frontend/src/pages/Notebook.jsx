@@ -1,417 +1,240 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from 'react'
+import { Link, useNavigate, useParams } from 'react-router-dom'
+import { apiRequest, downloadResource } from '../lib/api'
 
-// ── Sample Data (replace with real API data later) ────────────────────────────
-const sampleTimeline = [
-  {
-    date: "25 Mar 2026",
-    tasks: [
-      { id: 1, name: "Review Chapter 3", time: "08:00", folder: "Discrete Math" },
-      { id: 2, name: "Submit Lab Report", time: "10:00", folder: "Physics" },
-    ],
-  },
-  {
-    date: "26 Mar 2026",
-    tasks: [
-      { id: 3, name: "Quiz Preparation", time: "09:00", folder: "Calculus" },
-      { id: 4, name: "Group Meeting", time: "13:00", folder: "Software Eng" },
-    ],
-  },
-];
+function Notebook() {
+  const { id } = useParams()
+  const navigate = useNavigate()
+  const [notebook, setNotebook] = useState(null)
+  const [chapters, setChapters] = useState([])
+  const [resources, setResources] = useState([])
+  const [notes, setNotes] = useState([])
+  const [todos, setTodos] = useState([])
+  const [search, setSearch] = useState('')
+  const [chapterForm, setChapterForm] = useState({ title: '', content: '' })
+  const [noteForm, setNoteForm] = useState({ title: '', content: '', todo_id: '' })
+  const [resourceForm, setResourceForm] = useState({ file: null, chapter_id: '' })
+  const [message, setMessage] = useState('')
+  const [error, setError] = useState('')
+  const [isLoading, setIsLoading] = useState(true)
 
-const sampleResources = [
-  {
-    chapter: "Chapter 1",
-    files: ["Textbook.pdf", "Lecture_Slides.pdf"],
-    images: ["7404_Datasheet_Image.png"],
-  },
-  {
-    chapter: "Chapter 2",
-    files: ["Textbook.pdf"],
-    images: ["7404_Datasheet_Image.png", "7420_Datasheet_Image.png"],
-  },
-];
+  async function loadNotebook() {
+    setError('')
+    try {
+      const [notebooksData, chaptersData, resourcesData, notesData, todosData] = await Promise.all([
+        apiRequest('/notebooks'),
+        apiRequest(`/notebooks/${id}/chapters`),
+        apiRequest(`/resources/notebook/${id}`),
+        apiRequest('/notes'),
+        apiRequest('/todos?limit=100'),
+      ])
+      const currentNotebook = notebooksData.notebooks.find((item) => item.id === id)
+      if (!currentNotebook) {
+        navigate('/dashboard', { replace: true })
+        return
+      }
+      setNotebook(currentNotebook)
+      setChapters(chaptersData.chapters)
+      setResources(resourcesData.resources)
+      setNotes(notesData.notes)
+      setTodos(todosData.todos)
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
-const sampleChapters = [
-  {
-    id: 1,
-    title: "Chapter 1: Introduction",
-    preview:
-      "An overview of the core concepts covered in this notebook. Topics include foundational theory, key definitions, and the scope of the subject matter as outlined in the course syllabus.",
-    createdOn: "25/03/2026",
-  },
-  {
-    id: 2,
-    title: "Chapter 2: Core Concepts",
-    preview:
-      "Deep dive into the primary subject matter with worked examples and case studies. This chapter builds on the introduction and presents the main theoretical framework used throughout the course.",
-    createdOn: "25/03/2026",
-  },
-  {
-    id: 3,
-    title: "Chapter 3: Applications",
-    preview:
-      "Practical applications and problem-solving strategies derived from the core concepts. Students are expected to apply the theoretical knowledge from Chapter 2 to solve real-world scenarios.",
-    createdOn: "25/03/2026",
-  },
-  {
-    id: 4,
-    title: "Chapter 4: Advanced Topics",
-    preview:
-      "Extension material for deeper understanding. Covers advanced derivations, edge cases, and contemporary research directions relevant to the subject area covered in this notebook.",
-    createdOn: "26/03/2026",
-  },
-  {
-    id: 5,
-    title: "Chapter 5: Review & Summary",
-    preview:
-      "Consolidated review of all topics covered throughout the notebook. Includes a structured summary, key takeaways, and a self-assessment checklist to prepare for examinations.",
-    createdOn: "26/03/2026",
-  },
-];
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      loadNotebook()
+    }, 0)
+    return () => clearTimeout(timer)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id])
 
-// ── Styles ────────────────────────────────────────────────────────────────────
-const styles = {
-  page: {
-    fontFamily: "'Inria Sans', 'Inter', sans-serif",
-    minHeight: "100vh",
-    backgroundColor: "#F9F9F9",
-    color: "#1A1A1A",
-  },
+  const filteredChapters = useMemo(() => (
+    chapters.filter((chapter) => (
+      chapter.title.toLowerCase().includes(search.toLowerCase())
+      || (chapter.content || '').toLowerCase().includes(search.toLowerCase())
+    ))
+  ), [chapters, search])
 
-  // Top navbar
-  navbar: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    padding: "0 24px",
-    height: "52px",
-    backgroundColor: "#FFFFFF",
-    borderBottom: "1px solid #E5E5E5",
-    position: "sticky",
-    top: 0,
-    zIndex: 100,
-  },
-  navLeft: {
-    display: "flex",
-    alignItems: "center",
-    gap: "8px",
-    textDecoration: "none",
-    color: "#1A1A1A",
-    fontSize: "18px",
-    fontStyle: "italic",
-    fontWeight: "400",
-  },
-  backArrow: {
-    fontSize: "16px",
-    color: "#555",
-  },
-  notebookTitle: {
-    fontSize: "18px",
-    fontStyle: "italic",
-    fontWeight: "400",
-    textDecoration: "underline",
-    textDecorationStyle: "solid",
-    color: "#1A1A1A",
-  },
-  navRight: {
-    display: "flex",
-    alignItems: "center",
-    gap: "12px",
-  },
-  searchBar: {
-    display: "flex",
-    alignItems: "center",
-    gap: "6px",
-    border: "1px solid #D0D0D0",
-    borderRadius: "6px",
-    padding: "5px 10px",
-    fontSize: "13px",
-    backgroundColor: "#FFFFFF",
-    width: "200px",
-  },
-  searchInput: {
-    border: "none",
-    outline: "none",
-    fontSize: "13px",
-    width: "100%",
-    backgroundColor: "transparent",
-    color: "#1A1A1A",
-  },
-  iconBtn: {
-    background: "none",
-    border: "none",
-    cursor: "pointer",
-    fontSize: "16px",
-    color: "#555",
-    padding: "4px",
-  },
+  async function submitChapter(event) {
+    event.preventDefault()
+    setMessage('')
+    try {
+      await apiRequest(`/notebooks/${id}/chapters`, {
+        method: 'POST',
+        body: JSON.stringify(chapterForm),
+      })
+      setChapterForm({ title: '', content: '' })
+      setMessage('Chapter created.')
+      await loadNotebook()
+    } catch (err) {
+      setError(err.message)
+    }
+  }
 
-  // Main layout
-  body: {
-    display: "flex",
-    height: "calc(100vh - 52px)",
-    overflow: "hidden",
-  },
+  async function submitNote(event) {
+    event.preventDefault()
+    setMessage('')
+    try {
+      await apiRequest('/notes', {
+        method: 'POST',
+        body: JSON.stringify({
+          title: noteForm.title,
+          content: noteForm.content,
+          todo_id: noteForm.todo_id || null,
+        }),
+      })
+      setNoteForm({ title: '', content: '', todo_id: '' })
+      setMessage('Note created.')
+      await loadNotebook()
+    } catch (err) {
+      setError(err.message)
+    }
+  }
 
-  // Left sidebar
-  sidebar: {
-    width: "260px",
-    flexShrink: 0,
-    borderRight: "1px solid #E5E5E5",
-    backgroundColor: "#FFFFFF",
-    overflowY: "auto",
-    padding: "16px",
-    display: "flex",
-    flexDirection: "column",
-    gap: "24px",
-  },
-  sidebarSection: {},
-  sidebarHeader: {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: "10px",
-  },
-  sidebarTitle: {
-    fontSize: "13px",
-    fontWeight: "600",
-    color: "#1A1A1A",
-    letterSpacing: "0.02em",
-  },
-  addBtn: {
-    background: "none",
-    border: "none",
-    cursor: "pointer",
-    fontSize: "18px",
-    color: "#555",
-    lineHeight: 1,
-    padding: "0 2px",
-  },
+  async function submitResource(event) {
+    event.preventDefault()
+    setMessage('')
+    if (!resourceForm.file) {
+      setError('Choose a file first.')
+      return
+    }
+    const formData = new FormData()
+    formData.append('file', resourceForm.file)
+    formData.append('notebook_id', id)
+    if (resourceForm.chapter_id) {
+      formData.append('chapter_id', resourceForm.chapter_id)
+    }
+    try {
+      await apiRequest('/resources', {
+        method: 'POST',
+        body: formData,
+      })
+      setResourceForm({ file: null, chapter_id: '' })
+      event.target.reset()
+      setMessage('Resource uploaded.')
+      await loadNotebook()
+    } catch (err) {
+      setError(err.message)
+    }
+  }
 
-  // Timeline
-  dateGroup: {
-    marginBottom: "10px",
-  },
-  dateLabel: {
-    fontSize: "11px",
-    fontWeight: "600",
-    color: "#888",
-    marginBottom: "6px",
-    letterSpacing: "0.04em",
-  },
-  taskItem: {
-    display: "flex",
-    alignItems: "flex-start",
-    gap: "8px",
-    marginBottom: "6px",
-    padding: "6px 8px",
-    borderRadius: "6px",
-    cursor: "pointer",
-    transition: "background 0.15s",
-  },
-  taskCheckbox: {
-    width: "14px",
-    height: "14px",
-    borderRadius: "50%",
-    border: "1.5px solid #BBBBBB",
-    flexShrink: 0,
-    marginTop: "2px",
-  },
-  taskInfo: {},
-  taskName: {
-    fontSize: "12px",
-    fontWeight: "500",
-    color: "#1A1A1A",
-    lineHeight: 1.4,
-  },
-  taskMeta: {
-    fontSize: "11px",
-    color: "#888",
-  },
-
-  // Resources
-  resourceGroup: {
-    marginBottom: "10px",
-  },
-  resourceChapter: {
-    fontSize: "11px",
-    fontWeight: "600",
-    color: "#1A1A1A",
-    marginBottom: "4px",
-  },
-  resourceFile: {
-    fontSize: "11px",
-    color: "#555",
-    padding: "2px 0 2px 8px",
-    borderLeft: "2px solid #E5E5E5",
-    marginBottom: "2px",
-    cursor: "pointer",
-  },
-
-  // Right main area
-  main: {
-    flex: 1,
-    overflowY: "auto",
-    padding: "24px 32px",
-  },
-  chapterCard: {
-    backgroundColor: "#FFFFFF",
-    border: "1px solid #E5E5E5",
-    borderRadius: "8px",
-    padding: "16px 20px",
-    marginBottom: "12px",
-    cursor: "pointer",
-    transition: "box-shadow 0.15s, border-color 0.15s",
-  },
-  chapterTitle: {
-    fontSize: "15px",
-    fontWeight: "500",
-    fontStyle: "italic",
-    textDecoration: "underline",
-    color: "#1A1A1A",
-    marginBottom: "8px",
-  },
-  chapterPreview: {
-    fontSize: "13px",
-    color: "#555",
-    lineHeight: "1.6",
-    marginBottom: "10px",
-    display: "-webkit-box",
-    WebkitLineClamp: 3,
-    WebkitBoxOrient: "vertical",
-    overflow: "hidden",
-  },
-  chapterDate: {
-    fontSize: "11px",
-    color: "#AAA",
-    textAlign: "right",
-  },
-};
-
-// ── Component ─────────────────────────────────────────────────────────────────
-export default function Notebook() {
-  const [search, setSearch] = useState("");
-  const [hoveredCard, setHoveredCard] = useState(null);
-  const [hoveredTask, setHoveredTask] = useState(null);
-
-  const filteredChapters = sampleChapters.filter((c) =>
-    c.title.toLowerCase().includes(search.toLowerCase())
-  );
+  async function handleDownload(resource) {
+    setError('')
+    try {
+      await downloadResource(resource.id, resource.original_name)
+    } catch (err) {
+      setError(err.message)
+    }
+  }
 
   return (
-    <div style={styles.page}>
-
-      {/* ── Navbar ── */}
-      <nav style={styles.navbar}>
-        <div style={styles.navLeft}>
-          <span style={styles.backArrow}>←</span>
-          <span style={styles.notebookTitle}>Notebook Title</span>
+    <main className="app-shell">
+      <header className="topbar">
+        <div>
+          <Link to="/dashboard" className="back-link">Back to dashboard</Link>
+          <h1>{notebook?.title || 'Notebook'}</h1>
         </div>
-        <div style={styles.navRight}>
-          <div style={styles.searchBar}>
-            <span style={{ color: "#AAA", fontSize: "13px" }}>🔍</span>
-            <input
-              style={styles.searchInput}
-              placeholder="Search"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-            {search && (
-              <span
-                style={{ cursor: "pointer", color: "#AAA", fontSize: "12px" }}
-                onClick={() => setSearch("")}
-              >✕</span>
-            )}
-          </div>
-          <button style={styles.iconBtn} title="Filter">▽</button>
-          <button style={styles.iconBtn} title="Sort">↕</button>
+        <div className="search-box">
+          <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search chapters" />
+          {search && <button type="button" className="ghost-button" onClick={() => setSearch('')}>Clear</button>}
         </div>
-      </nav>
+      </header>
 
-      {/* ── Body ── */}
-      <div style={styles.body}>
+      {error && <div className="error">{error}</div>}
+      {message && <div className="success">{message}</div>}
 
-        {/* ── Left Sidebar ── */}
-        <aside style={styles.sidebar}>
-
-          {/* Timeline */}
-          <div style={styles.sidebarSection}>
-            <div style={styles.sidebarHeader}>
-              <span style={styles.sidebarTitle}>Timeline</span>
-              <button style={styles.addBtn} title="Add task">+</button>
+      {isLoading ? (
+        <div className="panel">Loading notebook...</div>
+      ) : (
+        <div className="notebook-layout">
+          <aside className="panel sidebar-panel">
+            <h2>Timeline</h2>
+            <div className="compact-list">
+              {todos.slice(0, 6).map((todo) => (
+                <div key={todo.id}>
+                  <strong>{todo.title}</strong>
+                  <span>{todo.deadline || 'No deadline'} · {todo.priority_label}</span>
+                </div>
+              ))}
+              {todos.length === 0 && <p className="muted">No tasks yet.</p>}
             </div>
-            {sampleTimeline.map((group) => (
-              <div key={group.date} style={styles.dateGroup}>
-                <div style={styles.dateLabel}>{group.date}</div>
-                {group.tasks.map((task) => (
-                  <div
-                    key={task.id}
-                    style={{
-                      ...styles.taskItem,
-                      background: hoveredTask === task.id ? "#F5F5F5" : "transparent",
-                    }}
-                    onMouseEnter={() => setHoveredTask(task.id)}
-                    onMouseLeave={() => setHoveredTask(null)}
-                  >
-                    <div style={styles.taskCheckbox} />
-                    <div style={styles.taskInfo}>
-                      <div style={styles.taskName}>{task.name}</div>
-                      <div style={styles.taskMeta}>{task.time} · {task.folder}</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ))}
-          </div>
 
-          {/* Resources */}
-          <div style={styles.sidebarSection}>
-            <div style={styles.sidebarHeader}>
-              <span style={styles.sidebarTitle}>Resources</span>
-              <button style={styles.addBtn} title="Add resource">+</button>
+            <h2>Resources</h2>
+            <div className="compact-list">
+              {resources.map((resource) => (
+                <div key={resource.id}>
+                  <strong>{resource.original_name}</strong>
+                  <button type="button" className="ghost-button" onClick={() => handleDownload(resource)}>Download</button>
+                </div>
+              ))}
+              {resources.length === 0 && <p className="muted">No uploaded resources.</p>}
             </div>
-            {sampleResources.map((group) => (
-              <div key={group.chapter} style={styles.resourceGroup}>
-                <div style={styles.resourceChapter}>{group.chapter}</div>
-                {group.files.map((file) => (
-                  <div key={file} style={styles.resourceFile}>{file}</div>
-                ))}
-                {group.images.map((img) => (
-                  <div key={img} style={{ ...styles.resourceFile, color: "#888" }}>{img}</div>
-                ))}
-              </div>
-            ))}
-          </div>
+          </aside>
 
-        </aside>
-
-        {/* ── Main Area ── */}
-        <main style={styles.main}>
-          {filteredChapters.length === 0 ? (
-            <div style={{ color: "#AAA", fontSize: "14px", textAlign: "center", marginTop: "60px" }}>
-              No chapters found.
+          <section className="panel main-panel">
+            <div className="section-heading">
+              <h2>Chapters</h2>
+              <span>{filteredChapters.length} shown</span>
             </div>
-          ) : (
-            filteredChapters.map((chapter) => (
-              <div
-                key={chapter.id}
-                style={{
-                  ...styles.chapterCard,
-                  boxShadow: hoveredCard === chapter.id ? "0 2px 12px rgba(0,0,0,0.08)" : "none",
-                  borderColor: hoveredCard === chapter.id ? "#CCCCCC" : "#E5E5E5",
-                }}
-                onMouseEnter={() => setHoveredCard(chapter.id)}
-                onMouseLeave={() => setHoveredCard(null)}
-              >
-                <div style={styles.chapterTitle}>{chapter.title}</div>
-                <div style={styles.chapterPreview}>{chapter.preview}</div>
-                <div style={styles.chapterDate}>Created On {chapter.createdOn}</div>
-              </div>
-            ))
-          )}
-        </main>
+            <div className="chapter-list">
+              {filteredChapters.map((chapter) => (
+                <article key={chapter.id} className="chapter-card">
+                  <h3>{chapter.title}</h3>
+                  <p>{chapter.content || 'No content yet.'}</p>
+                  <span>Created {new Date(chapter.created_at).toLocaleDateString()}</span>
+                </article>
+              ))}
+              {filteredChapters.length === 0 && <p className="muted">No chapters found.</p>}
+            </div>
+          </section>
 
-      </div>
-    </div>
-  );
+          <aside className="panel forms-panel">
+            <h2>Add Chapter</h2>
+            <form className="stack" onSubmit={submitChapter}>
+              <input value={chapterForm.title} onChange={(event) => setChapterForm({ ...chapterForm, title: event.target.value })} placeholder="Chapter title" required />
+              <textarea value={chapterForm.content} onChange={(event) => setChapterForm({ ...chapterForm, content: event.target.value })} placeholder="Chapter content" rows="4" />
+              <button type="submit">Create Chapter</button>
+            </form>
+
+            <h2>Quick Note</h2>
+            <form className="stack" onSubmit={submitNote}>
+              <input value={noteForm.title} onChange={(event) => setNoteForm({ ...noteForm, title: event.target.value })} placeholder="Note title" required />
+              <textarea value={noteForm.content} onChange={(event) => setNoteForm({ ...noteForm, content: event.target.value })} placeholder="Note content" rows="3" required />
+              <select value={noteForm.todo_id} onChange={(event) => setNoteForm({ ...noteForm, todo_id: event.target.value })}>
+                <option value="">No linked todo</option>
+                {todos.map((todo) => <option key={todo.id} value={todo.id}>{todo.title}</option>)}
+              </select>
+              <button type="submit">Create Note</button>
+            </form>
+
+            <div className="compact-list">
+              {notes.slice(0, 4).map((note) => (
+                <div key={note.id}>
+                  <strong>{note.title}</strong>
+                  <span>{note.content}</span>
+                </div>
+              ))}
+            </div>
+
+            <h2>Upload Resource</h2>
+            <form className="stack" onSubmit={submitResource}>
+              <input type="file" onChange={(event) => setResourceForm({ ...resourceForm, file: event.target.files[0] || null })} required />
+              <select value={resourceForm.chapter_id} onChange={(event) => setResourceForm({ ...resourceForm, chapter_id: event.target.value })}>
+                <option value="">Notebook-level resource</option>
+                {chapters.map((chapter) => <option key={chapter.id} value={chapter.id}>{chapter.title}</option>)}
+              </select>
+              <button type="submit">Upload Resource</button>
+            </form>
+          </aside>
+        </div>
+      )}
+    </main>
+  )
 }
+
+export default Notebook

@@ -22,9 +22,25 @@ class Resource {
     return db.prepare('SELECT * FROM resources WHERE notebook_id = ? ORDER BY created_at DESC').all(notebookId);
   }
 
+  static findByNotebookAndUser(notebookId, userId) {
+    return db.prepare(`
+      SELECT * FROM resources
+      WHERE notebook_id = ? AND user_id = ?
+      ORDER BY created_at DESC
+    `).all(notebookId, userId);
+  }
+
   // Get all resources in a chapter
   static findByChapter(chapterId) {
     return db.prepare('SELECT * FROM resources WHERE chapter_id = ? ORDER BY created_at DESC').all(chapterId);
+  }
+
+  static findByChapterAndUser(chapterId, userId) {
+    return db.prepare(`
+      SELECT * FROM resources
+      WHERE chapter_id = ? AND user_id = ?
+      ORDER BY created_at DESC
+    `).all(chapterId, userId);
   }
 
   // Find resource by ID
@@ -32,9 +48,13 @@ class Resource {
     return db.prepare('SELECT * FROM resources WHERE id = ?').get(id);
   }
 
+  static findByIdAndUser(id, userId) {
+    return db.prepare('SELECT * FROM resources WHERE id = ? AND user_id = ?').get(id, userId);
+  }
+
   // Delete resource
-  static delete(id) {
-    db.prepare('DELETE FROM resources WHERE id = ?').run(id);
+  static delete(id, userId) {
+    db.prepare('DELETE FROM resources WHERE id = ? AND user_id = ?').run(id, userId);
   }
 }
 

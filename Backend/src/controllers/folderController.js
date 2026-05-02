@@ -30,11 +30,11 @@ class FolderController {
   static update(req, res) {
     try {
       const { title } = req.body;
-      const folder = Folder.findById(req.params.id);
+      const folder = Folder.findByIdAndUser(req.params.id, req.userId);
       if (!folder) {
         return res.status(404).json({ message: 'Folder not found!' });
       }
-      Folder.update(req.params.id, title);
+      Folder.update(req.params.id, req.userId, title);
       res.json({ message: 'Folder updated!' });
     } catch (error) {
       res.status(500).json({ message: 'Server error', error: error.message });
@@ -44,11 +44,11 @@ class FolderController {
   // Delete a folder
   static delete(req, res) {
     try {
-      const folder = Folder.findById(req.params.id);
+      const folder = Folder.findByIdAndUser(req.params.id, req.userId);
       if (!folder) {
         return res.status(404).json({ message: 'Folder not found!' });
       }
-      Folder.delete(req.params.id);
+      Folder.delete(req.params.id, req.userId);
       res.json({ message: 'Folder deleted!' });
     } catch (error) {
       res.status(500).json({ message: 'Server error', error: error.message });
@@ -58,11 +58,11 @@ class FolderController {
   // Get all notebooks inside a folder
   static getNotebooks(req, res) {
     try {
-      const folder = Folder.findById(req.params.id);
+      const folder = Folder.findByIdAndUser(req.params.id, req.userId);
       if (!folder) {
         return res.status(404).json({ message: 'Folder not found!' });
       }
-      const notebooks = Notebook.findByFolder(req.params.id);
+      const notebooks = Notebook.findByFolderAndUser(req.params.id, req.userId);
       res.json({ notebooks });
     } catch (error) {
       res.status(500).json({ message: 'Server error', error: error.message });

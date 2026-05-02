@@ -8,6 +8,13 @@ class FocusSessionController {
     try {
       const { duration_minutes, todo_ids } = req.body;
 
+      if (todo_ids && todo_ids.length > 0) {
+        const validTodos = todo_ids.every(todoId => Todo.findByIdAndUser(todoId, req.userId));
+        if (!validTodos) {
+          return res.status(400).json({ message: 'One or more todos were not found!' });
+        }
+      }
+
       // Create session
       const sessionId = FocusSession.create(req.userId, duration_minutes || 50);
 
@@ -31,7 +38,7 @@ class FocusSessionController {
   // End a focus session
   static end(req, res) {
     try {
-      const session = FocusSession.findById(req.params.id);
+      const session = FocusSession.findByIdAndUser(req.params.id, req.userId);
       if (!session) {
         return res.status(404).json({ message: 'Session not found!' });
       }
@@ -46,12 +53,12 @@ class FocusSessionController {
   // Get session summary
   static getSummary(req, res) {
     try {
-      const session = FocusSession.findById(req.params.id);
+      const session = FocusSession.findByIdAndUser(req.params.id, req.userId);
       if (!session) {
         return res.status(404).json({ message: 'Session not found!' });
       }
 
-      const summary = FocusSession.getSummary(req.params.id);
+      const summary = FocusSession.getSummary(req.params.id, req.userId);
       res.json({ summary });
     } catch (error) {
       res.status(500).json({ message: 'Server error', error: error.message });

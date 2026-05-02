@@ -2,6 +2,7 @@ const Database = require('better-sqlite3');
 const path = require('path');
 
 const db = new Database(path.join(__dirname, 'notable.db'));
+db.pragma('foreign_keys = ON');
 
 db.exec(`
   CREATE TABLE IF NOT EXISTS users (
@@ -11,6 +12,8 @@ db.exec(`
     password_hash TEXT NOT NULL,
     display_name TEXT,
     role TEXT DEFAULT 'user' CHECK(role IN ('user', 'admin')),
+    reset_token TEXT,
+    reset_token_expiry DATETIME,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   );
 
@@ -26,6 +29,36 @@ db.exec(`
     FOREIGN KEY (user_id) REFERENCES users(id)
   );
 
+  CREATE TABLE IF NOT EXISTS folders (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL,
+    title TEXT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+  );
+
+  CREATE TABLE IF NOT EXISTS notebooks (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL,
+    folder_id TEXT,
+    title TEXT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (folder_id) REFERENCES folders(id) ON DELETE SET NULL
+  );
+
+  CREATE TABLE IF NOT EXISTS chapters (
+    id TEXT PRIMARY KEY,
+    notebook_id TEXT NOT NULL,
+    user_id TEXT NOT NULL,
+    title TEXT NOT NULL,
+    content TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (notebook_id) REFERENCES notebooks(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+  );
+
   CREATE TABLE IF NOT EXISTS notes (
     id TEXT PRIMARY KEY,
     user_id TEXT NOT NULL,
@@ -37,7 +70,51 @@ db.exec(`
     FOREIGN KEY (user_id) REFERENCES users(id),
     FOREIGN KEY (todo_id) REFERENCES todos(id)
   );
+
+  CREATE TABLE IF NOT EXISTS resources (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL,
+    notebook_id TEXT,
+    chapter_id TEXT,
+    filename TEXT NOT NULL,
+    original_name TEXT NOT NULL,
+    mimetype TEXT NOT NULL,
+    size INTEGER NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (notebook_id) REFERENCES notebooks(id) ON DELETE CASCADE,
+    FOREIGN KEY (chapter_id) REFERENCES chapters(id) ON DELETE CASCADE
+  );
+
+  CREATE TABLE IF NOT EXISTS focus_sessions (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL,
+    duration_minutes INTEGER DEFAULT 50,
+    started_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    ended_at DATETIME,
+    is_completed INTEGER DEFAULT 0,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+  );
+
+  CREATE TABLE IF NOT EXISTS session_todos (
+    id TEXT PRIMARY KEY,
+    session_id TEXT NOT NULL,
+    todo_id TEXT NOT NULL,
+    FOREIGN KEY (session_id) REFERENCES focus_sessions(id) ON DELETE CASCADE,
+    FOREIGN KEY (todo_id) REFERENCES todos(id) ON DELETE CASCADE
+  );
 `);
+
+function ensureColumn(table, column, definition) {
+  const columns = db.prepare(`PRAGMA table_info(${table})`).all();
+  if (!columns.some((entry) => entry.name === column)) {
+    db.exec(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`);
+  }
+}
+
+ensureColumn('users', 'reset_token', 'TEXT');
+ensureColumn('users', 'reset_token_expiry', 'DATETIME');
+ensureColumn('todos', 'estimated_effort', 'REAL DEFAULT 1.0');
 
 console.log('Database connected & tables ready!');
 

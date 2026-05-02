@@ -1,19 +1,37 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
+import { apiRequest } from '../lib/api'
 
 function ResetPassword() {
   const [email, setEmail] = useState('')
-  const navigate = useNavigate()
+  const [result, setResult] = useState(null)
+  const [error, setError] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
-  function handleReset(event) {
+  async function handleReset(event) {
     event.preventDefault()
-    navigate('/')
+    setError('')
+    setResult(null)
+    setIsSubmitting(true)
+    try {
+      const data = await apiRequest('/auth/forgot-password', {
+        method: 'POST',
+        body: JSON.stringify({ email }),
+      })
+      setResult(data)
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
-    <main style={{ padding: '32px', maxWidth: '420px', margin: '0 auto' }}>
+    <main className="auth-page">
+      <section className="auth-card">
       <h1>Reset Password</h1>
-      <form onSubmit={handleReset} style={{ display: 'grid', gap: '12px' }}>
+      <p className="muted">Untuk lokal, token reset akan tampil langsung jika email terdaftar.</p>
+      <form onSubmit={handleReset} className="stack">
         <input
           type="email"
           placeholder="Enter your email"
@@ -21,8 +39,20 @@ function ResetPassword() {
           onChange={(event) => setEmail(event.target.value)}
           required
         />
-        <button type="submit">Reset Password</button>
+        {error && <div className="error">{error}</div>}
+        <button type="submit" disabled={isSubmitting}>
+          {isSubmitting ? 'Generating...' : 'Reset Password'}
+        </button>
       </form>
+      {result && (
+        <div className="notice">
+          <strong>{result.message}</strong>
+          {result.resetToken && <code>{result.resetToken}</code>}
+          {result.resetLink && <Link to={`/new-password?token=${result.resetToken}`}>Open reset form</Link>}
+        </div>
+      )}
+      <p><Link to="/">Back to login</Link></p>
+      </section>
     </main>
   )
 }

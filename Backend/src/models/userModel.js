@@ -22,6 +22,14 @@ class User {
     return db.prepare('SELECT * FROM users WHERE id = ?').get(id);
   }
 
+  static findPublicById(id) {
+    return db.prepare(`
+      SELECT id, name, email, display_name, role, created_at
+      FROM users
+      WHERE id = ?
+    `).get(id);
+  }
+
   // Find user by reset token
   static findByResetToken(token) {
     return db.prepare('SELECT * FROM users WHERE reset_token = ?').get(token);
@@ -41,6 +49,13 @@ class User {
       UPDATE users SET password_hash = ?, reset_token = NULL, reset_token_expiry = NULL
       WHERE id = ?
     `).run(passwordHash, id);
+  }
+
+  static updateProfile(id, name, displayName) {
+    db.prepare(`
+      UPDATE users SET name = ?, display_name = ?
+      WHERE id = ?
+    `).run(name, displayName, id);
   }
 }
 

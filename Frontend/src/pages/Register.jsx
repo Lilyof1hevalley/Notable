@@ -1,27 +1,71 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { apiRequest } from '../lib/api'
+import { useAuth } from '../lib/AuthContext'
 
 function Register() {
+  const [name, setName] = useState('')
+  const [displayName, setDisplayName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
+  const [error, setError] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const auth = useAuth()
   const navigate = useNavigate()
 
-  function handleRegister(event) {
+  async function handleRegister(event) {
     event.preventDefault()
+    setError('')
 
     if (password !== confirmPassword) {
-      alert('Passwords do not match')
+      setError('Passwords do not match')
       return
     }
 
-    navigate('/dashboard')
+    setIsSubmitting(true)
+    try {
+      await apiRequest('/auth/register', {
+        method: 'POST',
+        body: JSON.stringify({
+          name,
+          email,
+          password,
+          display_name: displayName || name,
+        }),
+      })
+      const data = await apiRequest('/auth/login', {
+        method: 'POST',
+        body: JSON.stringify({ email, password }),
+      })
+      auth.login(data.token, data.user)
+      navigate('/dashboard', { replace: true })
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
-    <main style={{ padding: '32px', maxWidth: '420px', margin: '0 auto' }}>
+    <main className="auth-page">
+      <section className="auth-card">
+      <p className="eyebrow">Mulai workspace</p>
       <h1>Register</h1>
-      <form onSubmit={handleRegister} style={{ display: 'grid', gap: '12px' }}>
+      <form onSubmit={handleRegister} className="stack">
+        <input
+          type="text"
+          placeholder="Enter your name"
+          value={name}
+          onChange={(event) => setName(event.target.value)}
+          required
+        />
+        <input
+          type="text"
+          placeholder="Display name"
+          value={displayName}
+          onChange={(event) => setDisplayName(event.target.value)}
+        />
         <input
           type="email"
           placeholder="Enter your email"
@@ -43,11 +87,15 @@ function Register() {
           onChange={(event) => setConfirmPassword(event.target.value)}
           required
         />
-        <button type="submit">Register</button>
+        {error && <div className="error">{error}</div>}
+        <button type="submit" disabled={isSubmitting}>
+          {isSubmitting ? 'Creating...' : 'Register'}
+        </button>
       </form>
       <p>
         Already have an account? <Link to="/">Log in</Link>
       </p>
+      </section>
     </main>
   )
 }

@@ -23,22 +23,26 @@ class Note {
     return db.prepare('SELECT * FROM notes WHERE id = ?').get(id);
   }
 
+  static findByIdAndUser(id, userId) {
+    return db.prepare('SELECT * FROM notes WHERE id = ? AND user_id = ?').get(id, userId);
+  }
+
 // Find all notes linked to a specific todo
   static findByTodoId(todoId) {
     return db.prepare('SELECT * FROM notes WHERE todo_id = ?').all(todoId);
   }
 
 // Update note content
-  static update(id, title, content) {
+  static update(id, userId, title, content) {
     db.prepare(`
       UPDATE notes SET title = ?, content = ?, updated_at = CURRENT_TIMESTAMP
-      WHERE id = ?
-    `).run(title, content, id);
+      WHERE id = ? AND user_id = ?
+    `).run(title, content, id, userId);
   }
 
 // Delete a note by ID
-  static delete(id) {
-    db.prepare('DELETE FROM notes WHERE id = ?').run(id);
+  static delete(id, userId) {
+    db.prepare('DELETE FROM notes WHERE id = ? AND user_id = ?').run(id, userId);
   }
 }
 

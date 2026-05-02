@@ -1,26 +1,48 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { apiRequest } from '../lib/api'
 
 function NewPassword() {
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
+  const [message, setMessage] = useState('')
+  const [error, setError] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [searchParams] = useSearchParams()
   const navigate = useNavigate()
+  const token = searchParams.get('token') || ''
 
-  function handleNewPassword(event) {
+  async function handleNewPassword(event) {
     event.preventDefault()
+    setError('')
+    setMessage('')
 
     if (password !== confirmPassword) {
-      alert('Passwords do not match')
+      setError('Passwords do not match')
       return
     }
 
-    navigate('/')
+    setIsSubmitting(true)
+    try {
+      const data = await apiRequest('/auth/reset-password', {
+        method: 'POST',
+        body: JSON.stringify({ token, password }),
+      })
+      setMessage(data.message)
+      setTimeout(() => navigate('/'), 800)
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
-    <main style={{ padding: '32px', maxWidth: '420px', margin: '0 auto' }}>
+    <main className="auth-page">
+      <section className="auth-card">
       <h1>Set New Password</h1>
-      <form onSubmit={handleNewPassword} style={{ display: 'grid', gap: '12px' }}>
+      {!token && <div className="error">Reset token is missing.</div>}
+      <form onSubmit={handleNewPassword} className="stack">
         <input
           type="password"
           placeholder="New password"
@@ -35,8 +57,14 @@ function NewPassword() {
           onChange={(event) => setConfirmPassword(event.target.value)}
           required
         />
-        <button type="submit">Save Password</button>
+        {error && <div className="error">{error}</div>}
+        {message && <div className="success">{message}</div>}
+        <button type="submit" disabled={isSubmitting || !token}>
+          {isSubmitting ? 'Saving...' : 'Save Password'}
+        </button>
       </form>
+      <p><Link to="/">Back to login</Link></p>
+      </section>
     </main>
   )
 }

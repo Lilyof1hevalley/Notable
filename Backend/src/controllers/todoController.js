@@ -67,12 +67,12 @@ class TodoController {
       const { title, deadline, academic_weight, estimated_effort } = req.body;
       
       // Check if todo exists
-      const todo = Todo.findById(req.params.id);
+      const todo = Todo.findByIdAndUser(req.params.id, req.userId);
       if (!todo) {
         return res.status(404).json({ message: 'Todo not found!' });
       }
 
-      Todo.update(req.params.id, title, deadline, academic_weight, estimated_effort);
+      Todo.update(req.params.id, req.userId, title, deadline, academic_weight, estimated_effort);
       res.json({ message: 'Todo updated!' });
     } catch (error) {
       res.status(500).json({ message: 'Server error', error: error.message });
@@ -83,12 +83,12 @@ class TodoController {
   static markComplete(req, res) {
     try {
       // Check if todo exists
-      const todo = Todo.findById(req.params.id);
+      const todo = Todo.findByIdAndUser(req.params.id, req.userId);
       if (!todo) {
         return res.status(404).json({ message: 'Todo not found!' });
       }
 
-      Todo.markComplete(req.params.id);
+      Todo.markComplete(req.params.id, req.userId);
       res.json({ message: 'Todo marked as complete!' });
     } catch (error) {
       res.status(500).json({ message: 'Server error', error: error.message });
@@ -99,12 +99,12 @@ class TodoController {
   static delete(req, res) {
     try {
       // Check if todo exists
-      const todo = Todo.findById(req.params.id);
+      const todo = Todo.findByIdAndUser(req.params.id, req.userId);
       if (!todo) {
         return res.status(404).json({ message: 'Todo not found!' });
       }
 
-      Todo.delete(req.params.id);
+      Todo.delete(req.params.id, req.userId);
       res.json({ message: 'Todo deleted!' });
     } catch (error) {
       res.status(500).json({ message: 'Server error', error: error.message });

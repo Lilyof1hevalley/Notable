@@ -55,22 +55,26 @@ class Todo {
     return db.prepare('SELECT * FROM todos WHERE id = ?').get(id);
   }
 
+  static findByIdAndUser(id, userId) {
+    return db.prepare('SELECT * FROM todos WHERE id = ? AND user_id = ?').get(id, userId);
+  }
+
   // Update todo details
-  static update(id, title, deadline, academicWeight, estimatedEffort) {
+  static update(id, userId, title, deadline, academicWeight, estimatedEffort) {
     db.prepare(`
       UPDATE todos SET title = ?, deadline = ?, academic_weight = ?, estimated_effort = ?
-      WHERE id = ?
-    `).run(title, deadline, academicWeight, estimatedEffort, id);
+      WHERE id = ? AND user_id = ?
+    `).run(title, deadline, academicWeight, estimatedEffort, id, userId);
   }
 
   // Mark a todo as completed
-  static markComplete(id) {
-    db.prepare('UPDATE todos SET is_completed = 1 WHERE id = ?').run(id);
+  static markComplete(id, userId) {
+    db.prepare('UPDATE todos SET is_completed = 1 WHERE id = ? AND user_id = ?').run(id, userId);
   }
 
   // Delete a todo by ID
-  static delete(id) {
-    db.prepare('DELETE FROM todos WHERE id = ?').run(id);
+  static delete(id, userId) {
+    db.prepare('DELETE FROM todos WHERE id = ? AND user_id = ?').run(id, userId);
   }
 }
 

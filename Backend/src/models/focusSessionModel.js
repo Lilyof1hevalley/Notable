@@ -44,18 +44,22 @@ class FocusSession {
     return db.prepare('SELECT * FROM focus_sessions WHERE id = ?').get(id);
   }
 
+  static findByIdAndUser(id, userId) {
+    return db.prepare('SELECT * FROM focus_sessions WHERE id = ? AND user_id = ?').get(id, userId);
+  }
+
   // Get all sessions for a user
   static findAllByUser(userId) {
     return db.prepare(`
       SELECT * FROM focus_sessions 
       WHERE user_id = ? 
-      ORDER BY created_at DESC
+      ORDER BY started_at DESC
     `).all(userId);
   }
 
   // Get session summary
-  static getSummary(sessionId) {
-    const session = FocusSession.findById(sessionId);
+  static getSummary(sessionId, userId) {
+    const session = FocusSession.findByIdAndUser(sessionId, userId);
     const todos = FocusSession.getSessionTodos(sessionId);
     const completedTodos = todos.filter(t => t.is_completed === 1);
 
