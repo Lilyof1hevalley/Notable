@@ -1,475 +1,520 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 
 // ── Sample Data ───────────────────────────────────────────────────────────────
-const sampleNotebooks = [
-  { id: 1, title: 'Discrete Math', type: 'folder', noteCount: 12 },
-  { id: 2, title: 'Physics', type: 'notebook', noteCount: 8 },
-  { id: 3, title: 'Calculus', type: 'notebook', noteCount: 15 },
-  { id: 4, title: 'Software Eng', type: 'notebook', noteCount: 6 },
-  { id: 5, title: 'Chemistry', type: 'folder', noteCount: 9 },
-  { id: 6, title: 'Statistics', type: 'notebook', noteCount: 4 },
-  { id: 7, title: 'Linear Algebra', type: 'notebook', noteCount: 11 },
-  { id: 8, title: 'Data Structures', type: 'folder', noteCount: 7 },
+const initialNotebooks = [
+  { id: 'discrete-math', title: 'Discrete Math', noteCount: 12, color: '#F0EBFF' },
+  { id: 'physics', title: 'Physics', noteCount: 8, color: '#EBF4FF' },
+  { id: 'calculus', title: 'Calculus', noteCount: 15, color: '#EBFFF0' },
+  { id: 'software-eng', title: 'Software Eng', noteCount: 6, color: '#FFF8EB' },
 ]
 
-const sampleYourDay = [
-  { id: 1, title: 'All Day Event', location: 'Location', allDay: true },
-  { id: 2, title: 'Event Name', time: '08:00 – 09:00', location: 'Location' },
-  { id: 3, title: 'Event Name', time: '08:00 – 09:00', location: 'Location' },
-  { id: 4, title: 'Event Name', time: '08:00 – 09:00', location: 'Location' },
-  { id: 5, title: 'Event Name', time: '08:00 – 09:00', location: 'Location' },
+const initialTimeline = [
+  { id: 1, name: 'Review Chapter 3', time: '08:00', folder: 'Discrete Math', done: false, date: '25 Mar 2026' },
+  { id: 2, name: 'Submit Lab Report', time: '10:00', folder: 'Physics', done: false, date: '25 Mar 2026' },
+  { id: 3, name: 'Quiz Preparation', time: '09:00', folder: 'Calculus', done: true, date: '26 Mar 2026' },
+  { id: 4, name: 'Group Meeting', time: '13:00', folder: 'Software Eng', done: false, date: '26 Mar 2026' },
 ]
 
-const sampleTimeline = [
-  {
-    date: '25 Mar 2026',
-    tasks: [
-      { id: 1, name: 'Review Chapter 3', time: '08:00', folder: 'Folder/Notebook', done: false },
-      { id: 2, name: 'Submit Lab Report', time: '09:00', folder: 'Folder/Notebook', done: false },
-    ],
-  },
-  {
-    date: '25 Mar 2026',
-    tasks: [
-      { id: 3, name: 'Quiz Preparation', time: '09:00', folder: 'Folder/Notebook', done: false },
-      { id: 4, name: 'Group Meeting', time: '09:00', folder: 'Folder/Notebook', done: false },
-    ],
-  },
-  {
-    date: '25 Mar 2026',
-    tasks: [
-      { id: 5, name: 'Read Articles', time: '09:00', folder: 'Folder/Notebook', done: false },
-      { id: 6, name: 'Project Review', time: '09:00', folder: 'Folder/Notebook', done: false },
-    ],
-  },
-]
+const COLORS = ['#F0EBFF', '#EBF4FF', '#EBFFF0', '#FFF8EB', '#FFE8E8', '#E8F8FF', '#F5F5F5', '#FFF0F8']
 
-function NotebookThumb({ type }) {
-  if (type === 'folder') {
-    return (
-      <svg width="100%" height="100%" viewBox="0 0 120 80" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect width="120" height="80" fill="#E8E4DC" />
-        <rect x="8" y="20" width="50" height="6" rx="1" fill="#C8C4BC" />
-        <rect x="8" y="30" width="104" height="42" rx="3" fill="#D8D4CC" />
-        <line x1="15" y1="45" x2="105" y2="45" stroke="#C0BDB5" strokeWidth="1.5" />
-        <line x1="15" y1="55" x2="85" y2="55" stroke="#C0BDB5" strokeWidth="1.5" />
-        <line x1="15" y1="65" x2="95" y2="65" stroke="#C0BDB5" strokeWidth="1.5" />
-      </svg>
-    )
-  }
-  return (
-    <svg width="100%" height="100%" viewBox="0 0 120 80" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect width="120" height="80" fill="#E8E4DC" />
-      <rect x="8" y="8" width="104" height="64" rx="3" fill="#D8D4CC" />
-      <line x1="15" y1="24" x2="105" y2="24" stroke="#C0BDB5" strokeWidth="1.5" />
-      <line x1="15" y1="36" x2="105" y2="36" stroke="#C0BDB5" strokeWidth="1.5" />
-      <line x1="15" y1="48" x2="85" y2="48" stroke="#C0BDB5" strokeWidth="1.5" />
-      <line x1="15" y1="60" x2="95" y2="60" stroke="#C0BDB5" strokeWidth="1.5" />
-      <line x1="8" y1="8" x2="8" y2="72" stroke="#B0ADA5" strokeWidth="4" />
-    </svg>
-  )
-}
+// ── Add Notebook Modal ────────────────────────────────────────────────────────
+function AddNotebookModal({ onClose, onAdd }) {
+  const [title, setTitle] = useState('')
+  const [color, setColor] = useState(COLORS[0])
 
-export default function Dashboard() {
-  const [search, setSearch] = useState('')
-  const [hoveredCard, setHoveredCard] = useState(null)
-  const [tasks, setTasks] = useState(sampleTimeline)
-  const navigate = useNavigate()
-
-  const filteredNotebooks = sampleNotebooks.filter(n =>
-    n.title.toLowerCase().includes(search.toLowerCase())
-  )
-
-  function toggleTask(dateIdx, taskId) {
-    setTasks(prev => prev.map((group, i) =>
-      i === dateIdx
-        ? { ...group, tasks: group.tasks.map(t => t.id === taskId ? { ...t, done: !t.done } : t) }
-        : group
-    ))
+  const submit = () => {
+    if (!title.trim()) return
+    onAdd({ id: Date.now().toString(), title: title.trim(), noteCount: 0, color })
+    onClose()
   }
 
   return (
-    <div style={styles.page}>
-      <header style={styles.header}>
-        <h1 style={styles.greeting}>Hello, Nadira</h1>
-        <div style={styles.headerRight}>
-          <div style={styles.searchWrap}>
-            <span style={styles.searchIcon}>🔍</span>
-            <input
-              style={styles.searchInput}
-              placeholder="Search"
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-            />
-            {search && (
-              <span style={styles.clearBtn} onClick={() => setSearch('')}>×</span>
-            )}
-          </div>
-          <button style={styles.iconBtn} title="Filter">▽</button>
-          <button style={styles.iconBtn} title="Sort">↕</button>
+    <div style={modal.overlay} onClick={e => { if (e.target === e.currentTarget) onClose() }}>
+      <div style={modal.box}>
+        <div style={modal.header}>
+          <h2 style={modal.title}>New Notebook</h2>
+          <button style={modal.closeBtn} onClick={onClose}>✕</button>
         </div>
-      </header>
-
-      <div style={styles.body}>
-        <main style={styles.main}>
-          {filteredNotebooks.length === 0 ? (
-            <div style={styles.empty}>No notebooks found.</div>
-          ) : (
-            <div style={styles.grid}>
-              {filteredNotebooks.map(nb => (
-                <Link
-                  key={nb.id}
-                  to="/notebook"
-                  style={{
-                    ...styles.card,
-                    boxShadow: hoveredCard === nb.id ? '0 4px 16px rgba(0,0,0,0.10)' : '0 1px 4px rgba(0,0,0,0.06)',
-                    borderColor: hoveredCard === nb.id ? '#CCCCCC' : '#E5E5E5',
-                  }}
-                  onMouseEnter={() => setHoveredCard(nb.id)}
-                  onMouseLeave={() => setHoveredCard(null)}
-                >
-                  <div style={styles.cardThumb}>
-                    <NotebookThumb type={nb.type} />
-                  </div>
-                  <div style={styles.cardInfo}>
-                    <div style={styles.cardTitle}>{nb.title}</div>
-                    <div style={styles.cardMeta}>
-                      {nb.type === 'folder' ? 'Folder' : 'Notebook'} · {nb.noteCount} notes
-                    </div>
-                  </div>
-                </Link>
-              ))}
-              <button
-                style={styles.addCard}
-                onClick={() => navigate('/notebook')}
-                title="Add notebook"
-              >
-                <span style={styles.addCardPlus}>⊕</span>
-              </button>
-            </div>
-          )}
-        </main>
-
-        <aside style={styles.sidebar}>
-          <section style={styles.sideSection}>
-            <h2 style={styles.sideTitle}>Your Day</h2>
-            <div style={styles.dayList}>
-              {sampleYourDay.map(ev => (
-                <div key={ev.id} style={styles.dayItem}>
-                  <div style={styles.dayDot} />
-                  <div style={styles.dayBody}>
-                    <div style={styles.dayEventName}>{ev.title}</div>
-                    <div style={styles.dayEventMeta}>
-                      {ev.allDay ? 'All Day' : ev.time} · {ev.location}
-                    </div>
-                  </div>
-                </div>
+        <div style={modal.form}>
+          <div style={modal.field}>
+            <label style={modal.label}>TITLE</label>
+            <input
+              autoFocus
+              style={modal.input}
+              placeholder="e.g. Linear Algebra"
+              value={title}
+              onChange={e => setTitle(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter') submit(); if (e.key === 'Escape') onClose() }}
+            />
+          </div>
+          <div style={modal.field}>
+            <label style={modal.label}>COLOUR</label>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              {COLORS.map(c => (
+                <div key={c} onClick={() => setColor(c)} style={{
+                  width: 24, height: 24, borderRadius: '50%',
+                  backgroundColor: c, cursor: 'pointer',
+                  border: color === c ? '2px solid #1a1a1a' : '2px solid transparent',
+                  transform: color === c ? 'scale(1.2)' : 'scale(1)',
+                  transition: 'transform 0.1s, border-color 0.1s',
+                }} />
               ))}
             </div>
-          </section>
-
-          <div style={styles.divider} />
-
-          <section style={styles.sideSection}>
-            <div style={styles.sideTitleRow}>
-              <h2 style={styles.sideTitle}>Timeline</h2>
-              <button style={styles.sideAddBtn} title="Add task">+</button>
-            </div>
-            <div style={styles.timelineList}>
-              {tasks.map((group, gi) => (
-                <div key={gi} style={styles.timelineGroup}>
-                  <div style={styles.timelineDateLabel}>{group.date}</div>
-                  {group.tasks.map(task => (
-                    <div key={task.id} style={styles.timelineTask}>
-                      <button
-                        style={{
-                          ...styles.taskCircle,
-                          borderColor: task.done ? '#1A1A1A' : '#BBBBBB',
-                          backgroundColor: task.done ? '#1A1A1A' : 'transparent',
-                        }}
-                        onClick={() => toggleTask(gi, task.id)}
-                      />
-                      <div style={styles.taskBodyDiv}>
-                        <div style={{
-                          ...styles.taskName,
-                          textDecoration: task.done ? 'line-through' : 'none',
-                          color: task.done ? '#AAAAAA' : '#1A1A1A',
-                        }}>
-                          {task.name}
-                        </div>
-                        <div style={styles.taskMeta}>{task.time} · {task.folder}</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ))}
-            </div>
-          </section>
-        </aside>
+          </div>
+          <div style={modal.actions}>
+            <button style={modal.cancelBtn} onClick={onClose}>Cancel</button>
+            <button style={{ ...modal.submitBtn, opacity: title.trim() ? 1 : 0.4 }} onClick={submit}>ADD NOTEBOOK</button>
+          </div>
+        </div>
       </div>
     </div>
   )
 }
 
+// ── Add Task Modal ────────────────────────────────────────────────────────────
+function AddTaskModal({ onClose, onAdd, notebooks }) {
+  const [name, setName] = useState('')
+  const [time, setTime] = useState('09:00')
+  const [folder, setFolder] = useState(notebooks[0]?.title || '')
+
+  const submit = () => {
+    if (!name.trim()) return
+    onAdd({ id: Date.now(), name: name.trim(), time, folder, done: false, date: '25 Mar 2026' })
+    onClose()
+  }
+
+  return (
+    <div style={modal.overlay} onClick={e => { if (e.target === e.currentTarget) onClose() }}>
+      <div style={modal.box}>
+        <div style={modal.header}>
+          <h2 style={modal.title}>Add Task</h2>
+          <button style={modal.closeBtn} onClick={onClose}>✕</button>
+        </div>
+        <div style={modal.form}>
+          <div style={modal.field}>
+            <label style={modal.label}>TASK NAME</label>
+            <input
+              autoFocus
+              style={modal.input}
+              placeholder="e.g. Review Chapter 4"
+              value={name}
+              onChange={e => setName(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter') submit(); if (e.key === 'Escape') onClose() }}
+            />
+          </div>
+          <div style={{ display: 'flex', gap: 10 }}>
+            <div style={{ ...modal.field, flex: 1 }}>
+              <label style={modal.label}>TIME</label>
+              <input type="time" style={modal.input} value={time} onChange={e => setTime(e.target.value)} />
+            </div>
+            <div style={{ ...modal.field, flex: 1 }}>
+              <label style={modal.label}>NOTEBOOK</label>
+              <select style={{ ...modal.input, cursor: 'pointer' }} value={folder} onChange={e => setFolder(e.target.value)}>
+                {notebooks.map(n => <option key={n.id}>{n.title}</option>)}
+              </select>
+            </div>
+          </div>
+          <div style={modal.actions}>
+            <button style={modal.cancelBtn} onClick={onClose}>Cancel</button>
+            <button style={{ ...modal.submitBtn, opacity: name.trim() ? 1 : 0.4 }} onClick={submit}>ADD TASK</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ── Dashboard ─────────────────────────────────────────────────────────────────
+export default function Dashboard() {
+  const navigate = useNavigate()
+  const [search, setSearch] = useState('')
+  const [notebooks, setNotebooks] = useState(initialNotebooks)
+  const [timeline, setTimeline] = useState(initialTimeline)
+  const [hoveredCard, setHoveredCard] = useState(null)
+  const [showAddNotebook, setShowAddNotebook] = useState(false)
+  const [showAddTask, setShowAddTask] = useState(false)
+  const [sortBy, setSortBy] = useState('default')
+  const [sortOpen, setSortOpen] = useState(false)
+  const sortRef = useRef(null)
+
+  useEffect(() => {
+    const h = e => { if (sortRef.current && !sortRef.current.contains(e.target)) setSortOpen(false) }
+    document.addEventListener('mousedown', h)
+    return () => document.removeEventListener('mousedown', h)
+  }, [])
+
+  let displayed = notebooks.filter(n => n.title.toLowerCase().includes(search.toLowerCase()))
+  if (sortBy === 'name-asc') displayed = [...displayed].sort((a, b) => a.title.localeCompare(b.title))
+  else if (sortBy === 'name-desc') displayed = [...displayed].sort((a, b) => b.title.localeCompare(a.title))
+  else if (sortBy === 'notes-desc') displayed = [...displayed].sort((a, b) => b.noteCount - a.noteCount)
+  else if (sortBy === 'notes-asc') displayed = [...displayed].sort((a, b) => a.noteCount - b.noteCount)
+
+  const timelineGroups = Object.entries(
+    timeline.reduce((acc, t) => {
+      if (!acc[t.date]) acc[t.date] = []
+      acc[t.date].push(t)
+      return acc
+    }, {})
+  )
+
+  const toggleTask = id => setTimeline(prev => prev.map(t => t.id === id ? { ...t, done: !t.done } : t))
+
+  return (
+    <div style={styles.page}>
+      {showAddNotebook && (
+        <AddNotebookModal onClose={() => setShowAddNotebook(false)} onAdd={nb => setNotebooks(p => [...p, nb])} />
+      )}
+      {showAddTask && (
+        <AddTaskModal onClose={() => setShowAddTask(false)} notebooks={notebooks} onAdd={task => setTimeline(p => [...p, task])} />
+      )}
+
+      {/* ── Navbar ── */}
+      <nav style={styles.nav}>
+        <div style={styles.navLeft}>
+          <span style={styles.navTitle}>Notable</span>
+        </div>
+        <div style={styles.navRight}>
+          <div style={styles.searchWrap}>
+            <span style={styles.searchIcon}>⌕</span>
+            <input
+              style={styles.searchInput}
+              placeholder="Search notebooks…"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+            />
+            {search && <button style={styles.searchClear} onClick={() => setSearch('')}>✕</button>}
+          </div>
+          <div ref={sortRef} style={{ position: 'relative' }}>
+            <button style={styles.iconBtn} onClick={() => setSortOpen(o => !o)} title="Sort">↕</button>
+            {sortOpen && (
+              <div style={styles.dropdownMenu}>
+                <div style={styles.dropdownLabel}>Sort By</div>
+                {[
+                  { v: 'default', l: 'Default' },
+                  { v: 'name-asc', l: 'Name A → Z' },
+                  { v: 'name-desc', l: 'Name Z → A' },
+                  { v: 'notes-desc', l: 'Most Notes First' },
+                  { v: 'notes-asc', l: 'Fewest Notes First' },
+                ].map(o => (
+                  <button key={o.v} style={{
+                    ...styles.dropdownItem,
+                    background: sortBy === o.v ? '#F5F4F1' : 'none',
+                    fontWeight: sortBy === o.v ? 600 : 400,
+                  }} onClick={() => { setSortBy(o.v); setSortOpen(false) }}>
+                    {sortBy === o.v && <span style={{ fontSize: 10, minWidth: 10 }}>✓</span>}
+                    <span>{o.l}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </nav>
+
+      {/* ── Body ── */}
+      <div style={styles.body}>
+
+        {/* ── Sidebar ── */}
+        <aside style={styles.sidebar}>
+
+          <button style={styles.focusBtn} onClick={() => navigate('/focus')}>
+            <span>◎</span><span>Start Focus Session</span>
+          </button>
+
+          <div style={styles.sideSection}>
+            <div style={styles.sideHead}>
+              <span style={styles.sideTitle}>Timeline</span>
+              <button style={styles.sideAddBtn} onClick={() => setShowAddTask(true)}>+</button>
+            </div>
+            {timelineGroups.map(([date, tasks]) => (
+              <div key={date} style={styles.dateGroup}>
+                <div style={styles.dateLabel}>{date}</div>
+                {tasks.map(task => (
+                  <div key={task.id} style={styles.taskItem} onClick={() => toggleTask(task.id)}>
+                    <div style={{
+                      ...styles.taskCircle,
+                      ...(task.done ? { backgroundColor: '#1a1a1a', borderColor: '#1a1a1a' } : {}),
+                    }}>
+                      {task.done && (
+                        <svg width="8" height="8" viewBox="0 0 10 10" fill="none">
+                          <path d="M2 5l2.5 2.5L8 3" stroke="#FFF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      )}
+                    </div>
+                    <div>
+                      <div style={{ ...styles.taskName, ...(task.done ? { textDecoration: 'line-through', color: '#bbb' } : {}) }}>
+                        {task.name}
+                      </div>
+                      <div style={styles.taskMeta}>{task.time} · {task.folder}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
+
+          {/* Your Day */}
+          <div style={styles.sideSection}>
+            <div style={styles.sideHead}>
+              <span style={styles.sideTitle}>Your Day</span>
+            </div>
+            {timeline.filter(t => t.date === '25 Mar 2026' && !t.done).length === 0 ? (
+              <div style={{ fontSize: 12, color: '#bbb', fontStyle: 'italic' }}>All tasks done today 🎉</div>
+            ) : (
+              timeline.filter(t => t.date === '25 Mar 2026' && !t.done).map(t => (
+                <div key={t.id} style={styles.yourDayItem}>
+                  <span style={styles.yourDayTime}>{t.time}</span>
+                  <span style={styles.yourDayName}> — {t.name}</span>
+                </div>
+              ))
+            )}
+          </div>
+
+        </aside>
+
+        {/* ── Main ── */}
+        <main style={styles.main}>
+          <h1 style={styles.greeting}>Hello, Nadira</h1>
+
+          <div style={styles.sectionRow}>
+            <span style={styles.sectionTitle}>Notebooks</span>
+            <button style={styles.sideAddBtn} onClick={() => setShowAddNotebook(true)}>+</button>
+          </div>
+
+          {displayed.length === 0 ? (
+            <div style={styles.empty}>
+              {search ? `No notebooks matching "${search}"` : 'No notebooks yet.'}
+            </div>
+          ) : (
+            <div style={styles.grid}>
+              {displayed.map(nb => (
+                <Link
+                  key={nb.id}
+                  to="/notebook"
+                  style={{
+                    ...styles.notebookCard,
+                    boxShadow: hoveredCard === nb.id ? '0 4px 20px rgba(0,0,0,0.09)' : '0 1px 4px rgba(0,0,0,0.04)',
+                    borderColor: hoveredCard === nb.id ? '#C8C4BE' : '#E8E6E2',
+                  }}
+                  onMouseEnter={() => setHoveredCard(nb.id)}
+                  onMouseLeave={() => setHoveredCard(null)}
+                >
+                  <div style={{ ...styles.cardDot, backgroundColor: nb.color, marginBottom: 12 }} />
+                  <div style={styles.cardTitle}>{nb.title}</div>
+                  <div style={styles.cardMeta}>{nb.noteCount} notes</div>
+                </Link>
+              ))}
+            </div>
+          )}
+        </main>
+
+      </div>
+    </div>
+  )
+}
+
+// ── Styles ────────────────────────────────────────────────────────────────────
 const styles = {
   page: {
-    fontFamily: "'Inter', sans-serif",
+    fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif",
     minHeight: '100vh',
-    backgroundColor: '#F9F9F9',
-    color: '#1A1A1A',
-    display: 'flex',
-    flexDirection: 'column',
+    backgroundColor: '#F5F4F1',
+    color: '#1a1a1a',
   },
-  header: {
+  nav: {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: '14px 24px',
-    backgroundColor: '#FFFFFF',
-    borderBottom: '1px solid #E5E5E5',
+    padding: '0 24px',
+    height: 54,
+    backgroundColor: '#fff',
+    borderBottom: '1px solid #E8E6E2',
     position: 'sticky',
     top: 0,
-    zIndex: 100,
+    zIndex: 50,
     gap: 16,
   },
-  greeting: {
-    fontFamily: "'Inria', serif",
+  navLeft: { display: 'flex', alignItems: 'center' },
+  navTitle: {
+    fontFamily: "'Georgia', serif",
     fontStyle: 'italic',
-    fontWeight: '400',
-    fontSize: '26px',
-    color: '#1A1A1A',
-    margin: 0,
-    flexShrink: 0,
+    fontSize: 18,
+    fontWeight: 400,
+    color: '#1a1a1a',
   },
-  headerRight: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 10,
-  },
+  navRight: { display: 'flex', alignItems: 'center', gap: 12 },
   searchWrap: {
     display: 'flex',
     alignItems: 'center',
+    backgroundColor: '#F5F4F1',
+    borderRadius: 8,
+    padding: '0 12px',
+    height: 34,
     gap: 6,
-    border: '1px solid #D0D0D0',
-    borderRadius: '6px',
-    padding: '5px 10px',
-    backgroundColor: '#FFFFFF',
-    width: 220,
+    width: 200,
   },
-  searchIcon: { color: '#AAA', fontSize: 13 },
+  searchIcon: { fontSize: 17, color: '#bbb', lineHeight: 1 },
   searchInput: {
-    border: 'none',
-    outline: 'none',
-    fontSize: 13,
-    width: '100%',
-    backgroundColor: 'transparent',
-    color: '#1A1A1A',
+    flex: 1, border: 'none', background: 'transparent',
+    outline: 'none', fontSize: 13, color: '#1a1a1a',
     fontFamily: "'Inter', sans-serif",
   },
-  clearBtn: {
-    cursor: 'pointer',
-    color: '#AAA',
-    fontSize: 16,
-    lineHeight: 1,
-  },
+  searchClear: { background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, color: '#bbb', padding: 0 },
   iconBtn: {
-    background: 'none',
-    border: '1px solid #E5E5E5',
-    borderRadius: 6,
-    padding: '5px 9px',
-    cursor: 'pointer',
-    fontSize: 13,
-    color: '#555',
+    background: 'none', border: 'none', cursor: 'pointer',
+    fontSize: 16, color: '#555', padding: '4px 6px', borderRadius: 4,
   },
-  body: {
-    display: 'flex',
-    flex: 1,
-    height: 'calc(100vh - 57px)',
-    overflow: 'hidden',
+  dropdownMenu: {
+    position: 'absolute', top: '100%', right: 0, marginTop: 4,
+    backgroundColor: '#fff', border: '1px solid #E8E6E2',
+    borderRadius: 8, boxShadow: '0 4px 16px rgba(0,0,0,0.08)',
+    minWidth: 175, zIndex: 300, overflow: 'hidden',
   },
-  main: {
-    flex: 1,
-    overflowY: 'auto',
-    padding: '20px 24px',
+  dropdownLabel: {
+    padding: '6px 14px 4px', fontSize: 10, fontWeight: 600,
+    letterSpacing: '0.06em', color: '#bbb', textTransform: 'uppercase',
   },
-  grid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
-    gap: '16px',
+  dropdownItem: {
+    padding: '9px 14px', fontSize: 13, cursor: 'pointer',
+    display: 'flex', alignItems: 'center', gap: 8, color: '#1a1a1a',
+    border: 'none', width: '100%', textAlign: 'left',
+    fontFamily: "'Inter', sans-serif", transition: 'background 0.1s',
   },
-  card: {
-    display: 'flex',
-    flexDirection: 'column',
-    border: '1px solid #E5E5E5',
-    borderRadius: '8px',
-    overflow: 'hidden',
-    textDecoration: 'none',
-    color: '#1A1A1A',
-    backgroundColor: '#FFFFFF',
-    cursor: 'pointer',
-    transition: 'box-shadow 0.15s, border-color 0.15s',
-  },
-  cardThumb: {
-    width: '100%',
-    aspectRatio: '3/2',
-    overflow: 'hidden',
-    backgroundColor: '#E8E4DC',
-  },
-  cardInfo: {
-    padding: '8px 10px 10px',
-  },
-  cardTitle: {
-    fontSize: '13px',
-    fontWeight: '600',
-    color: '#1A1A1A',
-    marginBottom: 2,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-  cardMeta: {
-    fontSize: '11px',
-    color: '#888',
-  },
-  addCard: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    border: '1.5px dashed #D0D0D0',
-    borderRadius: '8px',
-    background: 'none',
-    cursor: 'pointer',
-    aspectRatio: 'unset',
-    minHeight: 100,
-    transition: 'border-color 0.15s',
-  },
-  addCardPlus: {
-    fontSize: 28,
-    color: '#CCCCCC',
-    lineHeight: 1,
-  },
-  empty: {
-    color: '#AAA',
-    fontSize: 14,
-    textAlign: 'center',
-    marginTop: 60,
-  },
+  body: { display: 'flex', height: 'calc(100vh - 54px)', overflow: 'hidden' },
   sidebar: {
-    width: 260,
-    flexShrink: 0,
-    borderLeft: '1px solid #E5E5E5',
-    backgroundColor: '#FFFFFF',
-    overflowY: 'auto',
-    padding: '16px',
-    display: 'flex',
-    flexDirection: 'column',
+    width: 252, flexShrink: 0,
+    borderRight: '1px solid #E8E6E2', backgroundColor: '#fff',
+    overflowY: 'auto', padding: '20px 16px',
+    display: 'flex', flexDirection: 'column', gap: 28,
   },
-  sideSection: {
-    marginBottom: 4,
+  focusBtn: {
+    width: '100%', padding: '10px 12px',
+    backgroundColor: '#1a1a1a', color: '#fff',
+    border: 'none', borderRadius: 7, fontSize: 12,
+    fontWeight: 600, cursor: 'pointer',
+    fontFamily: "'Inter', sans-serif", letterSpacing: '0.05em',
+    textAlign: 'left', display: 'flex', alignItems: 'center', gap: 8,
   },
+  sideSection: {},
+  sideHead: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 },
   sideTitle: {
-    fontFamily: "'Inter', sans-serif",
-    fontSize: '14px',
-    fontWeight: '700',
-    color: '#1A1A1A',
-    margin: '0 0 10px 0',
-  },
-  sideTitleRow: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 10,
+    fontFamily: "'Georgia', serif", fontStyle: 'italic',
+    fontSize: 14, color: '#1a1a1a', fontWeight: 400,
   },
   sideAddBtn: {
-    background: 'none',
-    border: 'none',
-    cursor: 'pointer',
-    fontSize: 20,
-    color: '#888',
-    lineHeight: 1,
-    padding: 0,
+    background: 'none', border: 'none', cursor: 'pointer',
+    fontSize: 18, color: '#ccc', padding: 0, lineHeight: 1,
   },
-  divider: {
-    height: 1,
-    backgroundColor: '#E5E5E5',
-    margin: '12px 0',
+  dateGroup: { marginBottom: 12 },
+  dateLabel: {
+    fontSize: 10, fontWeight: 600, color: '#bbb',
+    letterSpacing: '0.08em', marginBottom: 6, textTransform: 'uppercase',
   },
-  dayList: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 0,
-  },
-  dayItem: {
-    display: 'flex',
-    alignItems: 'flex-start',
-    gap: 8,
-    padding: '5px 0',
-    borderBottom: '1px solid #F0F0F0',
-  },
-  dayDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 2,
-    backgroundColor: '#1A1A1A',
-    flexShrink: 0,
-    marginTop: 3,
-  },
-  dayBody: {},
-  dayEventName: {
-    fontSize: '12px',
-    fontWeight: '500',
-    color: '#1A1A1A',
-    lineHeight: 1.4,
-  },
-  dayEventMeta: {
-    fontSize: '10px',
-    color: '#888',
-    marginTop: 1,
-  },
-  timelineList: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 8,
-  },
-  timelineGroup: {
-    marginBottom: 4,
-  },
-  timelineDateLabel: {
-    fontSize: '10px',
-    fontWeight: '700',
-    color: '#888',
-    letterSpacing: '0.04em',
-    marginBottom: 6,
-    textTransform: 'uppercase',
-  },
-  timelineTask: {
-    display: 'flex',
-    alignItems: 'flex-start',
-    gap: 8,
-    marginBottom: 6,
+  taskItem: {
+    display: 'flex', alignItems: 'flex-start', gap: 8,
+    marginBottom: 7, cursor: 'pointer',
+    padding: '4px 6px', borderRadius: 6, transition: 'background 0.12s',
   },
   taskCircle: {
-    width: 14,
-    height: 14,
-    borderRadius: '50%',
-    border: '1.5px solid #BBBBBB',
-    flexShrink: 0,
-    marginTop: 2,
-    cursor: 'pointer',
-    padding: 0,
-    transition: 'background-color 0.15s, border-color 0.15s',
+    width: 12, height: 12, borderRadius: '50%',
+    border: '1.5px solid #D0CCC6', flexShrink: 0, marginTop: 2,
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
   },
-  taskBodyDiv: {},
-  taskName: {
-    fontSize: '12px',
-    fontWeight: '500',
-    lineHeight: 1.4,
-    transition: 'color 0.15s',
+  taskName: { fontSize: 12, fontWeight: 500, color: '#1a1a1a', lineHeight: 1.4 },
+  taskMeta: { fontSize: 11, color: '#bbb' },
+  main: { flex: 1, overflowY: 'auto', padding: '28px 32px' },
+  greeting: {
+    fontFamily: "'Georgia', serif", fontStyle: 'italic',
+    fontSize: 22, fontWeight: 400, color: '#1a1a1a', margin: '0 0 20px',
   },
-  taskMeta: {
-    fontSize: '10px',
-    color: '#888',
-    marginTop: 1,
+  sectionRow: {
+    display: 'flex', alignItems: 'center',
+    justifyContent: 'space-between', marginBottom: 14,
+  },
+  sectionTitle: { fontSize: 13, fontWeight: 600, letterSpacing: '0.02em', color: '#1a1a1a' },
+  grid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fill, minmax(155px, 1fr))',
+    gap: 14,
+  },
+  notebookCard: {
+    backgroundColor: '#fff', border: '1px solid #E8E6E2',
+    borderRadius: 12, padding: '16px 18px',
+    cursor: 'pointer', transition: 'box-shadow 0.15s, border-color 0.15s',
+    textDecoration: 'none', color: '#1a1a1a', display: 'block',
+  },
+  cardDot: {
+    width: 10, height: 10, borderRadius: '50%',
+    flexShrink: 0, border: '1px solid rgba(0,0,0,0.06)',
+  },
+  cardTitle: {
+    fontFamily: "'Georgia', serif", fontStyle: 'italic',
+    fontSize: 13, fontWeight: 400, color: '#1a1a1a',
+    marginBottom: 4,
+  },
+  cardMeta: { fontSize: 11, color: '#bbb', fontFamily: "'Inter', sans-serif" },
+  yourDayItem: {
+    paddingBottom: 5,
+    borderBottom: '1px solid #EDEBE7',
+    marginBottom: 5,
+    fontSize: 12,
+    lineHeight: 1.5,
+  },
+  yourDayTime: { fontWeight: 600, color: '#1a1a1a' },
+  yourDayName: { color: '#555' },
+  empty: {
+    textAlign: 'center', color: '#bbb', fontSize: 14,
+    padding: '60px 0', fontFamily: "'Georgia', serif", fontStyle: 'italic',
+  },
+}
+
+// ── Modal styles ──────────────────────────────────────────────────────────────
+const modal = {
+  overlay: {
+    position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.35)',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    zIndex: 200, padding: 24, backdropFilter: 'blur(3px)',
+  },
+  box: {
+    backgroundColor: '#F7F6F3', borderRadius: 18,
+    padding: '36px 40px 32px', width: '100%', maxWidth: 480,
+    boxShadow: '0 24px 64px rgba(0,0,0,0.18)',
+    border: '1px solid rgba(0,0,0,0.06)',
+  },
+  header: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 28 },
+  title: {
+    fontFamily: "'Georgia', serif", fontStyle: 'italic',
+    fontSize: 24, fontWeight: 400, color: '#1a1a1a', margin: 0,
+  },
+  closeBtn: {
+    background: 'none', border: 'none', cursor: 'pointer',
+    fontSize: 16, color: '#bbb', padding: '4px 6px', borderRadius: 6, lineHeight: 1,
+  },
+  form: { display: 'flex', flexDirection: 'column', gap: 20 },
+  field: { display: 'flex', flexDirection: 'column', gap: 8 },
+  label: {
+    fontFamily: "'Inter', sans-serif",
+    fontSize: 11, fontWeight: 600, letterSpacing: '0.1em', color: '#666',
+  },
+  input: {
+    padding: '13px 16px', backgroundColor: '#EDEBE7',
+    border: '1.5px solid transparent', borderRadius: 8,
+    fontSize: 14, color: '#1a1a1a', outline: 'none',
+    fontFamily: "'Inter', sans-serif",
+    width: '100%', boxSizing: 'border-box',
+  },
+  actions: { display: 'flex', gap: 10, marginTop: 8 },
+  cancelBtn: {
+    flex: 1, background: 'none', border: '1.5px solid #E0DDD8',
+    borderRadius: 8, padding: '13px 0', fontSize: 12, fontWeight: 600,
+    cursor: 'pointer', color: '#888',
+    fontFamily: "'Inter', sans-serif", letterSpacing: '0.08em',
+  },
+  submitBtn: {
+    flex: 2, backgroundColor: '#1a1a1a', color: '#fff',
+    border: 'none', borderRadius: 8, padding: '13px 0',
+    fontSize: 12, fontWeight: 700, cursor: 'pointer',
+    fontFamily: "'Inter', sans-serif", letterSpacing: '0.12em',
   },
 }

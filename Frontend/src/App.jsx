@@ -5,7 +5,8 @@ import Dashboard from './pages/Dashboard'
 import Login from './pages/Login'
 import ResetPassword from './pages/ResetPassword'
 import NewPassword from './pages/NewPassword'
-import FolderView from './pages/FolderView'
+import ChapterEditor from './pages/ChapterEditor'
+import FocusSession from './pages/FocusSession'
 
 function App() {
   return (
@@ -16,7 +17,8 @@ function App() {
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/new-password" element={<NewPassword />} />
         <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/folder/:id" element={<FolderView />} />
+        <Route path="/chapter/:id" element={<ChapterEditor />} />
+        <Route path="/focus" element={<FocusSession />} />
         <Route path="/" element={<Login />} />
       </Routes>
     </BrowserRouter>
