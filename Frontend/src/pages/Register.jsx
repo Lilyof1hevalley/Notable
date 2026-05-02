@@ -2,10 +2,10 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { apiRequest } from '../lib/api'
 import { useAuth } from '../lib/AuthContext'
+import Navbar from '../components/Navbar'
 
 function Register() {
   const [name, setName] = useState('')
-  const [displayName, setDisplayName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -31,7 +31,7 @@ function Register() {
           name,
           email,
           password,
-          display_name: displayName || name,
+          display_name: name,
         }),
       })
       const data = await apiRequest('/auth/login', {
@@ -48,55 +48,79 @@ function Register() {
   }
 
   return (
-    <main className="auth-page">
-      <section className="auth-card">
-      <p className="eyebrow">Mulai workspace</p>
-      <h1>Register</h1>
-      <form onSubmit={handleRegister} className="stack">
-        <input
-          type="text"
-          placeholder="Enter your name"
-          value={name}
-          onChange={(event) => setName(event.target.value)}
-          required
-        />
-        <input
-          type="text"
-          placeholder="Display name"
-          value={displayName}
-          onChange={(event) => setDisplayName(event.target.value)}
-        />
-        <input
-          type="email"
-          placeholder="Enter your email"
-          value={email}
-          onChange={(event) => setEmail(event.target.value)}
-          required
-        />
-        <input
-          type="password"
-          placeholder="Enter your password"
-          value={password}
-          onChange={(event) => setPassword(event.target.value)}
-          required
-        />
-        <input
-          type="password"
-          placeholder="Confirm your password"
-          value={confirmPassword}
-          onChange={(event) => setConfirmPassword(event.target.value)}
-          required
-        />
-        {error && <div className="error">{error}</div>}
-        <button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? 'Creating...' : 'Register'}
-        </button>
-      </form>
-      <p>
-        Already have an account? <Link to="/">Log in</Link>
-      </p>
-      </section>
-    </main>
+    <div className="auth-page">
+      <Navbar />
+      <main className="auth-content">
+        <h1 className="auth-title">Sign Up</h1>
+        <section className="auth-card">
+          <div className="auth-card-title">Create Your Account</div>
+          <div className="auth-card-subtitle">Enter your details and create your password</div>
+          <form onSubmit={handleRegister}>
+            <div>
+              <label className="auth-form-label">Name</label>
+              <input
+                type="text"
+                className="auth-form-input"
+                placeholder="Enter your name"
+                value={name}
+                onChange={(event) => setName(event.target.value)}
+                required
+              />
+            </div>
+            <div>
+              <label className="auth-form-label">Email</label>
+              <input
+                type="email"
+                className="auth-form-input"
+                placeholder="Enter your email"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                required
+              />
+            </div>
+            <div>
+              <label className="auth-form-label">Password</label>
+              <input
+                type="password"
+                className="auth-form-input"
+                placeholder="Enter your password"
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                required
+              />
+            </div>
+            <div>
+              <label className="auth-form-label">Confirm Password</label>
+              <input
+                type="password"
+                className="auth-form-input"
+                placeholder="Confirm your password"
+                value={confirmPassword}
+                onChange={(event) => setConfirmPassword(event.target.value)}
+                required
+              />
+            </div>
+            
+            {error && <div className="error">{error}</div>}
+            
+            <button type="submit" className="auth-submit-btn" disabled={isSubmitting}>
+              {isSubmitting ? 'Creating...' : 'Sign Up'}
+            </button>
+          </form>
+          
+          <div className="auth-divider">Or</div>
+          
+          <button type="button" className="google-btn">
+            <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" />
+            Continue with Google
+          </button>
+          
+          <div className="auth-footer-text">
+            Already have an account? <Link to="/">Login</Link>
+          </div>
+        </section>
+      </main>
+    </div>
   )
 }
 
