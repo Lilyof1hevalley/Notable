@@ -3,6 +3,8 @@ import Notebook from './pages/Notebook'
 import Register from './pages/Register'
 import Dashboard from './pages/Dashboard'
 import Login from './pages/Login'
+import ResetPassword from './pages/ResetPassword'
+import NewPassword from './pages/NewPassword'
 
 function App() {
   return (
@@ -10,6 +12,8 @@ function App() {
       <Routes>
         <Route path="/notebook" element={<Notebook />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/new-password" element={<NewPassword />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/" element={<Login />} />
       </Routes>
