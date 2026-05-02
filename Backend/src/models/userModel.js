@@ -19,7 +19,7 @@ class User {
 
   // Find user by ID
   static findById(id) {
-    return db.prepare('SELECT * FROM users WHERE id = ?').get(id);
+    return db.prepare('SELECT id, name, email, display_name, role, created_at FROM users WHERE id = ?').get(id);
   }
 
   // Find user by reset token
@@ -41,6 +41,14 @@ class User {
       UPDATE users SET password_hash = ?, reset_token = NULL, reset_token_expiry = NULL
       WHERE id = ?
     `).run(passwordHash, id);
+  }
+
+  // Update user profile
+  static updateProfile(id, name, displayName) {
+    db.prepare(`
+      UPDATE users SET name = ?, display_name = ?
+      WHERE id = ?
+    `).run(name, displayName, id);
   }
 }
 
