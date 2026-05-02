@@ -1,255 +1,152 @@
 import { useState } from 'react'
-import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 
-const API_BASE = 'http://localhost:3000/api'
+const styles = {
+  page: {
+    minHeight: '100vh',
+    backgroundColor: '#E8E4DC',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontFamily: "'Inter', sans-serif",
+    padding: '24px',
+  },
+  card: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: '16px',
+    padding: '56px 48px 48px',
+    width: '100%',
+    maxWidth: '480px',
+    boxShadow: '0 2px 24px rgba(0,0,0,0.07)',
+  },
+  heading: {
+    fontFamily: "'Inria Sans', serif",
+    fontStyle: 'italic',
+    fontWeight: '400',
+    fontSize: '42px',
+    lineHeight: '1.15',
+    color: '#1A1A1A',
+    textAlign: 'center',
+    marginBottom: '8px',
+  },
+  subtitle: {
+    fontFamily: "'Inria Sans', serif",
+    fontStyle: 'italic',
+    fontWeight: '400',
+    fontSize: '15px',
+    color: '#888',
+    textAlign: 'center',
+    marginBottom: '40px',
+  },
+  fieldGroup: {
+    marginBottom: '20px',
+  },
+  label: {
+    display: 'block',
+    fontSize: '11px',
+    fontWeight: '600',
+    letterSpacing: '0.08em',
+    color: '#1A1A1A',
+    textTransform: 'uppercase',
+    marginBottom: '8px',
+  },
+  input: {
+    width: '100%',
+    padding: '14px 18px',
+    fontSize: '15px',
+    color: '#1A1A1A',
+    backgroundColor: '#F5F4F1',
+    border: '1.5px solid transparent',
+    borderRadius: '10px',
+    outline: 'none',
+    boxSizing: 'border-box',
+    fontFamily: "'Inter', sans-serif",
+    transition: 'border-color 0.15s',
+  },
+  button: {
+    width: '100%',
+    padding: '16px',
+    backgroundColor: '#1A1A1A',
+    color: '#FFFFFF',
+    border: 'none',
+    borderRadius: '10px',
+    fontSize: '12px',
+    fontWeight: '700',
+    letterSpacing: '0.12em',
+    textTransform: 'uppercase',
+    cursor: 'pointer',
+    marginTop: '8px',
+    fontFamily: "'Inter', sans-serif",
+    transition: 'background-color 0.15s',
+  },
+  footer: {
+    textAlign: 'center',
+    marginTop: '24px',
+    fontSize: '13px',
+    color: '#888',
+  },
+  footerLink: {
+    color: '#1A1A1A',
+    fontWeight: '600',
+    textDecoration: 'none',
+  },
+}
 
-function NewPassword() {
-  const [password, setPassword] = useState('')
-  const [confirmPassword, setConfirmPassword] = useState('')
-  const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [success, setSuccess] = useState(false)
+function ResetPassword() {
+  const [email, setEmail] = useState('')
+  const [emailFocused, setEmailFocused] = useState(false)
+  const [btnHovered, setBtnHovered] = useState(false)
   const navigate = useNavigate()
-  const [searchParams] = useSearchParams()
-  const token = searchParams.get('token')
 
-  async function handleNewPassword(event) {
+  function handleReset(event) {
     event.preventDefault()
-    setError('')
-
-    if (password !== confirmPassword) {
-      setError('Passwords do not match.')
-      return
-    }
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters.')
-      return
-    }
-    if (!token) {
-      setError('Invalid or missing reset token. Please request a new reset link.')
-      return
-    }
-
-    setLoading(true)
-    try {
-      const res = await fetch(`${API_BASE}/auth/reset-password`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token, password }),
-      })
-      const data = await res.json()
-
-      if (!res.ok) {
-        setError(data.message || 'Password reset failed. Please try again.')
-      } else {
-        setSuccess(true)
-        setTimeout(() => navigate('/'), 2000)
-      }
-    } catch {
-      setError('Unable to connect to server. Please try again.')
-    } finally {
-      setLoading(false)
-    }
+    navigate('/')
   }
 
   return (
     <div style={styles.page}>
-      <nav style={styles.nav}>
-        <Link to="/" style={styles.navLink}>Home</Link>
-        <Link to="/register" style={styles.navLink}>Register</Link>
-        <Link to="/dashboard" style={styles.navLink}>Dashboard</Link>
-      </nav>
+      <div style={styles.card}>
+        <h1 style={styles.heading}>Reset your<br />Password</h1>
+        <p style={styles.subtitle}>We'll send a recovery link to your email</p>
 
-      <div style={styles.content}>
-        <h1 style={styles.heading}>New Password</h1>
+        <form onSubmit={handleReset}>
+          <div style={styles.fieldGroup}>
+            <label style={styles.label}>Email Address</label>
+            <input
+              type="email"
+              placeholder="editor@notable.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              onFocus={() => setEmailFocused(true)}
+              onBlur={() => setEmailFocused(false)}
+              required
+              style={{
+                ...styles.input,
+                borderColor: emailFocused ? '#1A1A1A' : 'transparent',
+              }}
+            />
+          </div>
 
-        <div style={styles.card}>
-          {success ? (
-            <div style={styles.successBox}>
-              <div style={styles.successIcon}>✓</div>
-              <h2 style={styles.successTitle}>Password updated!</h2>
-              <p style={styles.successText}>Your password has been changed. Redirecting you to login...</p>
-            </div>
-          ) : (
-            <>
-              <h2 style={styles.cardTitle}>Create Your New Password</h2>
-              <p style={styles.cardSubtitle}>This will override your old password</p>
+          <button
+            type="submit"
+            style={{
+              ...styles.button,
+              backgroundColor: btnHovered ? '#333' : '#1A1A1A',
+            }}
+            onMouseEnter={() => setBtnHovered(true)}
+            onMouseLeave={() => setBtnHovered(false)}
+          >
+            Send Recovery Link
+          </button>
+        </form>
 
-              {error && <div style={styles.errorBox}>{error}</div>}
-
-              <form onSubmit={handleNewPassword} style={styles.form}>
-                <div style={styles.field}>
-                  <label style={styles.label} htmlFor="password">Password</label>
-                  <input
-                    id="password"
-                    type="password"
-                    placeholder="Enter your password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    style={styles.input}
-                  />
-                </div>
-
-                <div style={styles.field}>
-                  <label style={styles.label} htmlFor="confirmPassword">Confirm Password</label>
-                  <input
-                    id="confirmPassword"
-                    type="password"
-                    placeholder="Enter your password"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    required
-                    style={styles.input}
-                  />
-                </div>
-
-                <button type="submit" style={styles.btn} disabled={loading}>
-                  {loading ? 'Saving...' : 'Change Password'}
-                </button>
-              </form>
-            </>
-          )}
-        </div>
+        <p style={styles.footer}>
+          Remember your password?{' '}
+          <Link to="/" style={styles.footerLink}>Sign In</Link>
+        </p>
       </div>
     </div>
   )
 }
 
-const styles = {
-  page: {
-    fontFamily: "'Inter', sans-serif",
-    minHeight: '100vh',
-    backgroundColor: '#F9F9F9',
-  },
-  nav: {
-    display: 'flex',
-    justifyContent: 'flex-end',
-    gap: 32,
-    padding: '14px 32px',
-    backgroundColor: '#FFFFFF',
-    borderBottom: '1px solid #E5E5E5',
-  },
-  navLink: {
-    textDecoration: 'none',
-    fontSize: 14,
-    color: '#1A1A1A',
-    fontFamily: "'Inria Sans', sans-serif",
-  },
-  content: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    paddingTop: 48,
-    paddingBottom: 48,
-  },
-  heading: {
-    fontFamily: "'Inria Sans', sans-serif",
-    fontSize: 36,
-    fontWeight: 700,
-    color: '#0D1B2A',
-    marginBottom: 24,
-    letterSpacing: '-0.5px',
-  },
-  card: {
-    backgroundColor: '#FFFFFF',
-    border: '1px solid #E5E5E5',
-    borderRadius: 12,
-    padding: '32px 36px',
-    width: '100%',
-    maxWidth: 440,
-    boxShadow: '0 2px 16px rgba(0,0,0,0.06)',
-  },
-  cardTitle: {
-    fontFamily: "'Inria Sans', sans-serif",
-    fontSize: 18,
-    fontWeight: 700,
-    color: '#0D1B2A',
-    margin: 0,
-    marginBottom: 4,
-  },
-  cardSubtitle: {
-    fontSize: 13,
-    color: '#888',
-    margin: '0 0 20px 0',
-  },
-  errorBox: {
-    backgroundColor: '#FEF2F2',
-    border: '1px solid #FCA5A5',
-    borderRadius: 6,
-    padding: '10px 14px',
-    fontSize: 13,
-    color: '#DC2626',
-    marginBottom: 16,
-  },
-  form: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 16,
-  },
-  field: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 6,
-  },
-  label: {
-    fontSize: 13,
-    fontWeight: 500,
-    color: '#374151',
-  },
-  input: {
-    padding: '10px 12px',
-    border: '1px solid #D1D5DB',
-    borderRadius: 6,
-    fontSize: 14,
-    color: '#1A1A1A',
-    outline: 'none',
-    backgroundColor: '#FAFAFA',
-    fontFamily: "'Inter', sans-serif",
-  },
-  btn: {
-    backgroundColor: '#0D1B2A',
-    color: '#FFFFFF',
-    border: 'none',
-    borderRadius: 6,
-    padding: '12px 0',
-    fontSize: 14,
-    fontWeight: 600,
-    cursor: 'pointer',
-    fontFamily: "'Inter', sans-serif",
-    marginTop: 4,
-  },
-  successBox: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    textAlign: 'center',
-    gap: 12,
-  },
-  successIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: '50%',
-    backgroundColor: '#D1FAE5',
-    color: '#059669',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    fontSize: 22,
-    fontWeight: 700,
-  },
-  successTitle: {
-    fontFamily: "'Inria Sans', sans-serif",
-    fontSize: 20,
-    fontWeight: 700,
-    color: '#0D1B2A',
-    margin: 0,
-  },
-  successText: {
-    fontSize: 14,
-    color: '#6B7280',
-    margin: 0,
-  },
-}
-
-export default NewPassword
+export default ResetPassword

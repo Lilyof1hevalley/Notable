@@ -1,316 +1,211 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { api, getUser, logout } from '../utils/api'
 
-// Priority label colors
-const PRIORITY_COLORS = {
-  HIGH: { bg: '#FEE2E2', color: '#DC2626' },
-  MEDIUM: { bg: '#FEF9C3', color: '#92400E' },
-  LOW: { bg: '#DCFCE7', color: '#166534' },
+// ── Sample Data ───────────────────────────────────────────────────────────────
+const sampleNotebooks = [
+  { id: 1, title: 'Discrete Math', type: 'folder', noteCount: 12 },
+  { id: 2, title: 'Physics', type: 'notebook', noteCount: 8 },
+  { id: 3, title: 'Calculus', type: 'notebook', noteCount: 15 },
+  { id: 4, title: 'Software Eng', type: 'notebook', noteCount: 6 },
+  { id: 5, title: 'Chemistry', type: 'folder', noteCount: 9 },
+  { id: 6, title: 'Statistics', type: 'notebook', noteCount: 4 },
+  { id: 7, title: 'Linear Algebra', type: 'notebook', noteCount: 11 },
+  { id: 8, title: 'Data Structures', type: 'folder', noteCount: 7 },
+]
+
+const sampleYourDay = [
+  { id: 1, title: 'All Day Event', location: 'Location', allDay: true },
+  { id: 2, title: 'Event Name', time: '08:00 – 09:00', location: 'Location' },
+  { id: 3, title: 'Event Name', time: '08:00 – 09:00', location: 'Location' },
+  { id: 4, title: 'Event Name', time: '08:00 – 09:00', location: 'Location' },
+  { id: 5, title: 'Event Name', time: '08:00 – 09:00', location: 'Location' },
+]
+
+const sampleTimeline = [
+  {
+    date: '25 Mar 2026',
+    tasks: [
+      { id: 1, name: 'Review Chapter 3', time: '08:00', folder: 'Folder/Notebook', done: false },
+      { id: 2, name: 'Submit Lab Report', time: '09:00', folder: 'Folder/Notebook', done: false },
+    ],
+  },
+  {
+    date: '25 Mar 2026',
+    tasks: [
+      { id: 3, name: 'Quiz Preparation', time: '09:00', folder: 'Folder/Notebook', done: false },
+      { id: 4, name: 'Group Meeting', time: '09:00', folder: 'Folder/Notebook', done: false },
+    ],
+  },
+  {
+    date: '25 Mar 2026',
+    tasks: [
+      { id: 5, name: 'Read Articles', time: '09:00', folder: 'Folder/Notebook', done: false },
+      { id: 6, name: 'Project Review', time: '09:00', folder: 'Folder/Notebook', done: false },
+    ],
+  },
+]
+
+function NotebookThumb({ type }) {
+  if (type === 'folder') {
+    return (
+      <svg width="100%" height="100%" viewBox="0 0 120 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="120" height="80" fill="#E8E4DC" />
+        <rect x="8" y="20" width="50" height="6" rx="1" fill="#C8C4BC" />
+        <rect x="8" y="30" width="104" height="42" rx="3" fill="#D8D4CC" />
+        <line x1="15" y1="45" x2="105" y2="45" stroke="#C0BDB5" strokeWidth="1.5" />
+        <line x1="15" y1="55" x2="85" y2="55" stroke="#C0BDB5" strokeWidth="1.5" />
+        <line x1="15" y1="65" x2="95" y2="65" stroke="#C0BDB5" strokeWidth="1.5" />
+      </svg>
+    )
+  }
+  return (
+    <svg width="100%" height="100%" viewBox="0 0 120 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="120" height="80" fill="#E8E4DC" />
+      <rect x="8" y="8" width="104" height="64" rx="3" fill="#D8D4CC" />
+      <line x1="15" y1="24" x2="105" y2="24" stroke="#C0BDB5" strokeWidth="1.5" />
+      <line x1="15" y1="36" x2="105" y2="36" stroke="#C0BDB5" strokeWidth="1.5" />
+      <line x1="15" y1="48" x2="85" y2="48" stroke="#C0BDB5" strokeWidth="1.5" />
+      <line x1="15" y1="60" x2="95" y2="60" stroke="#C0BDB5" strokeWidth="1.5" />
+      <line x1="8" y1="8" x2="8" y2="72" stroke="#B0ADA5" strokeWidth="4" />
+    </svg>
+  )
 }
 
-function Dashboard() {
-  const [todos, setTodos] = useState([])
-  const [notes, setNotes] = useState([])
-  const [loading, setLoading] = useState(true)
+export default function Dashboard() {
   const [search, setSearch] = useState('')
-  const [showAddTodo, setShowAddTodo] = useState(false)
-  const [newTodo, setNewTodo] = useState({ title: '', deadline: '', academic_weight: 5, estimated_effort: 5 })
-  const [addingTodo, setAddingTodo] = useState(false)
+  const [hoveredCard, setHoveredCard] = useState(null)
+  const [tasks, setTasks] = useState(sampleTimeline)
   const navigate = useNavigate()
-  const user = getUser()
 
-  useEffect(() => {
-    if (!user) { navigate('/'); return }
-    loadData()
-  }, [])
-
-  async function loadData() {
-    setLoading(true)
-    try {
-      const [todosData, notesData] = await Promise.all([
-        api.getTodos({ limit: 20 }),
-        api.getNotes(),
-      ])
-      setTodos(todosData.todos || [])
-      setNotes(notesData.notes || [])
-    } catch (err) {
-      console.error(err)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  async function handleComplete(id) {
-    try {
-      await api.completeTodo(id)
-      setTodos(prev => prev.map(t => t.id === id ? { ...t, is_completed: 1 } : t))
-    } catch (err) {
-      console.error(err)
-    }
-  }
-
-  async function handleDeleteTodo(id) {
-    try {
-      await api.deleteTodo(id)
-      setTodos(prev => prev.filter(t => t.id !== id))
-    } catch (err) {
-      console.error(err)
-    }
-  }
-
-  async function handleAddTodo(e) {
-    e.preventDefault()
-    setAddingTodo(true)
-    try {
-      await api.createTodo(newTodo)
-      setNewTodo({ title: '', deadline: '', academic_weight: 5, estimated_effort: 5 })
-      setShowAddTodo(false)
-      loadData()
-    } catch (err) {
-      console.error(err)
-    } finally {
-      setAddingTodo(false)
-    }
-  }
-
-  function handleLogout() {
-    logout()
-    navigate('/')
-  }
-
-  const filteredTodos = todos.filter(t =>
-    t.title.toLowerCase().includes(search.toLowerCase())
+  const filteredNotebooks = sampleNotebooks.filter(n =>
+    n.title.toLowerCase().includes(search.toLowerCase())
   )
 
-  // Group todos by today vs upcoming for "Your Day" sidebar
-  const today = new Date().toDateString()
-  const todayTodos = todos.filter(t => {
-    if (!t.deadline) return false
-    return new Date(t.deadline).toDateString() === today
-  })
-
-  // Notebooks from notes (group by folder concept — using todo link for now)
-  const linkedNotebooks = [
-    { id: 'discrete-math', title: 'Discrete Math', noteCount: notes.filter(n => n.title?.toLowerCase().includes('discrete')).length },
-    { id: 'all-notes', title: 'All Notes', noteCount: notes.length },
-  ]
+  function toggleTask(dateIdx, taskId) {
+    setTasks(prev => prev.map((group, i) =>
+      i === dateIdx
+        ? { ...group, tasks: group.tasks.map(t => t.id === taskId ? { ...t, done: !t.done } : t) }
+        : group
+    ))
+  }
 
   return (
     <div style={styles.page}>
-      {/* Navbar */}
-      <nav style={styles.nav}>
-        <div style={styles.navLeft}>
-          <img src="/favicon.svg" alt="Notable" width={28} height={28} />
-          <span style={styles.navBrand}>Notable</span>
-        </div>
-        <div style={styles.navCenter}>
-          <div style={styles.searchBar}>
-            <span style={{ color: '#AAA', fontSize: 13 }}>🔍</span>
+      <header style={styles.header}>
+        <h1 style={styles.greeting}>Hello, Nadira</h1>
+        <div style={styles.headerRight}>
+          <div style={styles.searchWrap}>
+            <span style={styles.searchIcon}>🔍</span>
             <input
               style={styles.searchInput}
-              placeholder="Search tasks..."
+              placeholder="Search"
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={e => setSearch(e.target.value)}
             />
             {search && (
-              <span style={{ cursor: 'pointer', color: '#AAA', fontSize: 12 }} onClick={() => setSearch('')}>✕</span>
+              <span style={styles.clearBtn} onClick={() => setSearch('')}>×</span>
             )}
           </div>
+          <button style={styles.iconBtn} title="Filter">▽</button>
+          <button style={styles.iconBtn} title="Sort">↕</button>
         </div>
-        <div style={styles.navRight}>
-          <button style={styles.navBtn} onClick={() => navigate('/notebook')}>Notebook</button>
-          <button style={styles.navBtnPrimary} onClick={handleLogout}>Log out</button>
-        </div>
-      </nav>
+      </header>
 
-      {/* Main layout */}
-      <div style={styles.layout}>
-        {/* Main content */}
+      <div style={styles.body}>
         <main style={styles.main}>
-          <h1 style={styles.greeting}>
-            Hello, {user?.display_name || user?.name || 'there'}
-          </h1>
-
-          {/* Notebooks grid */}
-          <section style={styles.section}>
-            <div style={styles.sectionHeader}>
-              <h2 style={styles.sectionTitle}>Notebooks</h2>
-              <button style={styles.addBtn} onClick={() => navigate('/notebook')}>+ New</button>
-            </div>
-            <div style={styles.notebookGrid}>
-              {linkedNotebooks.map((nb) => (
-                <Link key={nb.id} to="/notebook" style={styles.notebookCard}>
-                  <div style={styles.notebookThumb}>
-                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
-                      <path d="M4 4h16v16H4z" fill="#E8E4FF" rx="2"/>
-                      <path d="M8 8h8M8 11h8M8 14h5" stroke="#863bff" strokeWidth="1.5" strokeLinecap="round"/>
-                    </svg>
+          {filteredNotebooks.length === 0 ? (
+            <div style={styles.empty}>No notebooks found.</div>
+          ) : (
+            <div style={styles.grid}>
+              {filteredNotebooks.map(nb => (
+                <Link
+                  key={nb.id}
+                  to="/notebook"
+                  style={{
+                    ...styles.card,
+                    boxShadow: hoveredCard === nb.id ? '0 4px 16px rgba(0,0,0,0.10)' : '0 1px 4px rgba(0,0,0,0.06)',
+                    borderColor: hoveredCard === nb.id ? '#CCCCCC' : '#E5E5E5',
+                  }}
+                  onMouseEnter={() => setHoveredCard(nb.id)}
+                  onMouseLeave={() => setHoveredCard(null)}
+                >
+                  <div style={styles.cardThumb}>
+                    <NotebookThumb type={nb.type} />
                   </div>
-                  <strong style={styles.notebookName}>{nb.title}</strong>
-                  <div style={styles.notebookCount}>{nb.noteCount} notes</div>
+                  <div style={styles.cardInfo}>
+                    <div style={styles.cardTitle}>{nb.title}</div>
+                    <div style={styles.cardMeta}>
+                      {nb.type === 'folder' ? 'Folder' : 'Notebook'} · {nb.noteCount} notes
+                    </div>
+                  </div>
                 </Link>
               ))}
-              <button style={styles.newNotebookCard} onClick={() => navigate('/notebook')}>
-                <span style={{ fontSize: 24, color: '#CCCCCC' }}>+</span>
-                <span style={{ fontSize: 13, color: '#AAAAAA' }}>New Notebook</span>
+              <button
+                style={styles.addCard}
+                onClick={() => navigate('/notebook')}
+                title="Add notebook"
+              >
+                <span style={styles.addCardPlus}>⊕</span>
               </button>
             </div>
-          </section>
-
-          {/* Tasks section */}
-          <section style={styles.section}>
-            <div style={styles.sectionHeader}>
-              <h2 style={styles.sectionTitle}>Tasks</h2>
-              <button style={styles.addBtn} onClick={() => setShowAddTodo(!showAddTodo)}>+ Add Task</button>
-            </div>
-
-            {/* Add todo form */}
-            {showAddTodo && (
-              <form onSubmit={handleAddTodo} style={styles.addTodoForm}>
-                <input
-                  type="text"
-                  placeholder="Task title"
-                  value={newTodo.title}
-                  onChange={(e) => setNewTodo(p => ({ ...p, title: e.target.value }))}
-                  required
-                  style={styles.formInput}
-                />
-                <input
-                  type="date"
-                  value={newTodo.deadline}
-                  onChange={(e) => setNewTodo(p => ({ ...p, deadline: e.target.value }))}
-                  required
-                  style={styles.formInput}
-                />
-                <div style={styles.sliderRow}>
-                  <label style={styles.sliderLabel}>
-                    Academic weight: <strong>{newTodo.academic_weight}</strong>
-                    <input type="range" min="1" max="10" value={newTodo.academic_weight}
-                      onChange={(e) => setNewTodo(p => ({ ...p, academic_weight: Number(e.target.value) }))}
-                      style={{ marginLeft: 8, width: 100 }} />
-                  </label>
-                  <label style={styles.sliderLabel}>
-                    Effort: <strong>{newTodo.estimated_effort}</strong>
-                    <input type="range" min="1" max="10" value={newTodo.estimated_effort}
-                      onChange={(e) => setNewTodo(p => ({ ...p, estimated_effort: Number(e.target.value) }))}
-                      style={{ marginLeft: 8, width: 100 }} />
-                  </label>
-                </div>
-                <div style={styles.formActions}>
-                  <button type="submit" style={styles.addBtn} disabled={addingTodo}>
-                    {addingTodo ? 'Adding...' : 'Add'}
-                  </button>
-                  <button type="button" style={styles.cancelBtn} onClick={() => setShowAddTodo(false)}>Cancel</button>
-                </div>
-              </form>
-            )}
-
-            {loading ? (
-              <div style={styles.loadingText}>Loading tasks...</div>
-            ) : filteredTodos.length === 0 ? (
-              <div style={styles.emptyText}>
-                {search ? `No tasks matching "${search}"` : 'No tasks yet. Add your first task!'}
-              </div>
-            ) : (
-              <div style={styles.taskList}>
-                {filteredTodos.map((todo) => {
-                  const priority = todo.priority_label || 'LOW'
-                  const pc = PRIORITY_COLORS[priority]
-                  return (
-                    <div key={todo.id} style={{
-                      ...styles.taskCard,
-                      opacity: todo.is_completed ? 0.5 : 1,
-                    }}>
-                      <button
-                        style={{
-                          ...styles.taskCheckbox,
-                          backgroundColor: todo.is_completed ? '#863bff' : 'transparent',
-                          borderColor: todo.is_completed ? '#863bff' : '#D1D5DB',
-                        }}
-                        onClick={() => !todo.is_completed && handleComplete(todo.id)}
-                        title={todo.is_completed ? 'Completed' : 'Mark complete'}
-                      >
-                        {todo.is_completed && (
-                          <svg width="10" height="10" viewBox="0 0 10 10">
-                            <path d="M2 5l2.5 2.5L8 3" stroke="#fff" strokeWidth="1.5" strokeLinecap="round"/>
-                          </svg>
-                        )}
-                      </button>
-
-                      <div style={styles.taskBody}>
-                        <div style={styles.taskTitle}>{todo.title}</div>
-                        {todo.deadline && (
-                          <div style={styles.taskMeta}>
-                            Due: {new Date(todo.deadline).toLocaleDateString('en-SG', { day: 'numeric', month: 'short', year: 'numeric' })}
-                          </div>
-                        )}
-                      </div>
-
-                      <div style={styles.taskRight}>
-                        <span style={{ ...styles.priorityBadge, backgroundColor: pc.bg, color: pc.color }}>
-                          {priority}
-                        </span>
-                        {todo.bhps_score !== undefined && (
-                          <span style={styles.bhpsScore}>{todo.bhps_score}</span>
-                        )}
-                        {!todo.is_completed && (
-                          <button style={styles.deleteBtn} onClick={() => handleDeleteTodo(todo.id)} title="Delete">✕</button>
-                        )}
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-            )}
-          </section>
+          )}
         </main>
 
-        {/* Right sidebar */}
         <aside style={styles.sidebar}>
-          {/* Your Day */}
-          <div style={styles.sideSection}>
-            <h2 style={styles.sideSectionTitle}>Your Day</h2>
-            {todayTodos.length === 0 ? (
-              <p style={styles.sideEmptyText}>Nothing due today 🎉</p>
-            ) : (
-              todayTodos.map(t => (
-                <div key={t.id} style={styles.dayItem}>
+          <section style={styles.sideSection}>
+            <h2 style={styles.sideTitle}>Your Day</h2>
+            <div style={styles.dayList}>
+              {sampleYourDay.map(ev => (
+                <div key={ev.id} style={styles.dayItem}>
                   <div style={styles.dayDot} />
-                  <div>
-                    <div style={styles.dayTaskName}>{t.title}</div>
-                    <div style={styles.dayTaskMeta}>Due today</div>
+                  <div style={styles.dayBody}>
+                    <div style={styles.dayEventName}>{ev.title}</div>
+                    <div style={styles.dayEventMeta}>
+                      {ev.allDay ? 'All Day' : ev.time} · {ev.location}
+                    </div>
                   </div>
                 </div>
-              ))
-            )}
-          </div>
-
-          {/* Timeline */}
-          <div style={styles.sideSection}>
-            <div style={styles.sideSectionHeader}>
-              <h2 style={styles.sideSectionTitle}>Timeline</h2>
-              <button style={styles.sideAddBtn} onClick={() => setShowAddTodo(true)}>+</button>
+              ))}
             </div>
-            {todos.slice(0, 6).map(t => {
-              const date = t.deadline ? new Date(t.deadline) : null
-              return (
-                <div key={t.id} style={styles.timelineItem}>
-                  <div style={{ ...styles.timelineCircle, borderColor: t.is_completed ? '#863bff' : '#BBBBBB' }}>
-                    {t.is_completed && <div style={styles.timelineDot} />}
-                  </div>
-                  <div style={styles.timelineBody}>
-                    <div style={styles.timelineTaskName}>{t.title}</div>
-                    {date && (
-                      <div style={styles.timelineTaskMeta}>
-                        {date.toLocaleDateString('en-SG', { day: 'numeric', month: 'short' })}
+          </section>
+
+          <div style={styles.divider} />
+
+          <section style={styles.sideSection}>
+            <div style={styles.sideTitleRow}>
+              <h2 style={styles.sideTitle}>Timeline</h2>
+              <button style={styles.sideAddBtn} title="Add task">+</button>
+            </div>
+            <div style={styles.timelineList}>
+              {tasks.map((group, gi) => (
+                <div key={gi} style={styles.timelineGroup}>
+                  <div style={styles.timelineDateLabel}>{group.date}</div>
+                  {group.tasks.map(task => (
+                    <div key={task.id} style={styles.timelineTask}>
+                      <button
+                        style={{
+                          ...styles.taskCircle,
+                          borderColor: task.done ? '#1A1A1A' : '#BBBBBB',
+                          backgroundColor: task.done ? '#1A1A1A' : 'transparent',
+                        }}
+                        onClick={() => toggleTask(gi, task.id)}
+                      />
+                      <div style={styles.taskBodyDiv}>
+                        <div style={{
+                          ...styles.taskName,
+                          textDecoration: task.done ? 'line-through' : 'none',
+                          color: task.done ? '#AAAAAA' : '#1A1A1A',
+                        }}>
+                          {task.name}
+                        </div>
+                        <div style={styles.taskMeta}>{task.time} · {task.folder}</div>
                       </div>
-                    )}
-                  </div>
+                    </div>
+                  ))}
                 </div>
-              )
-            })}
-          </div>
+              ))}
+            </div>
+          </section>
         </aside>
       </div>
     </div>
@@ -323,13 +218,14 @@ const styles = {
     minHeight: '100vh',
     backgroundColor: '#F9F9F9',
     color: '#1A1A1A',
+    display: 'flex',
+    flexDirection: 'column',
   },
-  nav: {
+  header: {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-    padding: '0 24px',
-    height: 52,
+    padding: '14px 24px',
     backgroundColor: '#FFFFFF',
     borderBottom: '1px solid #E5E5E5',
     position: 'sticky',
@@ -337,32 +233,31 @@ const styles = {
     zIndex: 100,
     gap: 16,
   },
-  navLeft: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 8,
+  greeting: {
+    fontFamily: "'Inria Sans', serif",
+    fontStyle: 'italic',
+    fontWeight: '400',
+    fontSize: '26px',
+    color: '#1A1A1A',
+    margin: 0,
     flexShrink: 0,
   },
-  navBrand: {
-    fontFamily: "'Inria Sans', sans-serif",
-    fontSize: 18,
-    fontStyle: 'italic',
-    fontWeight: 700,
-    color: '#863bff',
+  headerRight: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 10,
   },
-  navCenter: {
-    flex: 1,
-    maxWidth: 360,
-  },
-  searchBar: {
+  searchWrap: {
     display: 'flex',
     alignItems: 'center',
     gap: 6,
     border: '1px solid #D0D0D0',
-    borderRadius: 6,
+    borderRadius: '6px',
     padding: '5px 10px',
     backgroundColor: '#FFFFFF',
+    width: 220,
   },
+  searchIcon: { color: '#AAA', fontSize: 13 },
   searchInput: {
     border: 'none',
     outline: 'none',
@@ -370,361 +265,211 @@ const styles = {
     width: '100%',
     backgroundColor: 'transparent',
     color: '#1A1A1A',
+    fontFamily: "'Inter', sans-serif",
   },
-  navRight: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 10,
-    flexShrink: 0,
+  clearBtn: {
+    cursor: 'pointer',
+    color: '#AAA',
+    fontSize: 16,
+    lineHeight: 1,
   },
-  navBtn: {
+  iconBtn: {
     background: 'none',
     border: '1px solid #E5E5E5',
     borderRadius: 6,
-    padding: '6px 14px',
-    fontSize: 13,
+    padding: '5px 9px',
     cursor: 'pointer',
-    color: '#1A1A1A',
-    fontFamily: "'Inter', sans-serif",
-  },
-  navBtnPrimary: {
-    background: '#0D1B2A',
-    border: 'none',
-    borderRadius: 6,
-    padding: '6px 14px',
     fontSize: 13,
-    cursor: 'pointer',
-    color: '#FFFFFF',
-    fontFamily: "'Inter', sans-serif",
+    color: '#555',
   },
-  layout: {
+  body: {
     display: 'flex',
-    height: 'calc(100vh - 52px)',
+    flex: 1,
+    height: 'calc(100vh - 57px)',
     overflow: 'hidden',
   },
   main: {
     flex: 1,
     overflowY: 'auto',
-    padding: '32px 32px 32px 32px',
+    padding: '20px 24px',
   },
-  greeting: {
-    fontFamily: "'Inria Sans', sans-serif",
-    fontSize: 32,
-    fontStyle: 'italic',
-    fontWeight: 400,
-    color: '#0D1B2A',
-    marginBottom: 32,
-    marginTop: 0,
-  },
-  section: {
-    marginBottom: 36,
-  },
-  sectionHeader: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 16,
-  },
-  sectionTitle: {
-    fontFamily: "'Inria Sans', sans-serif",
-    fontSize: 18,
-    fontWeight: 700,
-    color: '#0D1B2A',
-    margin: 0,
-  },
-  addBtn: {
-    background: '#0D1B2A',
-    border: 'none',
-    borderRadius: 6,
-    padding: '6px 14px',
-    fontSize: 12,
-    cursor: 'pointer',
-    color: '#FFFFFF',
-    fontFamily: "'Inter', sans-serif",
-    fontWeight: 500,
-  },
-  cancelBtn: {
-    background: 'none',
-    border: '1px solid #E5E5E5',
-    borderRadius: 6,
-    padding: '6px 14px',
-    fontSize: 12,
-    cursor: 'pointer',
-    color: '#666',
-    fontFamily: "'Inter', sans-serif",
-  },
-  notebookGrid: {
+  grid: {
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
-    gap: 12,
+    gap: '16px',
   },
-  notebookCard: {
+  card: {
     display: 'flex',
     flexDirection: 'column',
-    alignItems: 'center',
-    gap: 8,
-    padding: '16px 12px',
-    backgroundColor: '#FFFFFF',
     border: '1px solid #E5E5E5',
-    borderRadius: 10,
+    borderRadius: '8px',
+    overflow: 'hidden',
     textDecoration: 'none',
     color: '#1A1A1A',
+    backgroundColor: '#FFFFFF',
     cursor: 'pointer',
     transition: 'box-shadow 0.15s, border-color 0.15s',
   },
-  notebookThumb: {
-    width: 48,
-    height: 48,
-    backgroundColor: '#F0EBFF',
-    borderRadius: 8,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
+  cardThumb: {
+    width: '100%',
+    aspectRatio: '3/2',
+    overflow: 'hidden',
+    backgroundColor: '#E8E4DC',
   },
-  notebookName: {
-    fontSize: 13,
-    fontWeight: 600,
-    textAlign: 'center',
+  cardInfo: {
+    padding: '8px 10px 10px',
+  },
+  cardTitle: {
+    fontSize: '13px',
+    fontWeight: '600',
     color: '#1A1A1A',
-  },
-  notebookCount: {
-    fontSize: 11,
-    color: '#888',
-  },
-  newNotebookCard: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    gap: 8,
-    padding: '16px 12px',
-    backgroundColor: '#FAFAFA',
-    border: '1px dashed #DDDDDD',
-    borderRadius: 10,
-    cursor: 'pointer',
-    background: 'none',
-    minHeight: 100,
-    justifyContent: 'center',
-  },
-  addTodoForm: {
-    backgroundColor: '#FFFFFF',
-    border: '1px solid #E5E5E5',
-    borderRadius: 8,
-    padding: 16,
-    marginBottom: 16,
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 10,
-  },
-  formInput: {
-    padding: '8px 12px',
-    border: '1px solid #D1D5DB',
-    borderRadius: 6,
-    fontSize: 13,
-    outline: 'none',
-    fontFamily: "'Inter', sans-serif",
-    backgroundColor: '#FAFAFA',
-  },
-  sliderRow: {
-    display: 'flex',
-    gap: 16,
-    flexWrap: 'wrap',
-  },
-  sliderLabel: {
-    fontSize: 12,
-    color: '#6B7280',
-    display: 'flex',
-    alignItems: 'center',
-  },
-  formActions: {
-    display: 'flex',
-    gap: 8,
-  },
-  loadingText: {
-    color: '#9CA3AF',
-    fontSize: 14,
-    textAlign: 'center',
-    padding: 32,
-  },
-  emptyText: {
-    color: '#9CA3AF',
-    fontSize: 14,
-    textAlign: 'center',
-    padding: 32,
-    backgroundColor: '#FFFFFF',
-    border: '1px solid #E5E5E5',
-    borderRadius: 8,
-  },
-  taskList: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 8,
-  },
-  taskCard: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: 12,
-    backgroundColor: '#FFFFFF',
-    border: '1px solid #E5E5E5',
-    borderRadius: 8,
-    padding: '12px 16px',
-    transition: 'box-shadow 0.15s',
-  },
-  taskCheckbox: {
-    width: 20,
-    height: 20,
-    borderRadius: '50%',
-    border: '1.5px solid #D1D5DB',
-    flexShrink: 0,
-    cursor: 'pointer',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    background: 'transparent',
-    padding: 0,
-  },
-  taskBody: {
-    flex: 1,
-    minWidth: 0,
-  },
-  taskTitle: {
-    fontSize: 14,
-    fontWeight: 500,
-    color: '#1A1A1A',
+    marginBottom: 2,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
   },
-  taskMeta: {
-    fontSize: 12,
-    color: '#9CA3AF',
-    marginTop: 2,
+  cardMeta: {
+    fontSize: '11px',
+    color: '#888',
   },
-  taskRight: {
+  addCard: {
     display: 'flex',
     alignItems: 'center',
-    gap: 8,
-    flexShrink: 0,
-  },
-  priorityBadge: {
-    fontSize: 10,
-    fontWeight: 700,
-    padding: '2px 8px',
-    borderRadius: 20,
-    letterSpacing: '0.05em',
-  },
-  bhpsScore: {
-    fontSize: 11,
-    color: '#9CA3AF',
-  },
-  deleteBtn: {
+    justifyContent: 'center',
+    border: '1.5px dashed #D0D0D0',
+    borderRadius: '8px',
     background: 'none',
-    border: 'none',
     cursor: 'pointer',
-    fontSize: 12,
-    color: '#D1D5DB',
-    padding: '2px 4px',
+    aspectRatio: 'unset',
+    minHeight: 100,
+    transition: 'border-color 0.15s',
+  },
+  addCardPlus: {
+    fontSize: 28,
+    color: '#CCCCCC',
     lineHeight: 1,
   },
-  // Right sidebar
+  empty: {
+    color: '#AAA',
+    fontSize: 14,
+    textAlign: 'center',
+    marginTop: 60,
+  },
   sidebar: {
-    width: 280,
+    width: 260,
     flexShrink: 0,
     borderLeft: '1px solid #E5E5E5',
     backgroundColor: '#FFFFFF',
     overflowY: 'auto',
-    padding: 20,
+    padding: '16px',
     display: 'flex',
     flexDirection: 'column',
-    gap: 28,
   },
   sideSection: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 12,
+    marginBottom: 4,
   },
-  sideSectionHeader: {
+  sideTitle: {
+    fontFamily: "'Inria Sans', serif",
+    fontSize: '14px',
+    fontWeight: '700',
+    color: '#1A1A1A',
+    margin: '0 0 10px 0',
+  },
+  sideTitleRow: {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
-  },
-  sideSectionTitle: {
-    fontFamily: "'Inria Sans', sans-serif",
-    fontSize: 15,
-    fontWeight: 700,
-    color: '#0D1B2A',
-    margin: 0,
+    marginBottom: 10,
   },
   sideAddBtn: {
     background: 'none',
     border: 'none',
     cursor: 'pointer',
     fontSize: 20,
-    color: '#9CA3AF',
+    color: '#888',
     lineHeight: 1,
     padding: 0,
   },
-  sideEmptyText: {
-    fontSize: 13,
-    color: '#9CA3AF',
-    margin: 0,
+  divider: {
+    height: 1,
+    backgroundColor: '#E5E5E5',
+    margin: '12px 0',
+  },
+  dayList: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 0,
   },
   dayItem: {
     display: 'flex',
     alignItems: 'flex-start',
-    gap: 10,
+    gap: 8,
+    padding: '5px 0',
+    borderBottom: '1px solid #F0F0F0',
   },
   dayDot: {
-    width: 8,
-    height: 8,
-    borderRadius: '50%',
-    backgroundColor: '#863bff',
+    width: 10,
+    height: 10,
+    borderRadius: 2,
+    backgroundColor: '#1A1A1A',
     flexShrink: 0,
-    marginTop: 5,
+    marginTop: 3,
   },
-  dayTaskName: {
-    fontSize: 13,
-    fontWeight: 500,
+  dayBody: {},
+  dayEventName: {
+    fontSize: '12px',
+    fontWeight: '500',
     color: '#1A1A1A',
+    lineHeight: 1.4,
   },
-  dayTaskMeta: {
-    fontSize: 11,
-    color: '#9CA3AF',
+  dayEventMeta: {
+    fontSize: '10px',
+    color: '#888',
+    marginTop: 1,
   },
-  timelineItem: {
+  timelineList: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 8,
+  },
+  timelineGroup: {
+    marginBottom: 4,
+  },
+  timelineDateLabel: {
+    fontSize: '10px',
+    fontWeight: '700',
+    color: '#888',
+    letterSpacing: '0.04em',
+    marginBottom: 6,
+    textTransform: 'uppercase',
+  },
+  timelineTask: {
     display: 'flex',
     alignItems: 'flex-start',
-    gap: 10,
+    gap: 8,
+    marginBottom: 6,
   },
-  timelineCircle: {
+  taskCircle: {
     width: 14,
     height: 14,
     borderRadius: '50%',
     border: '1.5px solid #BBBBBB',
     flexShrink: 0,
     marginTop: 2,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
+    cursor: 'pointer',
+    padding: 0,
+    transition: 'background-color 0.15s, border-color 0.15s',
   },
-  timelineDot: {
-    width: 6,
-    height: 6,
-    borderRadius: '50%',
-    backgroundColor: '#863bff',
-  },
-  timelineBody: {
-    flex: 1,
-  },
-  timelineTaskName: {
-    fontSize: 12,
-    fontWeight: 500,
-    color: '#1A1A1A',
+  taskBodyDiv: {},
+  taskName: {
+    fontSize: '12px',
+    fontWeight: '500',
     lineHeight: 1.4,
+    transition: 'color 0.15s',
   },
-  timelineTaskMeta: {
-    fontSize: 11,
-    color: '#9CA3AF',
+  taskMeta: {
+    fontSize: '10px',
+    color: '#888',
+    marginTop: 1,
   },
 }
-
-export default Dashboard
