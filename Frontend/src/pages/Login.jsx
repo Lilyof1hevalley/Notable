@@ -4,210 +4,180 @@ import { Link, useNavigate } from 'react-router-dom'
 function Login() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
+  const [emailFocus, setEmailFocus] = useState(false)
+  const [passFocus, setPassFocus] = useState(false)
   const navigate = useNavigate()
 
-  function handleLogin(event) {
-    event.preventDefault()
-    setError('')
-
-    // Basic format validation so it feels real
-    if (!email.includes('@')) {
-      setError('Please enter a valid email address.')
-      return
-    }
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters.')
-      return
-    }
-
-    // Fake loading delay
-    setLoading(true)
-    setTimeout(() => {
-      setLoading(false)
-      navigate('/dashboard')
-    }, 1200)
+  function handleLogin(e) {
+    e.preventDefault()
+    navigate('/dashboard')
   }
 
   return (
-    <main style={styles.page}>
+    <div style={styles.page}>
       <div style={styles.card}>
-        {/* Logo / brand */}
-        <div style={styles.brand}>
-          <span style={styles.brandName}>Notable</span>
-          <p style={styles.brandSub}>Your academic second brain</p>
+        <div style={styles.header}>
+          <h1 style={styles.title}>Welcome to<br />Notable</h1>
+          <p style={styles.subtitle}>Journal your thoughts elegantly</p>
         </div>
 
-        <h1 style={styles.heading}>Log In</h1>
-
         <form onSubmit={handleLogin} style={styles.form}>
-          <div style={styles.fieldGroup}>
-            <label style={styles.label}>Email</label>
+          <div style={styles.field}>
+            <label style={styles.label}>EMAIL ADDRESS</label>
             <input
-              style={styles.input}
               type="email"
-              placeholder="you@email.com"
+              placeholder="editor@notable.com"
               value={email}
-              onChange={(e) => { setEmail(e.target.value); setError('') }}
+              onChange={e => setEmail(e.target.value)}
+              onFocus={() => setEmailFocus(true)}
+              onBlur={() => setEmailFocus(false)}
               required
+              style={{ ...styles.input, borderColor: emailFocus ? '#1a1a1a' : 'transparent' }}
             />
           </div>
 
-          <div style={styles.fieldGroup}>
-            <label style={styles.label}>Password</label>
+          <div style={styles.field}>
+            <div style={styles.passwordHeader}>
+              <label style={styles.label}>PASSWORD</label>
+              <Link to="/reset-password" style={styles.recovery}>RECOVERY</Link>
+            </div>
             <input
-              style={styles.input}
               type="password"
-              placeholder="••••••••"
+              placeholder="········"
               value={password}
-              onChange={(e) => { setPassword(e.target.value); setError('') }}
+              onChange={e => setPassword(e.target.value)}
+              onFocus={() => setPassFocus(true)}
+              onBlur={() => setPassFocus(false)}
               required
+              style={{ ...styles.input, borderColor: passFocus ? '#1a1a1a' : 'transparent' }}
             />
           </div>
 
-          {error && <p style={styles.error}>{error}</p>}
-
-          <div style={styles.forgotRow}>
-            <Link to="/reset-password" style={styles.forgotLink}>
-              Forgot password?
-            </Link>
-          </div>
-
-          <button
-            type="submit"
-            style={{
-              ...styles.btn,
-              opacity: loading ? 0.7 : 1,
-              cursor: loading ? 'not-allowed' : 'pointer',
-            }}
-            disabled={loading}
-          >
-            {loading ? 'Logging in…' : 'Log In'}
-          </button>
+          <button type="submit" style={styles.btn}>SIGN IN</button>
         </form>
 
         <p style={styles.footer}>
-          Need an account?{' '}
-          <Link to="/register" style={styles.link}>Register</Link>
+          New here?{' '}
+          <Link to="/register" style={styles.footerLink}>Create an account</Link>
         </p>
       </div>
-    </main>
+    </div>
   )
 }
 
 const styles = {
   page: {
     minHeight: '100vh',
-    backgroundColor: '#F9F9F9',
+    backgroundColor: '#EDEBE7',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    fontFamily: "'Inria Sans', 'Inter', sans-serif",
-    padding: '24px',
+    fontFamily: "'Georgia', 'Times New Roman', serif",
+    padding: 24,
   },
   card: {
-    backgroundColor: '#FFFFFF',
-    border: '1px solid #E5E5E5',
-    borderRadius: '12px',
-    padding: '36px 32px',
+    backgroundColor: '#F7F6F3',
+    borderRadius: 18,
+    padding: '52px 48px 44px',
     width: '100%',
-    maxWidth: '400px',
-    boxShadow: '0 4px 24px rgba(0,0,0,0.06)',
+    maxWidth: 460,
+    boxShadow: '0 12px 48px rgba(0,0,0,0.10), 0 2px 8px rgba(0,0,0,0.05)',
+    border: '1px solid rgba(0,0,0,0.05)',
   },
-  brand: {
+  header: {
     textAlign: 'center',
-    marginBottom: '24px',
+    marginBottom: 44,
   },
-  brandName: {
-    fontSize: '26px',
+  title: {
+    fontFamily: "'Georgia', 'Times New Roman', serif",
     fontStyle: 'italic',
-    fontWeight: '700',
-    color: '#863bff',
-    letterSpacing: '-0.01em',
+    fontSize: 44,
+    fontWeight: 400,
+    color: '#1a1a1a',
+    lineHeight: 1.18,
+    margin: '0 0 14px 0',
+    letterSpacing: '-0.5px',
   },
-  brandSub: {
-    fontSize: '12px',
-    color: '#AAA',
-    margin: '4px 0 0',
-  },
-  heading: {
-    fontSize: '18px',
-    fontWeight: '700',
-    color: '#1A1A1A',
-    marginBottom: '20px',
-    fontFamily: "'Inria Sans', sans-serif",
+  subtitle: {
+    fontFamily: "'Georgia', serif",
+    fontStyle: 'italic',
+    fontSize: 15,
+    color: '#aaa',
+    margin: 0,
+    letterSpacing: '0.01em',
   },
   form: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '4px',
+    gap: 24,
   },
-  fieldGroup: {
-    marginBottom: '12px',
+  field: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 9,
   },
   label: {
-    display: 'block',
-    fontSize: '11px',
-    fontWeight: '600',
-    color: '#888',
-    letterSpacing: '0.06em',
-    textTransform: 'uppercase',
-    marginBottom: '6px',
+    fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif",
+    fontSize: 11,
+    fontWeight: 600,
+    letterSpacing: '0.1em',
+    color: '#666',
   },
-  input: {
-    width: '100%',
-    boxSizing: 'border-box',
-    padding: '10px 12px',
-    fontSize: '14px',
-    border: '1px solid #E0E0E0',
-    borderRadius: '7px',
-    outline: 'none',
-    color: '#1A1A1A',
-    backgroundColor: '#FAFAFA',
-    fontFamily: "'Inria Sans', 'Inter', sans-serif",
+  passwordHeader: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
-  error: {
-    fontSize: '12px',
-    color: '#E53935',
-    margin: '0 0 8px',
-    padding: '8px 12px',
-    backgroundColor: '#FFF0F0',
-    borderRadius: '6px',
-    border: '1px solid #FFCDD2',
-  },
-  forgotRow: {
-    textAlign: 'right',
-    marginBottom: '16px',
-    marginTop: '2px',
-  },
-  forgotLink: {
-    fontSize: '12px',
-    color: '#863bff',
+  recovery: {
+    fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif",
+    fontSize: 11,
+    fontWeight: 600,
+    letterSpacing: '0.08em',
+    color: '#bbb',
     textDecoration: 'none',
   },
-  btn: {
+  input: {
+    padding: '14px 16px',
+    backgroundColor: '#EDEBE7',
+    border: '1.5px solid transparent',
+    borderRadius: 8,
+    fontSize: 15,
+    color: '#1a1a1a',
+    outline: 'none',
+    fontFamily: "'Georgia', serif",
+    letterSpacing: '0.02em',
+    transition: 'border-color 0.15s',
     width: '100%',
-    padding: '11px',
-    fontSize: '14px',
-    fontWeight: '600',
-    backgroundColor: '#1A1A1A',
-    color: '#FFFFFF',
+    boxSizing: 'border-box',
+  },
+  btn: {
+    backgroundColor: '#1a1a1a',
+    color: '#fff',
     border: 'none',
-    borderRadius: '7px',
-    fontFamily: "'Inria Sans', 'Inter', sans-serif",
-    transition: 'background 0.15s',
+    borderRadius: 8,
+    padding: '16px 0',
+    fontSize: 12,
+    fontWeight: 700,
+    fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif",
+    letterSpacing: '0.14em',
+    cursor: 'pointer',
+    marginTop: 8,
+    width: '100%',
   },
   footer: {
     textAlign: 'center',
-    fontSize: '13px',
-    color: '#888',
-    marginTop: '20px',
+    marginTop: 28,
+    marginBottom: 0,
+    fontFamily: "'Georgia', serif",
+    fontStyle: 'italic',
+    fontSize: 14,
+    color: '#aaa',
   },
-  link: {
-    color: '#863bff',
-    textDecoration: 'none',
-    fontWeight: '600',
+  footerLink: {
+    color: '#555',
+    textDecoration: 'underline',
+    textUnderlineOffset: 3,
+    fontStyle: 'italic',
   },
 }
 

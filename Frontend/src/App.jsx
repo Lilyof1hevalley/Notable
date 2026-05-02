@@ -1,21 +1,25 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import Notebook from './pages/Notebook'
-import Register from './pages/Register'
-import Dashboard from './pages/Dashboard'
 import Login from './pages/Login'
+import Register from './pages/Register'
 import ResetPassword from './pages/ResetPassword'
 import NewPassword from './pages/NewPassword'
+import Dashboard from './pages/Dashboard'
+import Notebook from './pages/Notebook'
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/notebook" element={<Notebook />} />
+        {/* Auth */}
+        <Route path="/" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/new-password" element={<NewPassword />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/" element={<Dashboard />} />
+
+        {/* App */}
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/notebook" element={<Notebook />} />
+        <Route path="/notebook/:id" element={<Notebook />} />
       </Routes>
     </BrowserRouter>
   )

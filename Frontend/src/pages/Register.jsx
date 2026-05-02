@@ -1,188 +1,203 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 
-const styles = {
-  page: {
-    minHeight: '100vh',
-    backgroundColor: '#E8E4DC',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    fontFamily: "'Inter', sans-serif",
-    padding: '24px',
-  },
-  card: {
-    backgroundColor: '#FFFFFF',
-    borderRadius: '16px',
-    padding: '56px 48px 48px',
-    width: '100%',
-    maxWidth: '480px',
-    boxShadow: '0 2px 24px rgba(0,0,0,0.07)',
-  },
-  heading: {
-    fontFamily: "'Inria Sans', serif",
-    fontStyle: 'italic',
-    fontWeight: '400',
-    fontSize: '42px',
-    lineHeight: '1.15',
-    color: '#1A1A1A',
-    textAlign: 'center',
-    marginBottom: '8px',
-  },
-  subtitle: {
-    fontFamily: "'Inria Sans', serif",
-    fontStyle: 'italic',
-    fontWeight: '400',
-    fontSize: '15px',
-    color: '#888',
-    textAlign: 'center',
-    marginBottom: '40px',
-  },
-  fieldGroup: {
-    marginBottom: '20px',
-  },
-  label: {
-    display: 'block',
-    fontSize: '11px',
-    fontWeight: '600',
-    letterSpacing: '0.08em',
-    color: '#1A1A1A',
-    textTransform: 'uppercase',
-    marginBottom: '8px',
-  },
-  input: {
-    width: '100%',
-    padding: '14px 18px',
-    fontSize: '15px',
-    color: '#1A1A1A',
-    backgroundColor: '#F5F4F1',
-    border: '1.5px solid transparent',
-    borderRadius: '10px',
-    outline: 'none',
-    boxSizing: 'border-box',
-    fontFamily: "'Inter', sans-serif",
-    transition: 'border-color 0.15s',
-  },
-  button: {
-    width: '100%',
-    padding: '16px',
-    backgroundColor: '#1A1A1A',
-    color: '#FFFFFF',
-    border: 'none',
-    borderRadius: '10px',
-    fontSize: '12px',
-    fontWeight: '700',
-    letterSpacing: '0.12em',
-    textTransform: 'uppercase',
-    cursor: 'pointer',
-    marginTop: '8px',
-    fontFamily: "'Inter', sans-serif",
-    transition: 'background-color 0.15s',
-  },
-  footer: {
-    textAlign: 'center',
-    marginTop: '24px',
-    fontSize: '13px',
-    color: '#888',
-  },
-  footerLink: {
-    color: '#1A1A1A',
-    fontWeight: '600',
-    textDecoration: 'none',
-  },
-}
-
 function Register() {
+  const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
-  const [focused, setFocused] = useState(null)
-  const [btnHovered, setBtnHovered] = useState(false)
+  const [error, setError] = useState('')
   const navigate = useNavigate()
 
-  function handleRegister(event) {
-    event.preventDefault()
+  function handleRegister(e) {
+    e.preventDefault()
     if (password !== confirmPassword) {
-      alert('Passwords do not match')
+      setError('Passwords do not match.')
       return
     }
-    navigate('/dashboard')
+    navigate('/')
   }
-
-  const inputStyle = (field) => ({
-    ...styles.input,
-    borderColor: focused === field ? '#1A1A1A' : 'transparent',
-  })
 
   return (
     <div style={styles.page}>
       <div style={styles.card}>
-        <h1 style={styles.heading}>Create an<br />Account</h1>
-        <p style={styles.subtitle}>Start journaling your thoughts elegantly</p>
+        <div style={styles.header}>
+          <h1 style={styles.title}>Join<br />Notable</h1>
+          <p style={styles.subtitle}>Begin your journey of elegant notes</p>
+        </div>
 
-        <form onSubmit={handleRegister}>
-          <div style={styles.fieldGroup}>
-            <label style={styles.label}>Email Address</label>
+        {error && <div style={styles.errorBox}>{error}</div>}
+
+        <form onSubmit={handleRegister} style={styles.form}>
+          <div style={styles.field}>
+            <label style={styles.label}>FULL NAME</label>
+            <input
+              type="text"
+              placeholder="Your name"
+              value={name}
+              onChange={e => setName(e.target.value)}
+              required
+              style={styles.input}
+            />
+          </div>
+
+          <div style={styles.field}>
+            <label style={styles.label}>EMAIL ADDRESS</label>
             <input
               type="email"
               placeholder="editor@notable.com"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              onFocus={() => setFocused('email')}
-              onBlur={() => setFocused(null)}
+              onChange={e => setEmail(e.target.value)}
               required
-              style={inputStyle('email')}
+              style={styles.input}
             />
           </div>
 
-          <div style={styles.fieldGroup}>
-            <label style={styles.label}>Password</label>
+          <div style={styles.field}>
+            <label style={styles.label}>PASSWORD</label>
             <input
               type="password"
               placeholder="········"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              onFocus={() => setFocused('password')}
-              onBlur={() => setFocused(null)}
+              onChange={e => setPassword(e.target.value)}
               required
-              style={inputStyle('password')}
+              style={styles.input}
             />
           </div>
 
-          <div style={styles.fieldGroup}>
-            <label style={styles.label}>Confirm Password</label>
+          <div style={styles.field}>
+            <label style={styles.label}>CONFIRM PASSWORD</label>
             <input
               type="password"
               placeholder="········"
               value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              onFocus={() => setFocused('confirm')}
-              onBlur={() => setFocused(null)}
+              onChange={e => setConfirmPassword(e.target.value)}
               required
-              style={inputStyle('confirm')}
+              style={styles.input}
             />
           </div>
 
-          <button
-            type="submit"
-            style={{
-              ...styles.button,
-              backgroundColor: btnHovered ? '#333' : '#1A1A1A',
-            }}
-            onMouseEnter={() => setBtnHovered(true)}
-            onMouseLeave={() => setBtnHovered(false)}
-          >
-            Create Account
-          </button>
+          <button type="submit" style={styles.btn}>CREATE ACCOUNT</button>
         </form>
 
         <p style={styles.footer}>
           Already have an account?{' '}
-          <Link to="/" style={styles.footerLink}>Sign In</Link>
+          <Link to="/" style={styles.footerLink}>Sign in</Link>
         </p>
       </div>
     </div>
   )
+}
+
+const styles = {
+  page: {
+    minHeight: '100vh',
+    backgroundColor: '#EDEBE7',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontFamily: "'Georgia', serif",
+    padding: 24,
+  },
+  card: {
+    backgroundColor: '#F7F6F3',
+    borderRadius: 18,
+    padding: '52px 48px 44px',
+    width: '100%',
+    maxWidth: 460,
+    boxShadow: '0 12px 48px rgba(0,0,0,0.10), 0 2px 8px rgba(0,0,0,0.05)',
+    border: '1px solid rgba(0,0,0,0.05)',
+  },
+  header: {
+    textAlign: 'center',
+    marginBottom: 40,
+  },
+  title: {
+    fontFamily: "'Georgia', serif",
+    fontStyle: 'italic',
+    fontSize: 44,
+    fontWeight: 400,
+    color: '#1a1a1a',
+    lineHeight: 1.18,
+    margin: '0 0 14px 0',
+    letterSpacing: '-0.5px',
+  },
+  subtitle: {
+    fontFamily: "'Georgia', serif",
+    fontStyle: 'italic',
+    fontSize: 15,
+    color: '#aaa',
+    margin: 0,
+  },
+  errorBox: {
+    backgroundColor: '#FEF2F2',
+    border: '1px solid #FCA5A5',
+    borderRadius: 8,
+    padding: '10px 14px',
+    fontSize: 13,
+    color: '#DC2626',
+    marginBottom: 20,
+    fontFamily: "'Inter', sans-serif",
+  },
+  form: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 20,
+  },
+  field: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 9,
+  },
+  label: {
+    fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif",
+    fontSize: 11,
+    fontWeight: 600,
+    letterSpacing: '0.1em',
+    color: '#666',
+  },
+  input: {
+    padding: '14px 16px',
+    backgroundColor: '#EDEBE7',
+    border: '1.5px solid transparent',
+    borderRadius: 8,
+    fontSize: 15,
+    color: '#1a1a1a',
+    outline: 'none',
+    fontFamily: "'Georgia', serif",
+    letterSpacing: '0.02em',
+    width: '100%',
+    boxSizing: 'border-box',
+  },
+  btn: {
+    backgroundColor: '#1a1a1a',
+    color: '#fff',
+    border: 'none',
+    borderRadius: 8,
+    padding: '16px 0',
+    fontSize: 12,
+    fontWeight: 700,
+    fontFamily: "'Inter', 'Helvetica Neue', Arial, sans-serif",
+    letterSpacing: '0.14em',
+    cursor: 'pointer',
+    marginTop: 8,
+    width: '100%',
+  },
+  footer: {
+    textAlign: 'center',
+    marginTop: 28,
+    marginBottom: 0,
+    fontFamily: "'Georgia', serif",
+    fontStyle: 'italic',
+    fontSize: 14,
+    color: '#aaa',
+  },
+  footerLink: {
+    color: '#555',
+    textDecoration: 'underline',
+    textUnderlineOffset: 3,
+    fontStyle: 'italic',
+  },
 }
 
 export default Register
