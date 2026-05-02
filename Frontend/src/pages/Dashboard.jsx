@@ -12,10 +12,7 @@ const emptyTodo = {
   estimated_effort: '3',
 }
 
-function formatDate(value) {
-  if (!value) return 'No deadline'
-  return new Date(value).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
-}
+
 
 function Dashboard() {
   const auth = useAuth()
@@ -37,6 +34,9 @@ function Dashboard() {
   // UI States
   const [isTimerMinimized, setIsTimerMinimized] = useState(false)
   const [showGcalModal, setShowGcalModal] = useState(false)
+  const [showCreateFolderModal, setShowCreateFolderModal] = useState(false)
+  const [showCreateNotebookModal, setShowCreateNotebookModal] = useState(false)
+  const [showCreateTodoModal, setShowCreateTodoModal] = useState(false)
 
   async function loadDashboard() {
     setError('')
@@ -82,6 +82,7 @@ function Dashboard() {
         body: JSON.stringify({ title: folderTitle }),
       })
       setFolderTitle('')
+      setShowCreateFolderModal(false)
       setMessage('Folder created.')
       await loadDashboard()
     } catch (err) {
@@ -99,6 +100,7 @@ function Dashboard() {
       })
       setNotebookTitle('')
       setSelectedFolder('')
+      setShowCreateNotebookModal(false)
       setMessage('Notebook created.')
       await loadDashboard()
     } catch (err) {
@@ -120,6 +122,7 @@ function Dashboard() {
         }),
       })
       setTodoForm(emptyTodo)
+      setShowCreateTodoModal(false)
       setMessage('Todo created.')
       await loadDashboard()
     } catch (err) {
@@ -195,183 +198,151 @@ function Dashboard() {
 
   return (
     <main className="app-shell">
-      <header className="topbar">
-        <div>
-          <p className="eyebrow">Dashboard</p>
-          <h1>Hello, {profile?.display_name || profile?.name || 'Student'}</h1>
+      <header className="topbar pill">
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
+          <h1 style={{ fontFamily: '"Inria Sans", sans-serif', fontStyle: 'italic', color: '#3a4658' }}>
+            Hello, {profile?.display_name || profile?.name || 'Student'}
+          </h1>
         </div>
-        <div style={{ display: 'flex', gap: '10px' }}>
-          <Link to="/settings" className="ghost-button" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>Settings</Link>
-          <button type="button" className="ghost-button" onClick={logout}>Logout</button>
+        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+          <div className="search-box" style={{ background: '#cfd6e4', borderRadius: '999px', padding: '6px 16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span style={{ fontSize: '14px' }}>🔍</span>
+            <input placeholder="Search" style={{ background: 'transparent', border: 'none', padding: 0, outline: 'none', color: '#18202f' }} />
+          </div>
+          <button className="icon-button" title="Filter">⏳</button>
+          <button className="icon-button" title="Sort">🔃</button>
+          <Link to="/settings" className="icon-button" title="Settings" style={{ textDecoration: 'none' }}>⚙️</Link>
+          <button className="icon-button" onClick={logout} title="Logout">🚪</button>
         </div>
       </header>
 
       {error && <div className="error">{error}</div>}
       {message && <div className="success">{message}</div>}
-      
+
       {isLoading ? (
         <div className="panel">Loading workspace...</div>
       ) : (
         <div className="dashboard-grid">
-          <section className="panel wide" style={{ gridRow: 'span 2' }}>
-            <div className="section-heading">
-              <h2>Workspace</h2>
-              <span>{folders.length} Folders · {notebooks.length} Notebooks</span>
-            </div>
-            <div className="card-grid">
-              {folders.map((folder) => (
-                <div key={folder.id} className="card-wrapper">
-                  <Link to={`#`} style={{ textDecoration: 'none' }}>
-                    <FolderCard title={folder.title} taskCount={0} />
-                  </Link>
-                </div>
-              ))}
-              {notebooks.map((notebook) => (
-                <div key={notebook.id} style={{ position: 'relative', marginTop: '12px' }}>
-                  <Link to={`/notebook/${notebook.id}`} style={{ textDecoration: 'none' }}>
-                    <NotebookCard title={notebook.title} taskCount={0} />
-                  </Link>
-                  <button 
-                    className="icon-button" 
-                    style={{ position: 'absolute', top: 8, right: 8, background: '#fff', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }} 
-                    onClick={() => deleteNotebook(notebook.id)}
-                    title="Delete Notebook"
-                  >
-                    🗑️
-                  </button>
-                </div>
-              ))}
-              {folders.length === 0 && notebooks.length === 0 && <p className="muted">Create a folder or notebook to start.</p>}
+          {/* Main Grid Area (Left) */}
+          <section className="card-grid" style={{ alignContent: 'start' }}>
+            {folders.map((folder) => (
+              <div key={folder.id} style={{ height: '100%' }}>
+                <Link to={`#`} style={{ textDecoration: 'none', height: '100%', display: 'block' }}>
+                  <FolderCard title={folder.title} taskCount={0} />
+                </Link>
+              </div>
+            ))}
+            {notebooks.map((notebook) => (
+              <div key={notebook.id} style={{ position: 'relative', marginTop: '12px', height: '100%' }}>
+                <Link to={`/notebook/${notebook.id}`} style={{ textDecoration: 'none', height: '100%', display: 'block' }}>
+                  <NotebookCard title={notebook.title} taskCount={0} />
+                </Link>
+                <button 
+                  className="icon-button" 
+                  style={{ position: 'absolute', top: 8, right: 8, background: '#fff', boxShadow: '0 1px 3px rgba(0,0,0,0.1)', padding: '4px' }} 
+                  onClick={() => deleteNotebook(notebook.id)}
+                  title="Delete Notebook"
+                >
+                  🗑️
+                </button>
+              </div>
+            ))}
+            <div style={{ marginTop: '12px', height: '100%' }}>
+              <div 
+                className="add-card-button" 
+                onClick={() => {
+                  const choice = window.prompt("Type 'folder' to create a folder or 'notebook' to create a notebook:");
+                  if (choice === 'folder') setShowCreateFolderModal(true);
+                  if (choice === 'notebook') setShowCreateNotebookModal(true);
+                }}
+              >
+                +
+              </div>
             </div>
           </section>
 
-          <aside className="panel" style={{ gridRow: 'span 2' }}>
-            <div className="section-heading">
-              <h2>Your Day</h2>
-              <button className="ghost-button" onClick={() => setShowGcalModal(true)}>Full Screen</button>
-            </div>
-            <div style={{ height: '400px', borderRadius: '8px', overflow: 'hidden' }}>
-              {profile?.gcal_url ? (
-                <iframe src={profile.gcal_url} className="gcal-iframe" title="Google Calendar" />
+          {/* Right Sidebar */}
+          <div style={{ display: 'grid', gap: '24px', alignContent: 'start' }}>
+            {/* Your Day Panel */}
+            <aside className="panel" style={{ padding: '0', overflow: 'hidden' }}>
+              <div className="section-heading" style={{ background: '#e1e6ef', padding: '16px 20px', margin: 0, borderRadius: '8px 8px 0 0' }}>
+                <h2 style={{ margin: 0, fontSize: '18px', fontFamily: '"Inria Sans", sans-serif', fontStyle: 'italic', color: '#5d6b82' }}>Your <span style={{ fontWeight: 400 }}>Day</span></h2>
+                <button className="ghost-button" onClick={() => setShowGcalModal(true)} style={{ padding: '4px 8px', fontSize: '12px' }}>Full Screen</button>
+              </div>
+              <div style={{ padding: '16px', background: '#fbfcfe' }}>
+                {profile?.gcal_url ? (
+                  <iframe src={profile.gcal_url} className="gcal-iframe" style={{ height: '300px' }} title="Google Calendar" />
+                ) : (
+                  <div className="compact-list">
+                    <div className="task-row" style={{ background: '#fff', border: '1px solid #e1e6ef', borderRadius: '8px' }}>
+                      <div style={{ width: 16, height: 16, background: '#5d6b82', borderRadius: '4px' }}></div>
+                      <div>
+                        <strong style={{ fontSize: '14px' }}>All-Day Event</strong>
+                        <p style={{ margin: 0, fontSize: '12px' }}>Location</p>
+                      </div>
+                    </div>
+                    <div className="task-row" style={{ background: '#fff', border: '1px solid #e1e6ef', borderRadius: '8px' }}>
+                      <div style={{ width: 16, height: 16, background: '#5d6b82', borderRadius: '4px' }}></div>
+                      <div>
+                        <strong style={{ fontSize: '14px' }}>Event Name</strong>
+                        <p style={{ margin: 0, fontSize: '12px' }}>08:00 - 09:00 · Location</p>
+                      </div>
+                    </div>
+                    <p className="muted" style={{ marginTop: '16px', fontSize: '13px' }}>
+                      Update settings to embed your real Google Calendar.
+                    </p>
+                  </div>
+                )}
+              </div>
+            </aside>
+
+            {/* Timeline Panel */}
+            <aside className="panel" style={{ padding: '0', overflow: 'hidden' }}>
+              <div className="section-heading" style={{ background: '#e1e6ef', padding: '16px 20px', margin: 0, borderRadius: '8px 8px 0 0' }}>
+                <h2 style={{ margin: 0, fontSize: '18px' }}>Timeline</h2>
+                <button className="icon-button" onClick={() => setShowCreateTodoModal(true)} style={{ padding: '2px', color: '#18202f', fontWeight: 'bold' }}>➕</button>
+              </div>
+              <div style={{ padding: '16px', background: '#e1e6ef' }}>
+                <div className="stack" style={{ gap: '12px' }}>
+                  {todos.map((todo) => (
+                    <article key={todo.id} style={{ display: 'flex', alignItems: 'center', background: '#fff', padding: '12px', borderRadius: '8px', gap: '12px' }}>
+                      <button 
+                        type="button" 
+                        onClick={() => completeTodo(todo.id)} 
+                        style={{ background: 'transparent', border: '2px solid #aeb8c9', borderRadius: '50%', width: '20px', height: '20px', padding: 0, cursor: 'pointer' }}
+                        title="Mark Complete"
+                      ></button>
+                      <div style={{ flex: 1 }}>
+                        <strong style={{ fontSize: '14px', display: 'block' }}>{todo.title}</strong>
+                        <p style={{ margin: 0, fontSize: '12px', color: '#68768d' }}>{todo.deadline ? new Date(todo.deadline).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'All day'} · Folder/Notebook</p>
+                      </div>
+                      <button type="button" className="icon-button" onClick={() => deleteTodo(todo.id)} style={{ padding: '4px' }} title="Delete Task">🗑️</button>
+                    </article>
+                  ))}
+                  {todos.length === 0 && <p className="muted">No todos yet.</p>}
+                </div>
+              </div>
+            </aside>
+
+            {/* Focus Session Panel */}
+            <aside className="panel">
+              <h2 style={{ fontSize: '18px' }}>Focus Session</h2>
+              {activeSession ? (
+                <div className="stack">
+                  <p>Active {activeSession.duration_minutes}-minute session started at {new Date(activeSession.started_at).toLocaleTimeString()}.</p>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button type="button" onClick={() => endFocus(activeSession.id)} style={{ flex: 1 }}>End Session</button>
+                    <button type="button" className="ghost-button" onClick={() => setIsTimerMinimized(true)}>Minimize</button>
+                  </div>
+                </div>
               ) : (
-                <div className="compact-list">
-                  <div className="task-row" style={{ background: '#fbfcfe', border: '1px solid #e1e6ef', borderRadius: 8 }}>
-                    <div style={{ width: 12, height: 12, background: '#5d6b82', borderRadius: '4px' }}></div>
-                    <div>
-                      <strong>All-Day Event</strong>
-                      <p>Location</p>
-                    </div>
-                  </div>
-                  <div className="task-row" style={{ background: '#fbfcfe', border: '1px solid #e1e6ef', borderRadius: 8 }}>
-                    <div style={{ width: 12, height: 12, background: '#5d6b82', borderRadius: '4px' }}></div>
-                    <div>
-                      <strong>Event Name</strong>
-                      <p>08:00 - 09:00 · Location</p>
-                    </div>
-                  </div>
-                  <div className="task-row" style={{ background: '#fbfcfe', border: '1px solid #e1e6ef', borderRadius: 8 }}>
-                    <div style={{ width: 12, height: 12, background: '#5d6b82', borderRadius: '4px' }}></div>
-                    <div>
-                      <strong>Event Name</strong>
-                      <p>10:00 - 11:30 · Location</p>
-                    </div>
-                  </div>
-                  <p className="muted" style={{ marginTop: '16px', fontSize: '13px' }}>
-                    Update your settings to embed your real Google Calendar.
-                  </p>
+                <div className="stack">
+                  <p className="muted" style={{ fontSize: '14px' }}>Start with your highest priority task.</p>
+                  <button type="button" onClick={() => startFocus(recommendedTodos[0]?.id)} disabled={recommendedTodos.length === 0}>Start 50-min Focus</button>
                 </div>
               )}
-            </div>
-          </aside>
-
-          <aside className="panel">
-            <h2>Focus Session</h2>
-            {activeSession ? (
-              <div className="stack">
-                <p>Active {activeSession.duration_minutes}-minute session started at {new Date(activeSession.started_at).toLocaleTimeString()}.</p>
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  <button type="button" onClick={() => endFocus(activeSession.id)} style={{ flex: 1 }}>End Session</button>
-                  <button type="button" className="ghost-button" onClick={() => setIsTimerMinimized(true)}>Minimize</button>
-                </div>
-              </div>
-            ) : (
-              <div className="stack">
-                <p className="muted">Start with your highest BHPS recommendation.</p>
-                <button type="button" onClick={() => startFocus(recommendedTodos[0]?.id)} disabled={recommendedTodos.length === 0}>Start 50-min Focus</button>
-              </div>
-            )}
-            <div className="compact-list" style={{ marginTop: '12px' }}>
-              {recommendedTodos.slice(0, 3).map((todo) => (
-                <div key={todo.id}>
-                  <strong>{todo.title}</strong>
-                  <span>{todo.priority_label} · {todo.bhps_score}</span>
-                </div>
-              ))}
-            </div>
-          </aside>
-
-          <section className="panel wide">
-            <div className="section-heading">
-              <h2>Priority Queue</h2>
-              <span>BHPS ranked</span>
-            </div>
-            <div className="task-list">
-              {todos.map((todo) => (
-                <article key={todo.id} className="task-row">
-                  <button type="button" className="check-button" onClick={() => completeTodo(todo.id)} disabled={Boolean(todo.is_completed)}>
-                    {todo.is_completed ? 'Done' : 'Complete'}
-                  </button>
-                  <div style={{ flex: 1 }}>
-                    <strong>{todo.title}</strong>
-                    <p>{formatDate(todo.deadline)} · weight {todo.academic_weight} · effort {todo.estimated_effort}</p>
-                  </div>
-                  <span className={`priority ${String(todo.priority_label || 'low').toLowerCase()}`}>
-                    {todo.priority_label || 'LOW'} · {todo.bhps_score ?? 0}
-                  </span>
-                  <button type="button" className="icon-button" onClick={() => deleteTodo(todo.id)} title="Delete Task">🗑️</button>
-                </article>
-              ))}
-              {todos.length === 0 && <p className="muted">No todos yet.</p>}
-            </div>
-          </section>
-
-          <section className="panel">
-            <h2>Create Folder</h2>
-            <form className="stack" onSubmit={submitFolder}>
-              <input value={folderTitle} onChange={(event) => setFolderTitle(event.target.value)} placeholder="Folder title" required />
-              <button type="submit">Create Folder</button>
-            </form>
-          </section>
-
-          <section className="panel">
-            <h2>Create Notebook</h2>
-            <form className="stack" onSubmit={submitNotebook}>
-              <input value={notebookTitle} onChange={(event) => setNotebookTitle(event.target.value)} placeholder="Notebook title" required />
-              <select value={selectedFolder} onChange={(event) => setSelectedFolder(event.target.value)}>
-                <option value="">No folder</option>
-                {folders.map((folder) => <option key={folder.id} value={folder.id}>{folder.title}</option>)}
-              </select>
-              <button type="submit">Create Notebook</button>
-            </form>
-          </section>
-
-          <section className="panel wide">
-            <h2>Create Todo</h2>
-            <form className="todo-form" onSubmit={submitTodo}>
-              <input value={todoForm.title} onChange={(event) => setTodoForm({ ...todoForm, title: event.target.value })} placeholder="Task title" required />
-              <input value={todoForm.deadline} onChange={(event) => setTodoForm({ ...todoForm, deadline: event.target.value })} placeholder="YYYY-MM-DD" required />
-              <label>
-                Weight
-                <input type="number" min="1" max="10" value={todoForm.academic_weight} onChange={(event) => setTodoForm({ ...todoForm, academic_weight: event.target.value })} required />
-              </label>
-              <label>
-                Effort
-                <input type="number" min="1" max="10" value={todoForm.estimated_effort} onChange={(event) => setTodoForm({ ...todoForm, estimated_effort: event.target.value })} required />
-              </label>
-              <button type="submit">Create Todo</button>
-            </form>
-          </section>
-
+            </aside>
+          </div>
         </div>
       )}
 
@@ -408,6 +379,74 @@ function Dashboard() {
           </div>
         </div>
       )}
+
+      {/* Create Folder Modal */}
+      {showCreateFolderModal && (
+        <div className="modal-overlay" onClick={() => setShowCreateFolderModal(false)}>
+          <div className="modal-content" style={{ height: 'auto', maxWidth: '400px' }} onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Create Folder</h2>
+              <button className="icon-button" onClick={() => setShowCreateFolderModal(false)}>✕</button>
+            </div>
+            <div className="modal-body">
+              <form className="stack" onSubmit={submitFolder}>
+                <input value={folderTitle} onChange={(event) => setFolderTitle(event.target.value)} placeholder="Folder title" required />
+                <button type="submit">Create</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Create Notebook Modal */}
+      {showCreateNotebookModal && (
+        <div className="modal-overlay" onClick={() => setShowCreateNotebookModal(false)}>
+          <div className="modal-content" style={{ height: 'auto', maxWidth: '400px' }} onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Create Notebook</h2>
+              <button className="icon-button" onClick={() => setShowCreateNotebookModal(false)}>✕</button>
+            </div>
+            <div className="modal-body">
+              <form className="stack" onSubmit={submitNotebook}>
+                <input value={notebookTitle} onChange={(event) => setNotebookTitle(event.target.value)} placeholder="Notebook title" required />
+                <select value={selectedFolder} onChange={(event) => setSelectedFolder(event.target.value)}>
+                  <option value="">No folder</option>
+                  {folders.map((folder) => <option key={folder.id} value={folder.id}>{folder.title}</option>)}
+                </select>
+                <button type="submit">Create</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Create Todo Modal */}
+      {showCreateTodoModal && (
+        <div className="modal-overlay" onClick={() => setShowCreateTodoModal(false)}>
+          <div className="modal-content" style={{ height: 'auto', maxWidth: '400px' }} onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Create Todo</h2>
+              <button className="icon-button" onClick={() => setShowCreateTodoModal(false)}>✕</button>
+            </div>
+            <div className="modal-body">
+              <form className="stack" onSubmit={submitTodo}>
+                <input value={todoForm.title} onChange={(event) => setTodoForm({ ...todoForm, title: event.target.value })} placeholder="Task title" required />
+                <input value={todoForm.deadline} onChange={(event) => setTodoForm({ ...todoForm, deadline: event.target.value })} placeholder="YYYY-MM-DD" required />
+                <label>
+                  Weight (1-10)
+                  <input type="number" min="1" max="10" value={todoForm.academic_weight} onChange={(event) => setTodoForm({ ...todoForm, academic_weight: event.target.value })} required />
+                </label>
+                <label>
+                  Effort (1-10)
+                  <input type="number" min="1" max="10" value={todoForm.estimated_effort} onChange={(event) => setTodoForm({ ...todoForm, estimated_effort: event.target.value })} required />
+                </label>
+                <button type="submit">Create Task</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+
     </main>
   )
 }

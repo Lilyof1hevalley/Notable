@@ -98,7 +98,14 @@ h3 {
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  margin-bottom: 18px;
+  margin-bottom: 24px;
+}
+
+.topbar.pill {
+  background: #e6e9f0;
+  border-radius: 999px;
+  padding: 12px 24px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
 .topbar h1 {
@@ -155,11 +162,12 @@ h3 {
 .dashboard-grid,
 .notebook-layout {
   display: grid;
-  gap: 16px;
+  gap: 24px;
 }
 
 .dashboard-grid {
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1fr) 300px;
+  align-items: start;
 }
 
 .notebook-layout {
@@ -190,8 +198,8 @@ h3 {
 
 .card-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
 }
 
 .notebook-card,
@@ -326,6 +334,7 @@ h3 {
   display: block;
   text-decoration: none;
   color: inherit;
+  filter: drop-shadow(0 4px 6px rgba(0,0,0,0.05));
 }
 
 .folder-tab {
@@ -352,7 +361,6 @@ h3 {
   display: grid;
   gap: 8px;
   z-index: 1;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
 .folder-card.dark {
@@ -373,7 +381,28 @@ h3 {
   flex-direction: column;
   text-decoration: none;
   color: inherit;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+  height: 100%;
+}
+
+.add-card-button {
+  background: transparent;
+  border: 2px dashed #cfd6e4;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  min-height: 100px;
+  color: #cfd6e4;
+  font-size: 32px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.add-card-button:hover {
+  border-color: #5d6b82;
+  color: #5d6b82;
+  background: rgba(93, 107, 130, 0.05);
 }
 
 .notebook-cover {
