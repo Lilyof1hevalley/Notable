@@ -132,6 +132,18 @@ function Notebook() {
     }
   }
 
+  async function deleteChapter(chapterId) {
+    if (!window.confirm('Are you sure you want to delete this chapter?')) return
+    setMessage('')
+    try {
+      await apiRequest(`/notebooks/${id}/chapters/${chapterId}`, { method: 'DELETE' })
+      setMessage('Chapter deleted.')
+      await loadNotebook()
+    } catch (err) {
+      setError(err.message)
+    }
+  }
+
   return (
     <main className="app-shell">
       <header className="topbar">
@@ -184,8 +196,14 @@ function Notebook() {
             <div className="chapter-list">
               {filteredChapters.map((chapter) => (
                 <article key={chapter.id} className="chapter-card">
-                  <h3>{chapter.title}</h3>
-                  <p>{chapter.content || 'No content yet.'}</p>
+                  <div className="card-actions">
+                    <h3 style={{ margin: 0 }}>{chapter.title}</h3>
+                    <div style={{ display: 'flex', gap: '4px' }}>
+                      <Link to={`/notebook/${id}/chapter/${chapter.id}/edit`} className="icon-button" style={{ textDecoration: 'none' }} title="Edit Chapter">✏️</Link>
+                      <button type="button" className="icon-button" onClick={() => deleteChapter(chapter.id)} title="Delete Chapter">🗑️</button>
+                    </div>
+                  </div>
+                  <p style={{ marginTop: '12px' }}>{chapter.content || 'No content yet.'}</p>
                   <span>Created {new Date(chapter.created_at).toLocaleDateString()}</span>
                 </article>
               ))}

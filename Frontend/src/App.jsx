@@ -5,6 +5,8 @@ import Dashboard from './pages/Dashboard'
 import Login from './pages/Login'
 import ResetPassword from './pages/ResetPassword'
 import NewPassword from './pages/NewPassword'
+import Settings from './pages/Settings'
+import EditChapter from './pages/EditChapter'
 import { AuthProvider, ProtectedRoute } from './lib/AuthContext'
 
 function App() {
@@ -21,9 +23,25 @@ function App() {
               </ProtectedRoute>
             )}
           />
+          <Route
+            path="/notebook/:notebookId/chapter/:chapterId/edit"
+            element={(
+              <ProtectedRoute>
+                <EditChapter />
+              </ProtectedRoute>
+            )}
+          />
           <Route path="/register" element={<Register />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/new-password" element={<NewPassword />} />
+          <Route
+            path="/settings"
+            element={(
+              <ProtectedRoute>
+                <Settings />
+              </ProtectedRoute>
+            )}
+          />
           <Route
             path="/dashboard"
             element={(
