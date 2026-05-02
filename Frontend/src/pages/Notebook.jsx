@@ -413,7 +413,7 @@ const modal = {
     border: '1.5px solid transparent',
     borderRadius: 8, fontSize: 15,
     color: '#1a1a1a', outline: 'none',
-    fontFamily: "'Georgia', serif",
+    fontFamily: "'Inria', serif",
     width: '100%', boxSizing: 'border-box',
   },
   textarea: {
@@ -422,7 +422,7 @@ const modal = {
     border: '1.5px solid transparent',
     borderRadius: 8, fontSize: 14,
     color: '#1a1a1a', outline: 'none',
-    fontFamily: "'Georgia', serif",
+    fontFamily: "'Inria', serif",
     width: '100%', boxSizing: 'border-box',
     resize: 'vertical', lineHeight: 1.6,
   },
