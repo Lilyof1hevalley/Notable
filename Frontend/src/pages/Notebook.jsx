@@ -422,7 +422,7 @@ const modal = {
     border: '1.5px solid transparent',
     borderRadius: 8, fontSize: 14,
     color: '#1a1a1a', outline: 'none',
-    fontFamily: "'Inria', serif",
+    fontFamily: "'Georgia', serif",
     width: '100%', boxSizing: 'border-box',
     resize: 'vertical', lineHeight: 1.6,
   },
