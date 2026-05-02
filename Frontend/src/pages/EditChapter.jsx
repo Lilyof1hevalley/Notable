@@ -49,9 +49,11 @@ function EditChapter() {
   return (
     <main className="app-shell">
       <header className="topbar">
-        <div>
-          <Link to={`/notebook/${notebookId}`} className="back-link">Back to notebook</Link>
-          <h1>Edit Chapter</h1>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <Link to={`/notebook/${notebookId}`} className="back-link" style={{ fontSize: '12px', marginBottom: '4px', color: '#68768d' }}>← Back to notebook</Link>
+            <h1 style={{ margin: 0, fontSize: '20px', fontWeight: '700', color: '#1A303A' }}>Edit Chapter</h1>
+          </div>
         </div>
       </header>
 
@@ -63,15 +65,15 @@ function EditChapter() {
       ) : (
         <section className="panel main-panel">
           <form className="stack" onSubmit={submitEdit}>
-            <label>
+            <label className="auth-form-label">
               Chapter Title
-              <input value={chapterForm.title} onChange={(event) => setChapterForm({ ...chapterForm, title: event.target.value })} required />
+              <input className="auth-form-input" style={{ marginTop: '8px' }} value={chapterForm.title} onChange={(event) => setChapterForm({ ...chapterForm, title: event.target.value })} required />
             </label>
-            <label>
+            <label className="auth-form-label">
               Chapter Content
-              <textarea value={chapterForm.content} onChange={(event) => setChapterForm({ ...chapterForm, content: event.target.value })} rows="15" />
+              <textarea className="auth-form-input" style={{ marginTop: '8px' }} value={chapterForm.content} onChange={(event) => setChapterForm({ ...chapterForm, content: event.target.value })} rows="15" />
             </label>
-            <button type="submit">Save Changes</button>
+            <button type="submit" className="auth-submit-btn">Save Changes</button>
           </form>
         </section>
       )}

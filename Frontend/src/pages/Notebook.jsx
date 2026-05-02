@@ -147,13 +147,15 @@ function Notebook() {
   return (
     <main className="app-shell">
       <header className="topbar">
-        <div>
-          <Link to="/dashboard" className="back-link">Back to dashboard</Link>
-          <h1>{notebook?.title || 'Notebook'}</h1>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <Link to="/dashboard" className="back-link" style={{ fontSize: '12px', marginBottom: '4px', color: '#68768d' }}>← Back to dashboard</Link>
+            <h1 style={{ margin: 0, fontSize: '20px', fontWeight: '700', color: '#1A303A' }}>{notebook?.title || 'Notebook'}</h1>
+          </div>
         </div>
-        <div className="search-box">
-          <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search chapters" />
-          {search && <button type="button" className="ghost-button" onClick={() => setSearch('')}>Clear</button>}
+        <div className="search-box" style={{ background: '#FAFAFA', border: '1px solid #E5E5E5', borderRadius: '6px', padding: '8px 12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search chapters" style={{ background: 'transparent', border: 'none', padding: 0, outline: 'none', color: '#1A1A1A', fontSize: '14px' }} />
+          {search && <button type="button" className="ghost-button" onClick={() => setSearch('')} style={{ padding: '4px 8px', fontSize: '12px', border: 'none' }}>Clear</button>}
         </div>
       </header>
 
@@ -164,9 +166,11 @@ function Notebook() {
         <div className="panel">Loading notebook...</div>
       ) : (
         <div className="notebook-layout">
-          <aside className="panel sidebar-panel">
-            <h2>Timeline</h2>
-            <div className="compact-list">
+          <aside className="panel sidebar-panel" style={{ padding: '0', overflow: 'hidden' }}>
+            <div className="section-heading" style={{ background: '#FAFAFA', borderBottom: '1px solid #E5E5E5', padding: '16px 20px', margin: 0, borderRadius: '12px 12px 0 0' }}>
+              <h2 style={{ margin: 0, fontSize: '16px', fontWeight: '700', color: '#1A303A' }}>Timeline</h2>
+            </div>
+            <div className="compact-list" style={{ padding: '16px' }}>
               {todos.slice(0, 6).map((todo) => (
                 <div key={todo.id}>
                   <strong>{todo.title}</strong>
@@ -176,8 +180,10 @@ function Notebook() {
               {todos.length === 0 && <p className="muted">No tasks yet.</p>}
             </div>
 
-            <h2>Resources</h2>
-            <div className="compact-list">
+            <div className="section-heading" style={{ background: '#FAFAFA', borderTop: '1px solid #E5E5E5', borderBottom: '1px solid #E5E5E5', padding: '16px 20px', margin: 0 }}>
+              <h2 style={{ margin: 0, fontSize: '16px', fontWeight: '700', color: '#1A303A' }}>Resources</h2>
+            </div>
+            <div className="compact-list" style={{ padding: '16px' }}>
               {resources.map((resource) => (
                 <div key={resource.id}>
                   <strong>{resource.original_name}</strong>
@@ -188,12 +194,12 @@ function Notebook() {
             </div>
           </aside>
 
-          <section className="panel main-panel">
-            <div className="section-heading">
-              <h2>Chapters</h2>
-              <span>{filteredChapters.length} shown</span>
+          <section className="panel main-panel" style={{ padding: '0', overflow: 'hidden' }}>
+            <div className="section-heading" style={{ background: '#FAFAFA', borderBottom: '1px solid #E5E5E5', padding: '16px 20px', margin: 0, borderRadius: '12px 12px 0 0' }}>
+              <h2 style={{ margin: 0, fontSize: '16px', fontWeight: '700', color: '#1A303A' }}>Chapters</h2>
+              <span style={{ fontSize: '12px', color: '#68768d' }}>{filteredChapters.length} shown</span>
             </div>
-            <div className="chapter-list">
+            <div className="chapter-list" style={{ padding: '16px' }}>
               {filteredChapters.map((chapter) => (
                 <article key={chapter.id} className="chapter-card">
                   <div className="card-actions">
@@ -211,16 +217,20 @@ function Notebook() {
             </div>
           </section>
 
-          <aside className="panel forms-panel">
-            <h2>Add Chapter</h2>
-            <form className="stack" onSubmit={submitChapter}>
+          <aside className="panel forms-panel" style={{ padding: '0', overflow: 'hidden' }}>
+            <div className="section-heading" style={{ background: '#FAFAFA', borderBottom: '1px solid #E5E5E5', padding: '16px 20px', margin: 0, borderRadius: '12px 12px 0 0' }}>
+              <h2 style={{ margin: 0, fontSize: '16px', fontWeight: '700', color: '#1A303A' }}>Add Chapter</h2>
+            </div>
+            <form className="stack" onSubmit={submitChapter} style={{ padding: '16px' }}>
               <input value={chapterForm.title} onChange={(event) => setChapterForm({ ...chapterForm, title: event.target.value })} placeholder="Chapter title" required />
               <textarea value={chapterForm.content} onChange={(event) => setChapterForm({ ...chapterForm, content: event.target.value })} placeholder="Chapter content" rows="4" />
               <button type="submit">Create Chapter</button>
             </form>
 
-            <h2>Quick Note</h2>
-            <form className="stack" onSubmit={submitNote}>
+            <div className="section-heading" style={{ background: '#FAFAFA', borderTop: '1px solid #E5E5E5', borderBottom: '1px solid #E5E5E5', padding: '16px 20px', margin: 0 }}>
+              <h2 style={{ margin: 0, fontSize: '16px', fontWeight: '700', color: '#1A303A' }}>Quick Note</h2>
+            </div>
+            <form className="stack" onSubmit={submitNote} style={{ padding: '16px', paddingBottom: '8px' }}>
               <input value={noteForm.title} onChange={(event) => setNoteForm({ ...noteForm, title: event.target.value })} placeholder="Note title" required />
               <textarea value={noteForm.content} onChange={(event) => setNoteForm({ ...noteForm, content: event.target.value })} placeholder="Note content" rows="3" required />
               <select value={noteForm.todo_id} onChange={(event) => setNoteForm({ ...noteForm, todo_id: event.target.value })}>
@@ -230,7 +240,7 @@ function Notebook() {
               <button type="submit">Create Note</button>
             </form>
 
-            <div className="compact-list">
+            <div className="compact-list" style={{ padding: '0 16px 16px 16px' }}>
               {notes.slice(0, 4).map((note) => (
                 <div key={note.id}>
                   <strong>{note.title}</strong>
@@ -239,8 +249,10 @@ function Notebook() {
               ))}
             </div>
 
-            <h2>Upload Resource</h2>
-            <form className="stack" onSubmit={submitResource}>
+            <div className="section-heading" style={{ background: '#FAFAFA', borderTop: '1px solid #E5E5E5', borderBottom: '1px solid #E5E5E5', padding: '16px 20px', margin: 0 }}>
+              <h2 style={{ margin: 0, fontSize: '16px', fontWeight: '700', color: '#1A303A' }}>Upload Resource</h2>
+            </div>
+            <form className="stack" onSubmit={submitResource} style={{ padding: '16px' }}>
               <input type="file" onChange={(event) => setResourceForm({ ...resourceForm, file: event.target.files[0] || null })} required />
               <select value={resourceForm.chapter_id} onChange={(event) => setResourceForm({ ...resourceForm, chapter_id: event.target.value })}>
                 <option value="">Notebook-level resource</option>

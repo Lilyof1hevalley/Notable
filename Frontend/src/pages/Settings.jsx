@@ -47,9 +47,11 @@ function Settings() {
   return (
     <main className="app-shell">
       <header className="topbar">
-        <div>
-          <Link to="/dashboard" className="back-link">Back to dashboard</Link>
-          <h1>Settings</h1>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <Link to="/dashboard" className="back-link" style={{ fontSize: '12px', marginBottom: '4px', color: '#68768d' }}>← Back to dashboard</Link>
+            <h1 style={{ margin: 0, fontSize: '20px', fontWeight: '700', color: '#1A303A' }}>Settings</h1>
+          </div>
         </div>
       </header>
 
@@ -61,20 +63,20 @@ function Settings() {
       ) : (
         <section className="panel main-panel">
           <form className="stack" onSubmit={submitSettings}>
-            <label>
+            <label className="auth-form-label">
               Full Name
-              <input value={profileForm.name} onChange={(event) => setProfileForm({ ...profileForm, name: event.target.value })} required />
+              <input className="auth-form-input" style={{ marginTop: '8px' }} value={profileForm.name} onChange={(event) => setProfileForm({ ...profileForm, name: event.target.value })} required />
             </label>
-            <label>
+            <label className="auth-form-label">
               Display Name
-              <input value={profileForm.display_name} onChange={(event) => setProfileForm({ ...profileForm, display_name: event.target.value })} />
+              <input className="auth-form-input" style={{ marginTop: '8px' }} value={profileForm.display_name} onChange={(event) => setProfileForm({ ...profileForm, display_name: event.target.value })} />
             </label>
-            <label>
+            <label className="auth-form-label">
               Google Calendar Public Embed URL
-              <input value={profileForm.gcal_url} onChange={(event) => setProfileForm({ ...profileForm, gcal_url: event.target.value })} placeholder="https://calendar.google.com/calendar/embed?src=..." />
-              <span className="muted" style={{ fontSize: '12px' }}>Paste the embed URL from your Google Calendar settings to view it in Your Day.</span>
+              <input className="auth-form-input" style={{ marginTop: '8px', marginBottom: '4px' }} value={profileForm.gcal_url} onChange={(event) => setProfileForm({ ...profileForm, gcal_url: event.target.value })} placeholder="https://calendar.google.com/calendar/embed?src=..." />
+              <span className="muted" style={{ fontSize: '12px', fontWeight: '400' }}>Paste the embed URL from your Google Calendar settings to view it in Your Day.</span>
             </label>
-            <button type="submit" style={{ marginTop: '16px' }}>Save Settings</button>
+            <button type="submit" className="auth-submit-btn" style={{ marginTop: '16px' }}>Save Settings</button>
           </form>
         </section>
       )}

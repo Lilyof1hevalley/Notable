@@ -198,16 +198,17 @@ function Dashboard() {
 
   return (
     <main className="app-shell">
-      <header className="topbar pill">
-        <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
-          <h1 style={{ fontFamily: '"Inria Sans", sans-serif', fontStyle: 'italic', color: '#3a4658' }}>
+      <header className="topbar">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <div style={{ width: '32px', height: '32px', borderRadius: '50%', backgroundColor: '#E5E5E5' }}></div>
+          <h1 style={{ margin: 0, fontSize: '20px', fontWeight: '700', color: '#1A303A' }}>
             Hello, {profile?.display_name || profile?.name || 'Student'}
           </h1>
         </div>
-        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-          <div className="search-box" style={{ background: '#cfd6e4', borderRadius: '999px', padding: '6px 16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+          <div className="search-box" style={{ background: '#FAFAFA', border: '1px solid #E5E5E5', borderRadius: '6px', padding: '8px 12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <span style={{ fontSize: '14px' }}>🔍</span>
-            <input placeholder="Search" style={{ background: 'transparent', border: 'none', padding: 0, outline: 'none', color: '#18202f' }} />
+            <input placeholder="Search" style={{ background: 'transparent', border: 'none', padding: 0, outline: 'none', color: '#1A1A1A', fontSize: '14px' }} />
           </div>
           <button className="icon-button" title="Filter">⏳</button>
           <button className="icon-button" title="Sort">🔃</button>
@@ -265,27 +266,27 @@ function Dashboard() {
           <div style={{ display: 'grid', gap: '24px', alignContent: 'start' }}>
             {/* Your Day Panel */}
             <aside className="panel" style={{ padding: '0', overflow: 'hidden' }}>
-              <div className="section-heading" style={{ background: '#e1e6ef', padding: '16px 20px', margin: 0, borderRadius: '8px 8px 0 0' }}>
-                <h2 style={{ margin: 0, fontSize: '18px', fontFamily: '"Inria Sans", sans-serif', fontStyle: 'italic', color: '#5d6b82' }}>Your <span style={{ fontWeight: 400 }}>Day</span></h2>
-                <button className="ghost-button" onClick={() => setShowGcalModal(true)} style={{ padding: '4px 8px', fontSize: '12px' }}>Full Screen</button>
+              <div className="section-heading" style={{ background: '#FAFAFA', borderBottom: '1px solid #E5E5E5', padding: '16px 20px', margin: 0, borderRadius: '12px 12px 0 0' }}>
+                <h2 style={{ margin: 0, fontSize: '16px', fontWeight: '700', color: '#1A303A' }}>Your Day</h2>
+                <button className="ghost-button" onClick={() => setShowGcalModal(true)} style={{ padding: '4px 8px', fontSize: '12px', borderRadius: '6px' }}>Full Screen</button>
               </div>
-              <div style={{ padding: '16px', background: '#fbfcfe' }}>
+              <div style={{ padding: '16px', background: '#FFFFFF' }}>
                 {profile?.gcal_url ? (
                   <iframe src={profile.gcal_url} className="gcal-iframe" style={{ height: '300px' }} title="Google Calendar" />
                 ) : (
                   <div className="compact-list">
-                    <div className="task-row" style={{ background: '#fff', border: '1px solid #e1e6ef', borderRadius: '8px' }}>
-                      <div style={{ width: 16, height: 16, background: '#5d6b82', borderRadius: '4px' }}></div>
+                    <div className="task-row" style={{ background: '#FFFFFF', border: '1px solid #E5E5E5', borderRadius: '6px' }}>
+                      <div style={{ width: 16, height: 16, background: '#E5E5E5', borderRadius: '4px' }}></div>
                       <div>
-                        <strong style={{ fontSize: '14px' }}>All-Day Event</strong>
-                        <p style={{ margin: 0, fontSize: '12px' }}>Location</p>
+                        <strong style={{ fontSize: '14px', color: '#1A1A1A' }}>All-Day Event</strong>
+                        <p style={{ margin: 0, fontSize: '12px', color: '#68768d' }}>Location</p>
                       </div>
                     </div>
-                    <div className="task-row" style={{ background: '#fff', border: '1px solid #e1e6ef', borderRadius: '8px' }}>
-                      <div style={{ width: 16, height: 16, background: '#5d6b82', borderRadius: '4px' }}></div>
+                    <div className="task-row" style={{ background: '#FFFFFF', border: '1px solid #E5E5E5', borderRadius: '6px' }}>
+                      <div style={{ width: 16, height: 16, background: '#E5E5E5', borderRadius: '4px' }}></div>
                       <div>
-                        <strong style={{ fontSize: '14px' }}>Event Name</strong>
-                        <p style={{ margin: 0, fontSize: '12px' }}>08:00 - 09:00 · Location</p>
+                        <strong style={{ fontSize: '14px', color: '#1A1A1A' }}>Event Name</strong>
+                        <p style={{ margin: 0, fontSize: '12px', color: '#68768d' }}>08:00 - 09:00 · Location</p>
                       </div>
                     </div>
                     <p className="muted" style={{ marginTop: '16px', fontSize: '13px' }}>
@@ -298,18 +299,18 @@ function Dashboard() {
 
             {/* Timeline Panel */}
             <aside className="panel" style={{ padding: '0', overflow: 'hidden' }}>
-              <div className="section-heading" style={{ background: '#e1e6ef', padding: '16px 20px', margin: 0, borderRadius: '8px 8px 0 0' }}>
-                <h2 style={{ margin: 0, fontSize: '18px' }}>Timeline</h2>
-                <button className="icon-button" onClick={() => setShowCreateTodoModal(true)} style={{ padding: '2px', color: '#18202f', fontWeight: 'bold' }}>➕</button>
+              <div className="section-heading" style={{ background: '#FAFAFA', borderBottom: '1px solid #E5E5E5', padding: '16px 20px', margin: 0, borderRadius: '12px 12px 0 0' }}>
+                <h2 style={{ margin: 0, fontSize: '16px', fontWeight: '700', color: '#1A303A' }}>Timeline</h2>
+                <button className="icon-button" onClick={() => setShowCreateTodoModal(true)} style={{ padding: '2px', fontWeight: 'bold' }}>➕</button>
               </div>
-              <div style={{ padding: '16px', background: '#e1e6ef' }}>
+              <div style={{ padding: '16px', background: '#FFFFFF' }}>
                 <div className="stack" style={{ gap: '12px' }}>
                   {todos.map((todo) => (
-                    <article key={todo.id} style={{ display: 'flex', alignItems: 'center', background: '#fff', padding: '12px', borderRadius: '8px', gap: '12px' }}>
+                    <article key={todo.id} style={{ display: 'flex', alignItems: 'center', background: '#FFFFFF', border: '1px solid #E5E5E5', padding: '12px', borderRadius: '6px', gap: '12px' }}>
                       <button 
                         type="button" 
                         onClick={() => completeTodo(todo.id)} 
-                        style={{ background: 'transparent', border: '2px solid #aeb8c9', borderRadius: '50%', width: '20px', height: '20px', padding: 0, cursor: 'pointer' }}
+                        style={{ background: 'transparent', border: '2px solid #E5E5E5', borderRadius: '50%', width: '20px', height: '20px', padding: 0, cursor: 'pointer' }}
                         title="Mark Complete"
                       ></button>
                       <div style={{ flex: 1 }}>
@@ -326,7 +327,7 @@ function Dashboard() {
 
             {/* Focus Session Panel */}
             <aside className="panel">
-              <h2 style={{ fontSize: '18px' }}>Focus Session</h2>
+              <h2 style={{ fontSize: '16px', fontWeight: '700', color: '#1A303A' }}>Focus Session</h2>
               {activeSession ? (
                 <div className="stack">
                   <p>Active {activeSession.duration_minutes}-minute session started at {new Date(activeSession.started_at).toLocaleTimeString()}.</p>
