@@ -22,19 +22,31 @@ class Notebook {
     return db.prepare('SELECT * FROM notebooks WHERE folder_id = ? ORDER BY created_at DESC').all(folderId);
   }
 
+  static findByFolderAndUser(folderId, userId) {
+    return db.prepare(`
+      SELECT * FROM notebooks
+      WHERE folder_id = ? AND user_id = ?
+      ORDER BY created_at DESC
+    `).all(folderId, userId);
+  }
+
   // Find notebook by ID
   static findById(id) {
     return db.prepare('SELECT * FROM notebooks WHERE id = ?').get(id);
   }
 
+  static findByIdAndUser(id, userId) {
+    return db.prepare('SELECT * FROM notebooks WHERE id = ? AND user_id = ?').get(id, userId);
+  }
+
   // Update notebook
-  static update(id, title, folderId) {
-    db.prepare('UPDATE notebooks SET title = ?, folder_id = ? WHERE id = ?').run(title, folderId, id);
+  static update(id, userId, title, folderId) {
+    db.prepare('UPDATE notebooks SET title = ?, folder_id = ? WHERE id = ? AND user_id = ?').run(title, folderId, id, userId);
   }
 
   // Delete notebook
-  static delete(id) {
-    db.prepare('DELETE FROM notebooks WHERE id = ?').run(id);
+  static delete(id, userId) {
+    db.prepare('DELETE FROM notebooks WHERE id = ? AND user_id = ?').run(id, userId);
   }
 }
 

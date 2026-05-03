@@ -1,54 +1,126 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { apiRequest } from '../lib/api'
+import { useAuth } from '../lib/AuthContext'
+import Navbar from '../components/Navbar'
 
 function Register() {
+  const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
+  const [error, setError] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const auth = useAuth()
   const navigate = useNavigate()
 
-  function handleRegister(event) {
+  async function handleRegister(event) {
     event.preventDefault()
+    setError('')
 
     if (password !== confirmPassword) {
-      alert('Passwords do not match')
+      setError('Passwords do not match')
       return
     }
 
-    navigate('/dashboard')
+    setIsSubmitting(true)
+    try {
+      await apiRequest('/auth/register', {
+        method: 'POST',
+        body: JSON.stringify({
+          name,
+          email,
+          password,
+          display_name: name,
+        }),
+      })
+      const data = await apiRequest('/auth/login', {
+        method: 'POST',
+        body: JSON.stringify({ email, password }),
+      })
+      auth.login(data.token, data.user)
+      navigate('/dashboard', { replace: true })
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
-    <main style={{ padding: '32px', maxWidth: '420px', margin: '0 auto' }}>
-      <h1>Register</h1>
-      <form onSubmit={handleRegister} style={{ display: 'grid', gap: '12px' }}>
-        <input
-          type="email"
-          placeholder="Enter your email"
-          value={email}
-          onChange={(event) => setEmail(event.target.value)}
-          required
-        />
-        <input
-          type="password"
-          placeholder="Enter your password"
-          value={password}
-          onChange={(event) => setPassword(event.target.value)}
-          required
-        />
-        <input
-          type="password"
-          placeholder="Confirm your password"
-          value={confirmPassword}
-          onChange={(event) => setConfirmPassword(event.target.value)}
-          required
-        />
-        <button type="submit">Register</button>
-      </form>
-      <p>
-        Already have an account? <Link to="/">Log in</Link>
-      </p>
-    </main>
+    <div className="auth-page">
+      <Navbar />
+      <main className="auth-content">
+        <h1 className="auth-title">Sign Up</h1>
+        <section className="auth-card">
+          <div className="auth-card-title">Create Your Account</div>
+          <div className="auth-card-subtitle">Enter your details and create your password</div>
+          <form onSubmit={handleRegister}>
+            <div>
+              <label className="auth-form-label">Name</label>
+              <input
+                type="text"
+                className="auth-form-input"
+                placeholder="Enter your name"
+                value={name}
+                onChange={(event) => setName(event.target.value)}
+                required
+              />
+            </div>
+            <div>
+              <label className="auth-form-label">Email</label>
+              <input
+                type="email"
+                className="auth-form-input"
+                placeholder="Enter your email"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                required
+              />
+            </div>
+            <div>
+              <label className="auth-form-label">Password</label>
+              <input
+                type="password"
+                className="auth-form-input"
+                placeholder="Enter your password"
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                required
+              />
+            </div>
+            <div>
+              <label className="auth-form-label">Confirm Password</label>
+              <input
+                type="password"
+                className="auth-form-input"
+                placeholder="Confirm your password"
+                value={confirmPassword}
+                onChange={(event) => setConfirmPassword(event.target.value)}
+                required
+              />
+            </div>
+            
+            {error && <div className="error">{error}</div>}
+            
+            <button type="submit" className="auth-submit-btn" disabled={isSubmitting}>
+              {isSubmitting ? 'Creating...' : 'Sign Up'}
+            </button>
+          </form>
+          
+          <div className="auth-divider">Or</div>
+          
+          <button type="button" className="google-btn">
+            <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" />
+            Continue with Google
+          </button>
+          
+          <div className="auth-footer-text">
+            Already have an account? <Link to="/">Login</Link>
+          </div>
+        </section>
+      </main>
+    </div>
   )
 }
 

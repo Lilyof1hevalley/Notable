@@ -1,45 +1,142 @@
-import { Link } from 'react-router-dom'
-
-const notebooks = [
-  { id: 'discrete-math', title: 'Discrete Math', noteCount: 12 },
-  { id: 'physics', title: 'Physics', noteCount: 8 },
-  { id: 'calculus', title: 'Calculus', noteCount: 15 },
-  { id: 'software-eng', title: 'Software Eng', noteCount: 6 },
-]
+import { useNavigate } from 'react-router-dom'
+import FeedbackBanner from '../components/ui/FeedbackBanner'
+import CalendarPanel from '../features/dashboard/components/CalendarPanel'
+import DashboardHeader from '../features/dashboard/components/DashboardHeader'
+import DashboardModals from '../features/dashboard/components/DashboardModals'
+import FocusPanel from '../features/dashboard/components/FocusPanel'
+import FocusSummaryModal from '../features/dashboard/components/FocusSummaryModal'
+import RemindersPanel from '../features/dashboard/components/RemindersPanel'
+import TimelinePanel from '../features/dashboard/components/TimelinePanel'
+import WorkspaceGrid from '../features/dashboard/components/WorkspaceGrid'
+import { useDashboard } from '../features/dashboard/hooks/useDashboard'
+import { useAuth } from '../lib/AuthContext'
 
 function Dashboard() {
-  return (
-    <main style={{ display: 'flex', gap: '24px', padding: '32px' }}>
-      <section style={{ flex: 1 }}>
-        <h1>Hello, Nadira</h1>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '16px' }}>
-          {notebooks.map((notebook) => (
-            <Link
-              key={notebook.id}
-              to="/notebook"
-              style={{
-                border: '1px solid #E5E5E5',
-                borderRadius: '8px',
-                color: '#1A1A1A',
-                padding: '16px',
-                textDecoration: 'none',
-              }}
-            >
-              <strong>{notebook.title}</strong>
-              <div style={{ color: '#666', fontSize: '14px', marginTop: '8px' }}>
-                {notebook.noteCount} notes
-              </div>
-            </Link>
-          ))}
-        </div>
-      </section>
+  const auth = useAuth()
+  const navigate = useNavigate()
+  const dashboard = useDashboard(auth)
+  const {
+    activeModal,
+    activeSession,
+    clearFocusSummary,
+    closeModal,
+    completeTodo,
+    data,
+    deleteNotebook,
+    deleteTodo,
+    endFocus,
+    error,
+    folderTitle,
+    isLoading,
+    isTimerMinimized,
+    lastFocusSummary,
+    message,
+    notebookTitle,
+    openModal,
+    selectedFolder,
+    search,
+    reminderTodos,
+    setFolderTitle,
+    setIsTimerMinimized,
+    setNotebookTitle,
+    setSearch,
+    setSelectedFolder,
+    setSortMode,
+    setStatusFilter,
+    setTodoForm,
+    setTypeFilter,
+    sortMode,
+    startFocus,
+    statusFilter,
+    submitFolder,
+    submitNotebook,
+    submitTodo,
+    todoForm,
+    typeFilter,
+    visibleTimelineTodos,
+    visibleWorkspaceItems,
+  } = dashboard
 
-      <aside style={{ width: '300px' }}>
-        <h2>Your Day</h2>
-        <p>Review Chapter 3 at 08:00</p>
-        <h2>Timeline</h2>
-        <p>Submit Lab Report at 10:00</p>
-      </aside>
+  function logout() {
+    auth.logout()
+    navigate('/', { replace: true })
+  }
+
+  return (
+    <main className="app-shell dashboard-page">
+      <DashboardHeader
+        onLogout={logout}
+        onSearchChange={setSearch}
+        onSortModeChange={setSortMode}
+        onStatusFilterChange={setStatusFilter}
+        onTypeFilterChange={setTypeFilter}
+        profile={data.profile}
+        search={search}
+        sortMode={sortMode}
+        statusFilter={statusFilter}
+        typeFilter={typeFilter}
+      />
+      <FeedbackBanner error={error} message={message} />
+
+      {isLoading ? (
+        <div className="panel">Loading workspace...</div>
+      ) : (
+        <div className="dashboard-grid">
+          <WorkspaceGrid
+            onDeleteNotebook={deleteNotebook}
+            onOpenModal={openModal}
+            workspaceItems={visibleWorkspaceItems}
+          />
+          <div className="dashboard-sidebar">
+            <CalendarPanel
+              activeModal={activeModal}
+              onCloseModal={closeModal}
+              onOpenModal={openModal}
+              profile={data.profile}
+            />
+            <RemindersPanel reminders={reminderTodos} />
+            <TimelinePanel
+              onCompleteTodo={completeTodo}
+              onDeleteTodo={deleteTodo}
+              onOpenModal={openModal}
+              todos={visibleTimelineTodos}
+            />
+            <FocusPanel
+              activeSession={activeSession}
+              isTimerMinimized={isTimerMinimized}
+              onCompleteTodo={completeTodo}
+              onEndFocus={endFocus}
+              onMinimize={() => setIsTimerMinimized(true)}
+              onRestore={() => setIsTimerMinimized(false)}
+              onStartFocus={startFocus}
+              recommendedBlock={data.recommendedBlock}
+              recommendedTodos={data.recommendedTodos}
+            />
+          </div>
+        </div>
+      )}
+
+      <DashboardModals
+        activeModal={activeModal}
+        folderTitle={folderTitle}
+        folders={data.folders}
+        notebooks={data.notebooks}
+        notebookTitle={notebookTitle}
+        onClose={closeModal}
+        onFolderTitleChange={setFolderTitle}
+        onNotebookTitleChange={setNotebookTitle}
+        onSelectedFolderChange={setSelectedFolder}
+        onSubmitFolder={submitFolder}
+        onSubmitNotebook={submitNotebook}
+        onSubmitTodo={submitTodo}
+        onTodoFormChange={setTodoForm}
+        selectedFolder={selectedFolder}
+        todoForm={todoForm}
+      />
+      <FocusSummaryModal
+        onClose={clearFocusSummary}
+        summary={lastFocusSummary}
+      />
     </main>
   )
 }

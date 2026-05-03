@@ -22,14 +22,18 @@ class Folder {
     return db.prepare('SELECT * FROM folders WHERE id = ?').get(id);
   }
 
+  static findByIdAndUser(id, userId) {
+    return db.prepare('SELECT * FROM folders WHERE id = ? AND user_id = ?').get(id, userId);
+  }
+
   // Update folder title
-  static update(id, title) {
-    db.prepare('UPDATE folders SET title = ? WHERE id = ?').run(title, id);
+  static update(id, userId, title) {
+    db.prepare('UPDATE folders SET title = ? WHERE id = ? AND user_id = ?').run(title, id, userId);
   }
 
   // Delete folder
-  static delete(id) {
-    db.prepare('DELETE FROM folders WHERE id = ?').run(id);
+  static delete(id, userId) {
+    db.prepare('DELETE FROM folders WHERE id = ? AND user_id = ?').run(id, userId);
   }
 }
 

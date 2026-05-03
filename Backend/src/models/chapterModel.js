@@ -17,22 +17,34 @@ class Chapter {
     return db.prepare('SELECT * FROM chapters WHERE notebook_id = ? ORDER BY created_at ASC').all(notebookId);
   }
 
+  static findAllByNotebookAndUser(notebookId, userId) {
+    return db.prepare(`
+      SELECT * FROM chapters
+      WHERE notebook_id = ? AND user_id = ?
+      ORDER BY created_at ASC
+    `).all(notebookId, userId);
+  }
+
   // Find chapter by ID
   static findById(id) {
     return db.prepare('SELECT * FROM chapters WHERE id = ?').get(id);
   }
 
+  static findByIdAndUser(id, userId) {
+    return db.prepare('SELECT * FROM chapters WHERE id = ? AND user_id = ?').get(id, userId);
+  }
+
   // Update chapter
-  static update(id, title, content) {
+  static update(id, userId, title, content) {
     db.prepare(`
       UPDATE chapters SET title = ?, content = ?, updated_at = CURRENT_TIMESTAMP
-      WHERE id = ?
-    `).run(title, content, id);
+      WHERE id = ? AND user_id = ?
+    `).run(title, content, id, userId);
   }
 
   // Delete chapter
-  static delete(id) {
-    db.prepare('DELETE FROM chapters WHERE id = ?').run(id);
+  static delete(id, userId) {
+    db.prepare('DELETE FROM chapters WHERE id = ? AND user_id = ?').run(id, userId);
   }
 }
 

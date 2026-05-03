@@ -3,12 +3,12 @@ const { randomUUID } = require('crypto');
 
 class Todo {
   // Create a new todo for a user
-  static create(userId, title, deadline, academicWeight, estimatedEffort) {
+  static create(userId, title, deadline, academicWeight, estimatedEffort, folderId = null, notebookId = null, reminderAt = null) {
     const id = randomUUID();
     db.prepare(`
-      INSERT INTO todos (id, user_id, title, deadline, academic_weight, estimated_effort)
-      VALUES (?, ?, ?, ?, ?, ?)
-    `).run(id, userId, title, deadline, academicWeight, estimatedEffort);
+      INSERT INTO todos (id, user_id, title, deadline, folder_id, notebook_id, academic_weight, estimated_effort, reminder_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(id, userId, title, deadline, folderId, notebookId, academicWeight, estimatedEffort, reminderAt);
     return id;
   }
 
@@ -55,22 +55,27 @@ class Todo {
     return db.prepare('SELECT * FROM todos WHERE id = ?').get(id);
   }
 
+  static findByIdAndUser(id, userId) {
+    return db.prepare('SELECT * FROM todos WHERE id = ? AND user_id = ?').get(id, userId);
+  }
+
   // Update todo details
-  static update(id, title, deadline, academicWeight, estimatedEffort) {
+  static update(id, userId, title, deadline, academicWeight, estimatedEffort, folderId = null, notebookId = null, reminderAt = null) {
     db.prepare(`
-      UPDATE todos SET title = ?, deadline = ?, academic_weight = ?, estimated_effort = ?
-      WHERE id = ?
-    `).run(title, deadline, academicWeight, estimatedEffort, id);
+      UPDATE todos
+      SET title = ?, deadline = ?, folder_id = ?, notebook_id = ?, academic_weight = ?, estimated_effort = ?, reminder_at = ?
+      WHERE id = ? AND user_id = ?
+    `).run(title, deadline, folderId, notebookId, academicWeight, estimatedEffort, reminderAt, id, userId);
   }
 
   // Mark a todo as completed
-  static markComplete(id) {
-    db.prepare('UPDATE todos SET is_completed = 1 WHERE id = ?').run(id);
+  static markComplete(id, userId) {
+    db.prepare('UPDATE todos SET is_completed = 1 WHERE id = ? AND user_id = ?').run(id, userId);
   }
 
   // Delete a todo by ID
-  static delete(id) {
-    db.prepare('DELETE FROM todos WHERE id = ?').run(id);
+  static delete(id, userId) {
+    db.prepare('DELETE FROM todos WHERE id = ? AND user_id = ?').run(id, userId);
   }
 }
 
