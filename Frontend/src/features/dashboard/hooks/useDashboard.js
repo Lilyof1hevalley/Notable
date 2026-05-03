@@ -1,6 +1,18 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { apiRequest } from '../../../lib/api'
 import { getDefaultReminderAt, getReminderMeta, toIsoOrNull } from '../../../utils/reminders'
+import { getFocusRecommendations } from '../../focus/focus.api'
+import {
+  completeTodo as completeTodoRequest,
+  createFolder,
+  createNotebook,
+  createTodo,
+  deleteNotebook as deleteNotebookRequest,
+  deleteTodo as deleteTodoRequest,
+  getFolders,
+  getNotebooks,
+  getTodos,
+} from '../../workspace/workspace.api'
+import { getProfile } from '../../settings/settings.api'
 
 const EMPTY_TODO = {
   title: '',
@@ -62,11 +74,11 @@ export function useDashboard(auth) {
         todosData,
         recommendedData,
       ] = await Promise.all([
-        apiRequest('/user/profile'),
-        apiRequest('/folders'),
-        apiRequest('/notebooks'),
-        apiRequest('/todos?limit=100'),
-        apiRequest('/focus-sessions/recommended'),
+        getProfile(),
+        getFolders(),
+        getNotebooks(),
+        getTodos('?limit=100'),
+        getFocusRecommendations(),
       ])
 
       updateUser(profileData.user)
@@ -196,10 +208,7 @@ export function useDashboard(auth) {
   const submitFolder = useCallback((event) => {
     event.preventDefault()
     return runMutation(
-      () => apiRequest('/folders', {
-        method: 'POST',
-        body: JSON.stringify({ title: folderTitle }),
-      }),
+      () => createFolder({ title: folderTitle }),
       'Folder created.',
       () => {
         setFolderTitle('')
@@ -211,10 +220,7 @@ export function useDashboard(auth) {
   const submitNotebook = useCallback((event) => {
     event.preventDefault()
     return runMutation(
-      () => apiRequest('/notebooks', {
-        method: 'POST',
-        body: JSON.stringify({ title: notebookTitle, folder_id: selectedFolder || null }),
-      }),
+      () => createNotebook({ title: notebookTitle, folder_id: selectedFolder || null }),
       'Notebook created.',
       () => {
         setNotebookTitle('')
@@ -227,17 +233,14 @@ export function useDashboard(auth) {
   const submitTodo = useCallback((event) => {
     event.preventDefault()
     return runMutation(
-      () => apiRequest('/todos', {
-        method: 'POST',
-        body: JSON.stringify({
-          title: todoForm.title,
-          deadline: todoForm.deadline,
-          folder_id: todoForm.folder_id || null,
-          notebook_id: todoForm.notebook_id || null,
-          academic_weight: Number(todoForm.academic_weight),
-          estimated_effort: Number(todoForm.estimated_effort),
-          reminder_at: toIsoOrNull(todoForm.reminder_at) || toIsoOrNull(getDefaultReminderAt(todoForm.deadline)),
-        }),
+      () => createTodo({
+        title: todoForm.title,
+        deadline: todoForm.deadline,
+        folder_id: todoForm.folder_id || null,
+        notebook_id: todoForm.notebook_id || null,
+        academic_weight: Number(todoForm.academic_weight),
+        estimated_effort: Number(todoForm.estimated_effort),
+        reminder_at: toIsoOrNull(todoForm.reminder_at) || toIsoOrNull(getDefaultReminderAt(todoForm.deadline)),
       }),
       'Todo created.',
       () => {
@@ -248,7 +251,7 @@ export function useDashboard(auth) {
   }, [closeModal, runMutation, todoForm])
 
   const completeTodo = useCallback((todoId) => runMutation(
-    () => apiRequest(`/todos/${todoId}/complete`, { method: 'PATCH' }),
+    () => completeTodoRequest(todoId),
     'Todo completed.',
   ), [runMutation])
 
@@ -256,7 +259,7 @@ export function useDashboard(auth) {
     if (!window.confirm('Are you sure you want to delete this task?')) return undefined
 
     return runMutation(
-      () => apiRequest(`/todos/${todoId}`, { method: 'DELETE' }),
+      () => deleteTodoRequest(todoId),
       'Todo deleted.',
     )
   }, [runMutation])
@@ -265,7 +268,7 @@ export function useDashboard(auth) {
     if (!window.confirm('Are you sure you want to delete this notebook?')) return undefined
 
     return runMutation(
-      () => apiRequest(`/notebooks/${notebookId}`, { method: 'DELETE' }),
+      () => deleteNotebookRequest(notebookId),
       'Notebook deleted.',
     )
   }, [runMutation])

@@ -1,8 +1,15 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
+import { useAuth } from '../../app/providers/AuthContext'
 import FocusSummaryModal from '../dashboard/components/FocusSummaryModal'
-import { apiRequest } from '../../lib/api'
-import { useAuth } from '../../lib/AuthContext'
+import {
+  completeFocusTodo,
+  endFocusSession,
+  getFocusNotes,
+  getFocusResources,
+  getFocusSessions,
+  startFocusSession,
+} from './focus.api'
 import FocusSessionOverlay from './FocusSessionOverlay'
 import FocusTimerWidget from './FocusTimerWidget'
 
@@ -84,9 +91,9 @@ export function FocusSessionProvider({ children }) {
     setIsLoadingFocus(true)
     try {
       const [sessionsData, notesData, resourcesData] = await Promise.all([
-        apiRequest('/focus-sessions'),
-        apiRequest('/notes'),
-        apiRequest('/resources'),
+        getFocusSessions(),
+        getFocusNotes(),
+        getFocusResources(),
       ])
       const nextActiveSession = (sessionsData.sessions || []).find((session) => session.is_completed === 0) || null
 
@@ -154,10 +161,7 @@ export function FocusSessionProvider({ children }) {
     setFocusError('')
     setLastFocusSummary(null)
     try {
-      await apiRequest('/focus-sessions', {
-        method: 'POST',
-        body: JSON.stringify({ duration_minutes: 50, todo_ids: normalizedTodoIds }),
-      })
+      await startFocusSession({ duration_minutes: 50, todo_ids: normalizedTodoIds })
       await refreshFocus()
       setIsOverlayOpen(true)
     } catch (err) {
@@ -168,7 +172,7 @@ export function FocusSessionProvider({ children }) {
   const completeTodo = useCallback(async (todoId) => {
     setFocusError('')
     try {
-      await apiRequest(`/todos/${todoId}/complete`, { method: 'PATCH' })
+      await completeFocusTodo(todoId)
       await refreshFocus()
     } catch (err) {
       setFocusError(err.message)
@@ -180,7 +184,7 @@ export function FocusSessionProvider({ children }) {
 
     setFocusError('')
     try {
-      const response = await apiRequest(`/focus-sessions/${sessionId}/end`, { method: 'PATCH' })
+      const response = await endFocusSession(sessionId)
       setLastFocusSummary(response.summary || null)
       setIsOverlayOpen(false)
       await refreshFocus()

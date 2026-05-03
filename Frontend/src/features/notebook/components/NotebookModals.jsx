@@ -1,4 +1,4 @@
-import Modal from '../../../components/ui/Modal'
+import Modal from '../../../shared/components/ui/Modal'
 import { NOTEBOOK_MODAL } from '../hooks/useNotebook'
 
 function NotebookModals({

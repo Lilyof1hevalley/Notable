@@ -1,5 +1,5 @@
-import ProtectedTopbar from '../../../components/ui/ProtectedTopbar'
-import SearchInput from '../../../components/ui/SearchInput'
+import ProtectedTopbar from '../../../shared/components/ui/ProtectedTopbar'
+import SearchInput from '../../../shared/components/ui/SearchInput'
 import { NOTEBOOK_MODAL } from '../hooks/useNotebook'
 
 function NotebookTopbar({

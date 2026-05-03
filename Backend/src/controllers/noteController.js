@@ -1,4 +1,4 @@
-const Note = require('../models/noteModel');
+const Note = require('../repositories/noteRepository');
 
 class NoteController {
   // Get all notes for the logged-in user

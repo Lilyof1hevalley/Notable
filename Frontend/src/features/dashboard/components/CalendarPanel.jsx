@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import Modal from '../../../components/ui/Modal'
+import Modal from '../../../shared/components/ui/Modal'
 import { DASHBOARD_MODAL } from '../hooks/useDashboard'
 
 function CalendarEmptyState() {

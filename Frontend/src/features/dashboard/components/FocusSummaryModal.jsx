@@ -1,4 +1,4 @@
-import Modal from '../../../components/ui/Modal'
+import Modal from '../../../shared/components/ui/Modal'
 import { formatTime } from '../../../utils/date'
 import { formatBhpsScore, getFocusCue, getPriorityMeta } from '../../../utils/priority'
 

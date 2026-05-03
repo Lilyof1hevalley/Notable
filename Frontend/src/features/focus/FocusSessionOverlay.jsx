@@ -1,4 +1,4 @@
-import Modal from '../../components/ui/Modal'
+import Modal from '../../shared/components/ui/Modal'
 import { formatTime } from '../../utils/date'
 import { formatBhpsScore, getFocusCue, getLoadMeta, getPriorityMeta } from '../../utils/priority'
 import { formatCountdown, useFocusSession } from './FocusSessionContext'

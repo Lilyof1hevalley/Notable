@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
-import FolderCard from '../../../components/FolderCard'
-import NotebookCard from '../../../components/NotebookCard'
+import FolderCard from '../../workspace/components/FolderCard'
+import NotebookCard from '../../workspace/components/NotebookCard'
 import { DASHBOARD_MODAL } from '../hooks/useDashboard'
 
 function WorkspaceGrid({ onDeleteNotebook, onOpenModal, workspaceItems }) {

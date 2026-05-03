@@ -1,5 +1,5 @@
-const Chapter = require('../models/chapterModel');
-const Notebook = require('../models/notebookModel');
+const Chapter = require('../repositories/chapterRepository');
+const Notebook = require('../repositories/notebookRepository');
 
 class ChapterController {
   // Get all chapters in a notebook

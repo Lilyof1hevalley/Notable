@@ -1,4 +1,4 @@
-const Notebook = require('../models/notebookModel');
+const Notebook = require('../repositories/notebookRepository');
 
 class NotebookController {
   // Get all notebooks for the logged-in user

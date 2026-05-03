@@ -1,6 +1,6 @@
-const Resource = require('../models/resourceModel');
-const Notebook = require('../models/notebookModel');
-const Chapter = require('../models/chapterModel');
+const Resource = require('../repositories/resourceRepository');
+const Notebook = require('../repositories/notebookRepository');
+const Chapter = require('../repositories/chapterRepository');
 const path = require('path');
 const fs = require('fs');
 

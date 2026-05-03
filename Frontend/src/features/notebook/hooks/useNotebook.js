@@ -1,6 +1,19 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { apiRequest, downloadResource } from '../../../lib/api'
 import { formatDateGroup } from '../../../utils/date'
+import {
+  completeTodo as completeTodoRequest,
+  createChapter,
+  createNote,
+  deleteChapter as deleteChapterRequest,
+  deleteTodo as deleteTodoRequest,
+  downloadNotebookResource,
+  getNotebookChapters,
+  getNotebookResources,
+  getNotebooks,
+  getNotes,
+  getTodos,
+  uploadResource,
+} from '../notebook.api'
 
 const EMPTY_CHAPTER_FORM = { title: '', content: '' }
 const EMPTY_NOTE_FORM = { title: '', content: '', todo_id: '' }
@@ -40,11 +53,11 @@ export function useNotebook({ id, onMissingNotebook }) {
     setError('')
     try {
       const [notebooksData, chaptersData, resourcesData, todosData, notesData] = await Promise.all([
-        apiRequest('/notebooks'),
-        apiRequest(`/notebooks/${id}/chapters`),
-        apiRequest(`/resources/notebook/${id}`),
-        apiRequest('/todos?limit=100'),
-        apiRequest('/notes'),
+        getNotebooks(),
+        getNotebookChapters(id),
+        getNotebookResources(id),
+        getTodos('?limit=100'),
+        getNotes(),
       ])
       const currentNotebook = notebooksData.notebooks.find((item) => String(item.id) === String(id))
       if (!currentNotebook) {
@@ -106,10 +119,7 @@ export function useNotebook({ id, onMissingNotebook }) {
   const submitChapter = useCallback((event) => {
     event.preventDefault()
     return runMutation(
-      () => apiRequest(`/notebooks/${id}/chapters`, {
-        method: 'POST',
-        body: JSON.stringify(chapterForm),
-      }),
+      () => createChapter(id, chapterForm),
       'Chapter created.',
       () => {
         setChapterForm(EMPTY_CHAPTER_FORM)
@@ -121,13 +131,10 @@ export function useNotebook({ id, onMissingNotebook }) {
   const submitNote = useCallback((event) => {
     event.preventDefault()
     return runMutation(
-      () => apiRequest('/notes', {
-        method: 'POST',
-        body: JSON.stringify({
-          title: noteForm.title,
-          content: noteForm.content,
-          todo_id: noteForm.todo_id || null,
-        }),
+      () => createNote({
+        title: noteForm.title,
+        content: noteForm.content,
+        todo_id: noteForm.todo_id || null,
       }),
       'Note created.',
       () => {
@@ -152,10 +159,7 @@ export function useNotebook({ id, onMissingNotebook }) {
     }
 
     return runMutation(
-      () => apiRequest('/resources', {
-        method: 'POST',
-        body: formData,
-      }),
+      () => uploadResource(formData),
       'Resource uploaded.',
       () => {
         setResourceForm(EMPTY_RESOURCE_FORM)
@@ -167,7 +171,7 @@ export function useNotebook({ id, onMissingNotebook }) {
   const download = useCallback(async (resource) => {
     setError('')
     try {
-      await downloadResource(resource.id, resource.original_name)
+      await downloadNotebookResource(resource.id, resource.original_name)
     } catch (err) {
       setError(err.message)
     }
@@ -177,7 +181,7 @@ export function useNotebook({ id, onMissingNotebook }) {
     if (!window.confirm('Are you sure you want to delete this chapter?')) return undefined
 
     return runMutation(
-      () => apiRequest(`/chapters/${chapterId}`, { method: 'DELETE' }),
+      () => deleteChapterRequest(chapterId),
       'Chapter deleted.',
     )
   }, [runMutation])
@@ -186,13 +190,13 @@ export function useNotebook({ id, onMissingNotebook }) {
     if (!window.confirm('Are you sure you want to delete this task?')) return undefined
 
     return runMutation(
-      () => apiRequest(`/todos/${todoId}`, { method: 'DELETE' }),
+      () => deleteTodoRequest(todoId),
       'Todo deleted.',
     )
   }, [runMutation])
 
   const completeTodo = useCallback((todoId) => runMutation(
-    () => apiRequest(`/todos/${todoId}/complete`, { method: 'PATCH' }),
+    () => completeTodoRequest(todoId),
     'Todo completed.',
   ), [runMutation])
 

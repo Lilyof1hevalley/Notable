@@ -2,7 +2,7 @@ const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
-const db = require('./database/db');
+const db = require('./src/db');
 
 const DEMO_USER = {
   id: 'demo-user-nadira',

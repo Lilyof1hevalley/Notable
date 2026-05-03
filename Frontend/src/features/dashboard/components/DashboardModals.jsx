@@ -1,4 +1,4 @@
-import Modal from '../../../components/ui/Modal'
+import Modal from '../../../shared/components/ui/Modal'
 import { getDefaultReminderAt } from '../../../utils/reminders'
 import { DASHBOARD_MODAL } from '../hooks/useDashboard'
 

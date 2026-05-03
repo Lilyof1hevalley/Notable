@@ -1,7 +1,7 @@
-import ActionPopover from '../../../components/ui/ActionPopover'
-import { FilterIcon, SortIcon } from '../../../components/ui/Icons'
-import ProtectedTopbar from '../../../components/ui/ProtectedTopbar'
-import SearchInput from '../../../components/ui/SearchInput'
+import ActionPopover from '../../../shared/components/ui/ActionPopover'
+import { FilterIcon, SortIcon } from '../../../shared/components/ui/Icons'
+import ProtectedTopbar from '../../../shared/components/ui/ProtectedTopbar'
+import SearchInput from '../../../shared/components/ui/SearchInput'
 
 const typeFilterLabels = {
   all: 'All',
