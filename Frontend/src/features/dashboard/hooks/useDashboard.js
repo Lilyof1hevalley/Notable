@@ -55,7 +55,6 @@ export function useDashboard(auth) {
   const [notebookTitle, setNotebookTitle] = useState('')
   const [selectedFolder, setSelectedFolder] = useState('')
   const [todoForm, setTodoForm] = useState(EMPTY_TODO)
-  const [search, setSearch] = useState('')
   const [typeFilter, setTypeFilter] = useState('all')
   const [statusFilter, setStatusFilter] = useState('all')
   const [sortMode, setSortMode] = useState('newest')
@@ -135,7 +134,6 @@ export function useDashboard(auth) {
   }, [data.notebooks, filteredTodosByStatus])
 
   const visibleWorkspaceItems = useMemo(() => {
-    const query = search.trim().toLowerCase()
     const folderItems = data.folders.map((folder) => ({
       ...folder,
       type: 'folder',
@@ -149,7 +147,6 @@ export function useDashboard(auth) {
 
     return [...folderItems, ...notebookItems]
       .filter((item) => typeFilter === 'all' || item.type === typeFilter)
-      .filter((item) => !query || item.title.toLowerCase().includes(query))
       .sort((first, second) => {
         if (sortMode === 'az') return first.title.localeCompare(second.title)
         if (sortMode === 'mostTodos') return second.taskCount - first.taskCount || first.title.localeCompare(second.title)
@@ -159,7 +156,6 @@ export function useDashboard(auth) {
   }, [
     data.folders,
     data.notebooks,
-    search,
     sortMode,
     todoCountsByFolderId,
     todoCountsByNotebookId,
@@ -167,11 +163,8 @@ export function useDashboard(auth) {
   ])
 
   const visibleTimelineTodos = useMemo(() => {
-    const query = search.trim().toLowerCase()
-    return filteredTodosByStatus.filter((todo) => (
-      !query || todo.title.toLowerCase().includes(query)
-    ))
-  }, [filteredTodosByStatus, search])
+    return filteredTodosByStatus
+  }, [filteredTodosByStatus])
 
   const reminderTodos = useMemo(() => {
     const now = new Date()
@@ -287,10 +280,8 @@ export function useDashboard(auth) {
     notebookTitle,
     openModal,
     selectedFolder,
-    search,
     setFolderTitle,
     setNotebookTitle,
-    setSearch,
     setSelectedFolder,
     setSortMode,
     setStatusFilter,

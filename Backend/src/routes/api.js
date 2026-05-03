@@ -11,6 +11,7 @@ const notebookRoutes = require('./modules/notebooks.routes');
 const chapterRoutes = require('./modules/chapters.routes');
 const resourceRoutes = require('./modules/resources.routes');
 const calendarRoutes = require('./modules/calendar.routes');
+const searchRoutes = require('./modules/search.routes');
 
 router.use('/auth', authRoutes);
 router.use('/user', settingsRoutes);
@@ -22,5 +23,6 @@ router.use('/notebooks', notebookRoutes);
 router.use('/', chapterRoutes);
 router.use('/resources', resourceRoutes);
 router.use('/calendar', calendarRoutes);
+router.use('/search', searchRoutes);
 
 module.exports = router;

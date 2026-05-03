@@ -28,11 +28,9 @@ function Dashboard() {
     notebookTitle,
     openModal,
     selectedFolder,
-    search,
     reminderTodos,
     setFolderTitle,
     setNotebookTitle,
-    setSearch,
     setSelectedFolder,
     setSortMode,
     setStatusFilter,
@@ -52,12 +50,10 @@ function Dashboard() {
   return (
     <main className="app-shell dashboard-page">
       <DashboardHeader
-        onSearchChange={setSearch}
         onSortModeChange={setSortMode}
         onStatusFilterChange={setStatusFilter}
         onTypeFilterChange={setTypeFilter}
         profile={data.profile}
-        search={search}
         sortMode={sortMode}
         statusFilter={statusFilter}
         typeFilter={typeFilter}

@@ -35,6 +35,7 @@ After Phase 2, route pages live with their feature owner:
 - `features/notebook`: Notebook route, hook, and notebook-owned panels/modals.
 - `features/chapter`: Chapter detail/edit route.
 - `features/settings`: Settings route.
+- `features/search`: Global command-search UI and search API module.
 - `shared/components/ui`: Canonical shared UI primitive location.
 - `shared/api`: Canonical API/session transport location.
 - `features/*/*.api.js`: Feature-owned endpoint wrappers with intent-named functions.
@@ -50,6 +51,7 @@ After Phase 7, raw endpoint strings should stay in feature API modules:
 - `Frontend/src/features/workspace/workspace.api.js`
 - `Frontend/src/features/notebook/notebook.api.js`
 - `Frontend/src/features/focus/focus.api.js`
+- `Frontend/src/features/search/search.api.js`
 - `Frontend/src/shared/api/api.js` remains transport/session only.
 - Legacy compatibility imports from `Frontend/src/components/ui` and `Frontend/src/lib` were removed in Phase 8.
 

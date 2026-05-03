@@ -16,6 +16,7 @@ Base path: `/api`
 - `chapters.routes.js`: `/notebooks/:notebookId/chapters`, `/chapters/:id`
 - `resources.routes.js`: `/resources`
 - `calendar.routes.js`: `/calendar`
+- `search.routes.js`: `/search`
 
 ## Middleware
 
@@ -138,6 +139,12 @@ Base path: `/api`
 | GET | `/calendar/callback` | Public callback | none | `GoogleCalendarController.handleCallback` |
 | GET | `/calendar/events` | Protected | `authMiddleware` | `GoogleCalendarController.getEvents` |
 
+## Global Search
+
+| Method | Path | Access | Middleware | Controller |
+| --- | --- | --- | --- | --- |
+| GET | `/search` | Protected | `authMiddleware` | `SearchController.search` |
+
 ## Demo Contract Endpoints
 
 Keep these stable during early refactor phases because the frontend demo depends on them:
@@ -164,3 +171,4 @@ Keep these stable during early refactor phases because the frontend demo depends
 - `/focus-sessions/recommended`
 - `/focus-sessions/:id/end`
 - `/focus-sessions/:id/summary`
+- `/search`

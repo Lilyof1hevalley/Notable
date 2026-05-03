@@ -12,6 +12,8 @@
 
 @import './features/dashboard/dashboard.css';
 
+@import './features/search/search.css';
+
 @import './features/focus/focus.css';
 
 @import './features/notebook/notebook.css';

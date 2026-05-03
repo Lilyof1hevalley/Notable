@@ -11,6 +11,7 @@ const repositories = [
   'noteRepository',
   'resourceRepository',
   'focusSessionRepository',
+  'searchRepository',
 ]
 
 const routeModules = [
@@ -24,6 +25,7 @@ const routeModules = [
   ['chapters', 'chapters.routes'],
   ['resources', 'resources.routes'],
   ['calendar', 'calendar.routes'],
+  ['search', 'search.routes'],
 ]
 
 function routeRows(router) {

@@ -1,7 +1,7 @@
 import ActionPopover from '../../../shared/components/ui/ActionPopover'
 import { FilterIcon, SortIcon } from '../../../shared/components/ui/Icons'
 import ProtectedTopbar from '../../../shared/components/ui/ProtectedTopbar'
-import SearchInput from '../../../shared/components/ui/SearchInput'
+import GlobalSearch from '../../search/GlobalSearch'
 
 const typeFilterLabels = {
   all: 'All',
@@ -23,12 +23,10 @@ const sortLabels = {
 }
 
 function DashboardHeader({
-  onSearchChange,
   onSortModeChange,
   onStatusFilterChange,
   onTypeFilterChange,
   profile,
-  search,
   sortMode,
   statusFilter,
   typeFilter,
@@ -90,13 +88,7 @@ function DashboardHeader({
     <ProtectedTopbar
       actions={(
         <>
-        <SearchInput
-          ariaLabel="Search folders, notebooks, and tasks"
-          className="dashboard-search"
-          onChange={onSearchChange}
-          onClear={() => onSearchChange('')}
-          value={search}
-        />
+        <GlobalSearch className="dashboard-search" />
         <ActionPopover
           ariaLabel="Dashboard filters"
           icon={<FilterIcon className="ui-icon" />}
