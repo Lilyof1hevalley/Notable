@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
 import FeedbackBanner from '../components/ui/FeedbackBanner'
+import ProtectedTopbar from '../components/ui/ProtectedTopbar'
 import { apiRequest } from '../lib/api'
 import { useAuth } from '../lib/AuthContext'
 
@@ -12,7 +12,6 @@ const emptyPasswordForm = {
 
 function Settings() {
   const auth = useAuth()
-  const navigate = useNavigate()
   const [profileForm, setProfileForm] = useState({ name: '', display_name: '', gcal_url: '' })
   const [passwordForm, setPasswordForm] = useState(emptyPasswordForm)
   const [message, setMessage] = useState('')
@@ -87,20 +86,15 @@ function Settings() {
     }
   }
 
-  function logout() {
-    auth.logout()
-    navigate('/', { replace: true })
-  }
-
   return (
     <main className="app-shell settings-page">
-      <header className="topbar settings-topbar">
-        <div>
-          <Link to="/dashboard" className="back-link">Back to dashboard</Link>
-          <h1>Account Settings</h1>
-        </div>
-        <button className="ghost-button" onClick={logout} type="button">Logout</button>
-      </header>
+      <ProtectedTopbar
+        backLabel="Dashboard"
+        backTo="/dashboard"
+        className="settings-topbar"
+        showSettings={false}
+        title="Account Settings"
+      />
 
       <FeedbackBanner error={error} message={message} />
 

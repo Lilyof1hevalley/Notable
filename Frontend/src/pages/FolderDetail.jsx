@@ -2,6 +2,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import NotebookCard from '../components/NotebookCard'
 import FeedbackBanner from '../components/ui/FeedbackBanner'
+import Modal from '../components/ui/Modal'
+import ProtectedTopbar from '../components/ui/ProtectedTopbar'
 import { apiRequest } from '../lib/api'
 import { formatDateGroup, formatTime } from '../utils/date'
 
@@ -20,7 +22,10 @@ function FolderDetail() {
   const [folder, setFolder] = useState(null)
   const [notebooks, setNotebooks] = useState([])
   const [todos, setTodos] = useState([])
+  const [notebookTitle, setNotebookTitle] = useState('')
+  const [isCreateNotebookOpen, setIsCreateNotebookOpen] = useState(false)
   const [error, setError] = useState('')
+  const [message, setMessage] = useState('')
   const [isLoading, setIsLoading] = useState(true)
 
   const loadFolder = useCallback(async () => {
@@ -78,16 +83,44 @@ function FolderDetail() {
   const groupedTodos = useMemo(() => groupTodosByDate(todos), [todos])
   const todoGroups = Object.entries(groupedTodos)
 
+  async function submitNotebook(event) {
+    event.preventDefault()
+    setError('')
+    setMessage('')
+
+    try {
+      await apiRequest('/notebooks', {
+        method: 'POST',
+        body: JSON.stringify({ title: notebookTitle, folder_id: id }),
+      })
+      setNotebookTitle('')
+      setIsCreateNotebookOpen(false)
+      setMessage('Notebook created.')
+      await loadFolder()
+    } catch (err) {
+      setError(err.message)
+    }
+  }
+
   return (
     <main className="folder-detail-page">
-      <header className="notebook-topbar folder-detail-topbar">
-        <div className="notebook-topbar__title">
-          <Link className="back-link" to="/dashboard">Back to dashboard</Link>
-          <h1>{folder?.title || 'Folder'}</h1>
-        </div>
-      </header>
+      <ProtectedTopbar
+        actions={(
+          <button
+            className="dashboard-tool-button dashboard-tool-button--text"
+            onClick={() => setIsCreateNotebookOpen(true)}
+            type="button"
+          >
+            Add Notebook
+          </button>
+        )}
+        backLabel="Dashboard"
+        backTo="/dashboard"
+        className="folder-detail-topbar"
+        title={folder?.title || 'Folder'}
+      />
 
-      <FeedbackBanner error={error} />
+      <FeedbackBanner error={error} message={message} />
 
       {isLoading ? (
         <div className="notebook-loading">Loading folder...</div>
@@ -96,11 +129,25 @@ function FolderDetail() {
           <section>
             <div className="folder-detail-section-header">
               <h2>Notebooks</h2>
-              <span>{notebooks.length} items</span>
+              <div className="inline-actions">
+                <span>{notebooks.length} items</span>
+                <button
+                  className="ghost-button ghost-button--small"
+                  onClick={() => setIsCreateNotebookOpen(true)}
+                  type="button"
+                >
+                  Add Notebook
+                </button>
+              </div>
             </div>
             <div className="folder-notebook-grid">
               {notebooks.map((notebook) => (
-                <Link className="workspace-item__link" key={notebook.id} to={`/notebook/${notebook.id}`}>
+                <Link
+                  className="workspace-item__link"
+                  key={notebook.id}
+                  state={{ fromFolder: { id, title: folder.title } }}
+                  to={`/notebook/${notebook.id}`}
+                >
                   <NotebookCard
                     taskCount={todoCountsByNotebookId.get(String(notebook.id)) || 0}
                     title={notebook.title}
@@ -141,6 +188,29 @@ function FolderDetail() {
           </aside>
         </div>
       )}
+
+      <Modal
+        isOpen={isCreateNotebookOpen}
+        onClose={() => setIsCreateNotebookOpen(false)}
+        size="dialog"
+        title="Create Notebook"
+      >
+        <form className="stack modal-form" onSubmit={submitNotebook}>
+          <label className="auth-form-label">
+            Notebook title
+            <input
+              className="auth-form-input"
+              onChange={(event) => setNotebookTitle(event.target.value)}
+              required
+              value={notebookTitle}
+            />
+          </label>
+          <p className="muted folder-detail-modal-note">
+            This notebook will be added to {folder?.title || 'this folder'}.
+          </p>
+          <button className="auth-submit-btn" type="submit">Create Notebook</button>
+        </form>
+      </Modal>
     </main>
   )
 }

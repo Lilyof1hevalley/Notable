@@ -1,18 +1,21 @@
-import { Link } from 'react-router-dom'
-import { BackIcon, FilterIcon, SortIcon } from '../../../components/ui/Icons'
+import ProtectedTopbar from '../../../components/ui/ProtectedTopbar'
 import SearchInput from '../../../components/ui/SearchInput'
 import { NOTEBOOK_MODAL } from '../hooks/useNotebook'
 
-function NotebookTopbar({ notebook, onOpenModal, onSearchChange, onSearchClear, search }) {
+function NotebookTopbar({
+  backLabel,
+  backState,
+  backTo,
+  notebook,
+  onOpenModal,
+  onSearchChange,
+  onSearchClear,
+  search,
+}) {
   return (
-    <header className="notebook-topbar">
-      <div className="notebook-topbar__title">
-        <Link aria-label="Back to dashboard" to="/dashboard" className="notebook-topbar__back">
-          <BackIcon className="ui-icon" />
-        </Link>
-        <h1>{notebook?.title || 'Notebook Title'}</h1>
-      </div>
-      <div className="notebook-topbar__actions">
+    <ProtectedTopbar
+      actions={(
+        <>
         <SearchInput
           ariaLabel="Search chapters"
           className="notebook-search"
@@ -21,31 +24,20 @@ function NotebookTopbar({ notebook, onOpenModal, onSearchChange, onSearchClear, 
           value={search}
         />
         <button
-          aria-label="Filter chapters is not available yet"
-          className="notebook-tool-button"
-          disabled
-          type="button"
-        >
-          <FilterIcon className="ui-icon" />
-        </button>
-        <button
-          aria-label="Sort chapters is not available yet"
-          className="notebook-tool-button"
-          disabled
-          type="button"
-        >
-          <SortIcon className="ui-icon" />
-        </button>
-        <button
-          aria-label="Add chapter"
-          className="notebook-tool-button notebook-tool-button--plus"
+          className="dashboard-tool-button dashboard-tool-button--text"
           onClick={() => onOpenModal(NOTEBOOK_MODAL.CHAPTER)}
           type="button"
         >
-          +
+          Add Chapter
         </button>
-      </div>
-    </header>
+        </>
+      )}
+      backLabel={backLabel}
+      backState={backState}
+      backTo={backTo}
+      className="notebook-topbar"
+      title={notebook?.title || 'Notebook Title'}
+    />
   )
 }
 

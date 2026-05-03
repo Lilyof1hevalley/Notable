@@ -1,0 +1,242 @@
+/* eslint-disable react-refresh/only-export-components */
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
+import FocusSummaryModal from '../dashboard/components/FocusSummaryModal'
+import { apiRequest } from '../../lib/api'
+import { useAuth } from '../../lib/AuthContext'
+import FocusSessionOverlay from './FocusSessionOverlay'
+import FocusTimerWidget from './FocusTimerWidget'
+
+const FocusSessionContext = createContext(null)
+
+function parseSessionDate(value) {
+  if (!value) return null
+  const normalized = String(value).includes('T') ? value : `${String(value).replace(' ', 'T')}Z`
+  const date = new Date(normalized)
+  return Number.isNaN(date.getTime()) ? null : date
+}
+
+export function formatCountdown(totalSeconds) {
+  const safeSeconds = Math.max(0, Number(totalSeconds) || 0)
+  const minutes = Math.floor(safeSeconds / 60)
+  const seconds = safeSeconds % 60
+  return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
+}
+
+function getFocusTiming(session, nowMs) {
+  if (!session) {
+    return {
+      elapsedSeconds: 0,
+      isExpired: false,
+      progress: 0,
+      remainingSeconds: 0,
+      totalSeconds: 0,
+    }
+  }
+
+  const startedAt = parseSessionDate(session.started_at)
+  const totalSeconds = Math.max(60, (Number(session.duration_minutes) || 50) * 60)
+  const elapsedSeconds = startedAt
+    ? Math.max(0, Math.floor((nowMs - startedAt.getTime()) / 1000))
+    : 0
+  const remainingSeconds = Math.max(0, totalSeconds - elapsedSeconds)
+
+  return {
+    elapsedSeconds,
+    isExpired: remainingSeconds === 0,
+    progress: Math.min(1, elapsedSeconds / totalSeconds),
+    remainingSeconds,
+    totalSeconds,
+  }
+}
+
+function getSupportContext(activeSession, notes, resources) {
+  const todos = activeSession?.todos || []
+  const todoIds = new Set(todos.map((todo) => String(todo.id)))
+  const notebookIds = new Set(todos.map((todo) => String(todo.notebook_id)).filter(Boolean))
+
+  return {
+    notes: notes.filter((note) => note.todo_id && todoIds.has(String(note.todo_id))).slice(0, 4),
+    resources: resources.filter((resource) => (
+      resource.notebook_id && notebookIds.has(String(resource.notebook_id))
+    )).slice(0, 4),
+  }
+}
+
+export function FocusSessionProvider({ children }) {
+  const auth = useAuth()
+  const [activeSession, setActiveSession] = useState(null)
+  const [supportContext, setSupportContext] = useState({ notes: [], resources: [] })
+  const [lastFocusSummary, setLastFocusSummary] = useState(null)
+  const [isOverlayOpen, setIsOverlayOpen] = useState(false)
+  const [isLoadingFocus, setIsLoadingFocus] = useState(false)
+  const [focusError, setFocusError] = useState('')
+  const [nowMs, setNowMs] = useState(() => Date.now())
+
+  const refreshFocus = useCallback(async () => {
+    if (!auth.isAuthenticated) {
+      setActiveSession(null)
+      setSupportContext({ notes: [], resources: [] })
+      setIsOverlayOpen(false)
+      return null
+    }
+
+    setFocusError('')
+    setIsLoadingFocus(true)
+    try {
+      const [sessionsData, notesData, resourcesData] = await Promise.all([
+        apiRequest('/focus-sessions'),
+        apiRequest('/notes'),
+        apiRequest('/resources'),
+      ])
+      const nextActiveSession = (sessionsData.sessions || []).find((session) => session.is_completed === 0) || null
+
+      setActiveSession(nextActiveSession)
+      setSupportContext(getSupportContext(
+        nextActiveSession,
+        notesData.notes || [],
+        resourcesData.resources || [],
+      ))
+
+      if (!nextActiveSession) {
+        setIsOverlayOpen(false)
+      }
+
+      return nextActiveSession
+    } catch (err) {
+      setFocusError(err.message)
+      return null
+    } finally {
+      setIsLoadingFocus(false)
+    }
+  }, [auth.isAuthenticated])
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      refreshFocus()
+    }, 0)
+
+    return () => window.clearTimeout(timer)
+  }, [refreshFocus])
+
+  useEffect(() => {
+    if (!auth.isAuthenticated) return undefined
+
+    function handleVisibilityChange() {
+      setNowMs(Date.now())
+      if (document.visibilityState === 'visible') {
+        refreshFocus()
+      }
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange)
+  }, [auth.isAuthenticated, refreshFocus])
+
+  useEffect(() => {
+    if (!auth.isAuthenticated || !activeSession) return undefined
+
+    const timer = window.setInterval(() => {
+      setNowMs(Date.now())
+    }, 1000)
+
+    return () => window.clearInterval(timer)
+  }, [activeSession, auth.isAuthenticated])
+
+  const timing = useMemo(() => getFocusTiming(activeSession, nowMs), [activeSession, nowMs])
+
+  const startFocus = useCallback(async (todoIds) => {
+    const normalizedTodoIds = Array.isArray(todoIds)
+      ? todoIds.filter(Boolean)
+      : todoIds
+        ? [todoIds]
+        : []
+
+    setFocusError('')
+    setLastFocusSummary(null)
+    try {
+      await apiRequest('/focus-sessions', {
+        method: 'POST',
+        body: JSON.stringify({ duration_minutes: 50, todo_ids: normalizedTodoIds }),
+      })
+      await refreshFocus()
+      setIsOverlayOpen(true)
+    } catch (err) {
+      setFocusError(err.message)
+    }
+  }, [refreshFocus])
+
+  const completeTodo = useCallback(async (todoId) => {
+    setFocusError('')
+    try {
+      await apiRequest(`/todos/${todoId}/complete`, { method: 'PATCH' })
+      await refreshFocus()
+    } catch (err) {
+      setFocusError(err.message)
+    }
+  }, [refreshFocus])
+
+  const endFocus = useCallback(async (sessionId = activeSession?.id) => {
+    if (!sessionId) return
+
+    setFocusError('')
+    try {
+      const response = await apiRequest(`/focus-sessions/${sessionId}/end`, { method: 'PATCH' })
+      setLastFocusSummary(response.summary || null)
+      setIsOverlayOpen(false)
+      await refreshFocus()
+    } catch (err) {
+      setFocusError(err.message)
+    }
+  }, [activeSession?.id, refreshFocus])
+
+  const value = useMemo(() => ({
+    ...timing,
+    activeSession,
+    clearFocusSummary: () => setLastFocusSummary(null),
+    closeOverlay: () => setIsOverlayOpen(false),
+    completeTodo,
+    endFocus,
+    focusError,
+    isLoadingFocus,
+    isOverlayOpen,
+    lastFocusSummary,
+    openOverlay: () => setIsOverlayOpen(true),
+    refreshFocus,
+    startFocus,
+    supportContext,
+  }), [
+    activeSession,
+    completeTodo,
+    endFocus,
+    focusError,
+    isLoadingFocus,
+    isOverlayOpen,
+    lastFocusSummary,
+    refreshFocus,
+    startFocus,
+    supportContext,
+    timing,
+  ])
+
+  return (
+    <FocusSessionContext.Provider value={value}>
+      {children}
+      {auth.isAuthenticated && activeSession && <FocusTimerWidget />}
+      {auth.isAuthenticated && <FocusSessionOverlay />}
+      {auth.isAuthenticated && (
+        <FocusSummaryModal
+          onClose={() => setLastFocusSummary(null)}
+          summary={lastFocusSummary}
+        />
+      )}
+    </FocusSessionContext.Provider>
+  )
+}
+
+export function useFocusSession() {
+  const context = useContext(FocusSessionContext)
+  if (!context) {
+    throw new Error('useFocusSession must be used inside FocusSessionProvider')
+  }
+  return context
+}

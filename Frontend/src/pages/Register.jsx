@@ -108,13 +108,6 @@ function Register() {
             </button>
           </form>
           
-          <div className="auth-divider">Or</div>
-          
-          <button type="button" className="google-btn">
-            <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" />
-            Continue with Google
-          </button>
-          
           <div className="auth-footer-text">
             Already have an account? <Link to="/">Login</Link>
           </div>

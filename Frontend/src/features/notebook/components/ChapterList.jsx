@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import { formatShortDate } from '../../../utils/date'
 
-function ChapterList({ chapters, notebookId, onDeleteChapter }) {
+function ChapterList({ chapters, navigationState, notebookId, onDeleteChapter }) {
   if (chapters.length === 0) {
     return <p className="muted">No chapters found.</p>
   }
@@ -11,6 +11,7 @@ function ChapterList({ chapters, notebookId, onDeleteChapter }) {
       <div className="chapter-card-new__header">
         <Link
           className="chapter-card-new__link"
+          state={navigationState}
           to={`/notebook/${notebookId}/chapter/${chapter.id}/edit`}
         >
           <h3>{chapter.title}</h3>
@@ -19,6 +20,7 @@ function ChapterList({ chapters, notebookId, onDeleteChapter }) {
           <Link
             className="chapter-action"
             aria-label={`Edit ${chapter.title}`}
+            state={navigationState}
             to={`/notebook/${notebookId}/chapter/${chapter.id}/edit`}
           >
             Edit
@@ -35,6 +37,7 @@ function ChapterList({ chapters, notebookId, onDeleteChapter }) {
       </div>
       <Link
         className="chapter-card-new__body-link"
+        state={navigationState}
         to={`/notebook/${notebookId}/chapter/${chapter.id}/edit`}
       >
         <p>{chapter.content || 'No content yet.'}</p>

@@ -26,7 +26,6 @@ function getDefaultState(user) {
     profile: user,
     recommendedBlock: null,
     recommendedTodos: [],
-    sessions: [],
     todos: [],
   }
 }
@@ -49,8 +48,6 @@ export function useDashboard(auth) {
   const [statusFilter, setStatusFilter] = useState('all')
   const [sortMode, setSortMode] = useState('newest')
   const [activeModal, setActiveModal] = useState(null)
-  const [isTimerMinimized, setIsTimerMinimized] = useState(false)
-  const [lastFocusSummary, setLastFocusSummary] = useState(null)
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(true)
@@ -64,14 +61,12 @@ export function useDashboard(auth) {
         notebooksData,
         todosData,
         recommendedData,
-        sessionsData,
       ] = await Promise.all([
         apiRequest('/user/profile'),
         apiRequest('/folders'),
         apiRequest('/notebooks'),
         apiRequest('/todos?limit=100'),
         apiRequest('/focus-sessions/recommended'),
-        apiRequest('/focus-sessions'),
       ])
 
       updateUser(profileData.user)
@@ -81,7 +76,6 @@ export function useDashboard(auth) {
         profile: profileData.user,
         recommendedBlock: recommendedData.recommended_block || null,
         recommendedTodos: recommendedData.recommended_todos || [],
-        sessions: sessionsData.sessions || [],
         todos: todosData.todos || [],
       })
     } catch (err) {
@@ -98,11 +92,6 @@ export function useDashboard(auth) {
 
     return () => window.clearTimeout(timer)
   }, [loadDashboard])
-
-  const activeSession = useMemo(
-    () => data.sessions.find((session) => session.is_completed === 0),
-    [data.sessions],
-  )
 
   const filteredTodosByStatus = useMemo(
     () => data.todos.filter((todo) => todoMatchesStatus(todo, statusFilter)),
@@ -202,7 +191,6 @@ export function useDashboard(auth) {
   }, [loadDashboard])
 
   const closeModal = useCallback(() => setActiveModal(null), [])
-  const clearFocusSummary = useCallback(() => setLastFocusSummary(null), [])
   const openModal = useCallback((modal) => setActiveModal(modal), [])
 
   const submitFolder = useCallback((event) => {
@@ -282,60 +270,22 @@ export function useDashboard(auth) {
     )
   }, [runMutation])
 
-  const startFocus = useCallback((todoIds) => {
-    const normalizedTodoIds = Array.isArray(todoIds)
-      ? todoIds.filter(Boolean)
-      : todoIds
-        ? [todoIds]
-        : []
-
-    return runMutation(
-      () => apiRequest('/focus-sessions', {
-        method: 'POST',
-        body: JSON.stringify({ duration_minutes: 50, todo_ids: normalizedTodoIds }),
-      }),
-      'Focus session started.',
-      () => setLastFocusSummary(null),
-    )
-  }, [runMutation])
-
-  const endFocus = useCallback(async (sessionId) => {
-    setError('')
-    setMessage('')
-
-    try {
-      const response = await apiRequest(`/focus-sessions/${sessionId}/end`, { method: 'PATCH' })
-      setIsTimerMinimized(false)
-      setLastFocusSummary(response.summary || null)
-      setMessage('Focus session ended.')
-      await loadDashboard()
-    } catch (err) {
-      setError(err.message)
-    }
-  }, [loadDashboard])
-
   return {
     activeModal,
-    activeSession,
-    clearFocusSummary,
     closeModal,
     completeTodo,
     data,
     deleteNotebook,
     deleteTodo,
-    endFocus,
     error,
     folderTitle,
     isLoading,
-    isTimerMinimized,
-    lastFocusSummary,
     message,
     notebookTitle,
     openModal,
     selectedFolder,
     search,
     setFolderTitle,
-    setIsTimerMinimized,
     setNotebookTitle,
     setSearch,
     setSelectedFolder,
@@ -344,7 +294,6 @@ export function useDashboard(auth) {
     setTodoForm,
     setTypeFilter,
     sortMode,
-    startFocus,
     statusFilter,
     submitFolder,
     submitNotebook,

@@ -1,35 +1,29 @@
-import { useNavigate } from 'react-router-dom'
 import FeedbackBanner from '../components/ui/FeedbackBanner'
 import CalendarPanel from '../features/dashboard/components/CalendarPanel'
 import DashboardHeader from '../features/dashboard/components/DashboardHeader'
 import DashboardModals from '../features/dashboard/components/DashboardModals'
 import FocusPanel from '../features/dashboard/components/FocusPanel'
-import FocusSummaryModal from '../features/dashboard/components/FocusSummaryModal'
 import RemindersPanel from '../features/dashboard/components/RemindersPanel'
 import TimelinePanel from '../features/dashboard/components/TimelinePanel'
 import WorkspaceGrid from '../features/dashboard/components/WorkspaceGrid'
 import { useDashboard } from '../features/dashboard/hooks/useDashboard'
+import { useFocusSession } from '../features/focus/FocusSessionContext'
 import { useAuth } from '../lib/AuthContext'
 
 function Dashboard() {
   const auth = useAuth()
-  const navigate = useNavigate()
+  const focus = useFocusSession()
   const dashboard = useDashboard(auth)
   const {
     activeModal,
-    activeSession,
-    clearFocusSummary,
     closeModal,
     completeTodo,
     data,
     deleteNotebook,
     deleteTodo,
-    endFocus,
     error,
     folderTitle,
     isLoading,
-    isTimerMinimized,
-    lastFocusSummary,
     message,
     notebookTitle,
     openModal,
@@ -37,7 +31,6 @@ function Dashboard() {
     search,
     reminderTodos,
     setFolderTitle,
-    setIsTimerMinimized,
     setNotebookTitle,
     setSearch,
     setSelectedFolder,
@@ -46,7 +39,6 @@ function Dashboard() {
     setTodoForm,
     setTypeFilter,
     sortMode,
-    startFocus,
     statusFilter,
     submitFolder,
     submitNotebook,
@@ -57,15 +49,9 @@ function Dashboard() {
     visibleWorkspaceItems,
   } = dashboard
 
-  function logout() {
-    auth.logout()
-    navigate('/', { replace: true })
-  }
-
   return (
     <main className="app-shell dashboard-page">
       <DashboardHeader
-        onLogout={logout}
         onSearchChange={setSearch}
         onSortModeChange={setSortMode}
         onStatusFilterChange={setStatusFilter}
@@ -102,15 +88,16 @@ function Dashboard() {
               todos={visibleTimelineTodos}
             />
             <FocusPanel
-              activeSession={activeSession}
-              isTimerMinimized={isTimerMinimized}
-              onCompleteTodo={completeTodo}
-              onEndFocus={endFocus}
-              onMinimize={() => setIsTimerMinimized(true)}
-              onRestore={() => setIsTimerMinimized(false)}
-              onStartFocus={startFocus}
+              activeSession={focus.activeSession}
+              isExpired={focus.isExpired}
+              onCompleteTodo={focus.completeTodo}
+              onEndFocus={focus.endFocus}
+              onOpenFocus={focus.openOverlay}
+              onStartFocus={focus.startFocus}
+              progress={focus.progress}
               recommendedBlock={data.recommendedBlock}
               recommendedTodos={data.recommendedTodos}
+              remainingSeconds={focus.remainingSeconds}
             />
           </div>
         </div>
@@ -132,10 +119,6 @@ function Dashboard() {
         onTodoFormChange={setTodoForm}
         selectedFolder={selectedFolder}
         todoForm={todoForm}
-      />
-      <FocusSummaryModal
-        onClose={clearFocusSummary}
-        summary={lastFocusSummary}
       />
     </main>
   )

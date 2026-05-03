@@ -1,12 +1,10 @@
 import { formatTime } from '../../../utils/date'
-import { NOTEBOOK_MODAL } from '../hooks/useNotebook'
 
 function NotebookTimelinePanel({
   groupedTodos,
   notebookTitle,
   onCompleteTodo,
   onDeleteTodo,
-  onOpenModal,
 }) {
   const groups = Object.entries(groupedTodos)
 
@@ -14,14 +12,6 @@ function NotebookTimelinePanel({
     <div className="notebook-panel">
       <div className="notebook-panel-header">
         <h2>Timeline</h2>
-        <button
-          aria-label="Create note"
-          className="plus-btn"
-          onClick={() => onOpenModal(NOTEBOOK_MODAL.NOTE)}
-          type="button"
-        >
-          +
-        </button>
       </div>
 
       {groups.length === 0 ? (

@@ -1,16 +1,18 @@
 import { formatTime } from '../../../utils/date'
 import { formatBhpsScore, getFocusCue, getLoadMeta, getPriorityMeta } from '../../../utils/priority'
+import { formatCountdown } from '../../focus/FocusSessionContext'
 
 function FocusPanel({
   activeSession,
-  isTimerMinimized,
+  isExpired,
   onCompleteTodo,
   onEndFocus,
-  onMinimize,
-  onRestore,
+  onOpenFocus,
   onStartFocus,
+  progress,
   recommendedBlock,
   recommendedTodos,
+  remainingSeconds,
 }) {
   const recommendations = (recommendedTodos || []).slice(0, 3)
   const studyBlock = recommendedBlock || null
@@ -23,19 +25,23 @@ function FocusPanel({
   const startedAt = activeSession
     ? new Date(activeSession.started_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     : null
+  const progressPercent = Math.round((Number(progress) || 0) * 100)
 
   return (
-    <>
-      <aside className="dashboard-panel dashboard-panel--focus">
+    <aside className="dashboard-panel dashboard-panel--focus">
         <div className="dashboard-panel__header">
           <h2>Focus Session</h2>
         </div>
         <div className="dashboard-panel__body focus-panel__body">
           {activeSession ? (
             <div className="focus-panel__content focus-panel__content--recommendations">
-              <div>
-                <strong>{activeSession.duration_minutes} min session</strong>
+              <div className={isExpired ? 'focus-panel-timer is-expired' : 'focus-panel-timer'}>
+                <span>{isExpired ? "Time's up" : 'Active block'}</span>
+                <strong>{formatCountdown(remainingSeconds)}</strong>
                 <p>Started at {startedAt}. Keep this block contained and finish one step at a time.</p>
+                <div className="focus-panel-timer__bar" aria-hidden="true">
+                  <span style={{ width: `${progressPercent}%` }} />
+                </div>
               </div>
               {sessionTodos.length > 0 && (
                 <div className="focus-session-task-list" aria-label="Tasks in this focus session">
@@ -65,11 +71,11 @@ function FocusPanel({
                 </div>
               )}
               <div className="focus-panel__actions">
-                <button onClick={() => onEndFocus(activeSession.id)} type="button">
-                  End Session
+                <button className="ghost-button" onClick={onOpenFocus} type="button">
+                  Open Focus
                 </button>
-                <button className="ghost-button" onClick={onMinimize} type="button">
-                  Minimize
+                <button onClick={() => onEndFocus(activeSession.id)} type="button">
+                  {isExpired ? 'Finish Session' : 'End Session'}
                 </button>
               </div>
             </div>
@@ -165,22 +171,7 @@ function FocusPanel({
             </div>
           )}
         </div>
-      </aside>
-
-      {isTimerMinimized && activeSession && (
-        <div className="floating-timer">
-          <div className="header">
-            <strong>Focus Session</strong>
-            <button className="icon-button" onClick={onRestore} type="button">Open</button>
-          </div>
-          <p>{activeSession.duration_minutes}m session running since {startedAt}.</p>
-          <div className="floating-timer__bar" aria-hidden="true">
-            <span />
-          </div>
-          <button onClick={() => onEndFocus(activeSession.id)} type="button">End Session</button>
-        </div>
-      )}
-    </>
+    </aside>
   )
 }
 

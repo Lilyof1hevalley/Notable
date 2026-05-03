@@ -101,13 +101,6 @@ function Login() {
             </button>
           </form>
           
-          <div className="auth-divider">Or</div>
-          
-          <button type="button" className="google-btn">
-            <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" />
-            Continue with Google
-          </button>
-          
           <div className="auth-footer-text">
             Don't have an account? <Link to="/register">Sign Up</Link>
           </div>

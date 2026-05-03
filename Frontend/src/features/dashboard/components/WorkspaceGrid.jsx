@@ -14,7 +14,11 @@ function WorkspaceGrid({ onDeleteNotebook, onOpenModal, workspaceItems }) {
             </Link>
           ) : (
             <>
-              <Link className="workspace-item__link" to={`/notebook/${item.id}`}>
+              <Link
+                className="workspace-item__link"
+                state={{ fromDashboard: true }}
+                to={`/notebook/${item.id}`}
+              >
                 <NotebookCard title={item.title} taskCount={item.taskCount} />
               </Link>
               <button

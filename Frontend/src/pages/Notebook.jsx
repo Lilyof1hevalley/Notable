@@ -1,5 +1,5 @@
 import { useCallback } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import FeedbackBanner from '../components/ui/FeedbackBanner'
 import ChapterList from '../features/notebook/components/ChapterList'
 import NotebookModals from '../features/notebook/components/NotebookModals'
@@ -11,7 +11,12 @@ import { useNotebook } from '../features/notebook/hooks/useNotebook'
 
 function Notebook() {
   const { id } = useParams()
+  const location = useLocation()
   const navigate = useNavigate()
+  const fromFolder = location.state?.fromFolder || null
+  const backTo = fromFolder?.id ? `/folder/${fromFolder.id}` : '/dashboard'
+  const backLabel = fromFolder?.title || 'Dashboard'
+  const notebookState = fromFolder ? { fromFolder } : { fromDashboard: true }
   const onMissingNotebook = useCallback(() => {
     navigate('/dashboard', { replace: true })
   }, [navigate])
@@ -50,6 +55,9 @@ function Notebook() {
   return (
     <div className="notebook-page">
       <NotebookTopbar
+        backLabel={backLabel}
+        backState={notebookState}
+        backTo={backTo}
         notebook={notebookData}
         onOpenModal={openModal}
         onSearchChange={setSearch}
@@ -69,9 +77,11 @@ function Notebook() {
               notebookTitle={notebookData?.title}
               onCompleteTodo={completeTodo}
               onDeleteTodo={deleteTodo}
+            />
+            <NotesPanel
+              notes={notes}
               onOpenModal={openModal}
             />
-            <NotesPanel notes={notes} />
             <ResourcesPanel
               onDownload={download}
               onOpenModal={openModal}
@@ -82,6 +92,7 @@ function Notebook() {
           <div>
             <ChapterList
               chapters={filteredChapters}
+              navigationState={notebookState}
               notebookId={id}
               onDeleteChapter={deleteChapter}
             />

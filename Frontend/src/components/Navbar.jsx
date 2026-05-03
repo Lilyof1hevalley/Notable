@@ -11,6 +11,7 @@ const styles = {
     width: '100%',
   },
   logo: {
+    display: 'block',
     width: '32px',
     height: '32px',
     borderRadius: '50%',
@@ -33,12 +34,11 @@ const styles = {
 
 function Navbar() {
   return (
-    <nav style={styles.nav}>
-      <div style={styles.logo}></div>
+    <nav aria-label="Authentication" style={styles.nav}>
+      <Link aria-label="Notable login" style={styles.logo} to="/" />
       <div style={styles.links}>
-        <Link to="/" style={styles.link}>Home</Link>
+        <Link to="/" style={styles.link}>Login</Link>
         <Link to="/register" style={styles.link}>Register</Link>
-        <Link to="/dashboard" style={styles.link}>Dashboard</Link>
       </div>
     </nav>
   )

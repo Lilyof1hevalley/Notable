@@ -1,12 +1,16 @@
 import { useEffect, useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { useLocation, useParams } from 'react-router-dom'
 import FeedbackBanner from '../components/ui/FeedbackBanner'
+import ProtectedTopbar from '../components/ui/ProtectedTopbar'
 import { apiRequest, downloadResource } from '../lib/api'
 import { formatShortDate } from '../utils/date'
 
 function EditChapter() {
   const { notebookId, chapterId } = useParams()
-  const navigate = useNavigate()
+  const location = useLocation()
+  const notebookState = location.state?.fromFolder
+    ? { fromFolder: location.state.fromFolder }
+    : { fromDashboard: true }
   const [chapter, setChapter] = useState(null)
   const [chapterForm, setChapterForm] = useState({ title: '', content: '' })
   const [resources, setResources] = useState([])
@@ -78,15 +82,13 @@ function EditChapter() {
 
   return (
     <main className="chapter-detail-page">
-      <header className="notebook-topbar chapter-detail-topbar">
-        <div className="notebook-topbar__title">
-          <Link className="back-link" to={`/notebook/${notebookId}`}>Back to notebook</Link>
-          <h1>{chapter?.title || 'Chapter'}</h1>
-        </div>
-        <button className="ghost-button" onClick={() => navigate(`/notebook/${notebookId}`)} type="button">
-          Done
-        </button>
-      </header>
+      <ProtectedTopbar
+        backLabel="Notebook"
+        backState={notebookState}
+        backTo={`/notebook/${notebookId}`}
+        className="chapter-detail-topbar"
+        title={chapter?.title || 'Chapter'}
+      />
 
       <FeedbackBanner error={error} message={message} />
 
