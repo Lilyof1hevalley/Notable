@@ -2,7 +2,7 @@
 
 function NotebookCard({ title, taskCount }) {
   return (
-    <div className="notebook-card-v2">
+    <div className="notebook-card-v2 dashboard-notebook-card">
       <div className="notebook-cover">
         <svg viewBox="0 0 100 100" preserveAspectRatio="none">
           <line x1="0" y1="0" x2="100" y2="100" stroke="#E5E5E5" strokeWidth="2" />

@@ -7,6 +7,7 @@ import ResetPassword from './pages/ResetPassword'
 import NewPassword from './pages/NewPassword'
 import Settings from './pages/Settings'
 import EditChapter from './pages/EditChapter'
+import FolderDetail from './pages/FolderDetail'
 import { AuthProvider, ProtectedRoute } from './lib/AuthContext'
 
 function App() {
@@ -34,6 +35,14 @@ function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/new-password" element={<NewPassword />} />
+          <Route
+            path="/folder/:id"
+            element={(
+              <ProtectedRoute>
+                <FolderDetail />
+              </ProtectedRoute>
+            )}
+          />
           <Route
             path="/settings"
             element={(

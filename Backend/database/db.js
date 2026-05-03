@@ -11,6 +11,7 @@ db.exec(`
     email TEXT UNIQUE NOT NULL,
     password_hash TEXT NOT NULL,
     display_name TEXT,
+    gcal_url TEXT,
     role TEXT DEFAULT 'user' CHECK(role IN ('user', 'admin')),
     reset_token TEXT,
     reset_token_expiry DATETIME,
@@ -22,11 +23,16 @@ db.exec(`
     user_id TEXT NOT NULL,
     title TEXT NOT NULL,
     deadline DATETIME,
+    folder_id TEXT,
+    notebook_id TEXT,
     academic_weight REAL DEFAULT 1.0,
     estimated_effort REAL DEFAULT 1.0,
+    reminder_at DATETIME,
     is_completed INTEGER DEFAULT 0,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id)
+    FOREIGN KEY (user_id) REFERENCES users(id),
+    FOREIGN KEY (folder_id) REFERENCES folders(id) ON DELETE SET NULL,
+    FOREIGN KEY (notebook_id) REFERENCES notebooks(id) ON DELETE SET NULL
   );
 
   CREATE TABLE IF NOT EXISTS folders (
@@ -114,7 +120,11 @@ function ensureColumn(table, column, definition) {
 
 ensureColumn('users', 'reset_token', 'TEXT');
 ensureColumn('users', 'reset_token_expiry', 'DATETIME');
+ensureColumn('users', 'gcal_url', 'TEXT');
 ensureColumn('todos', 'estimated_effort', 'REAL DEFAULT 1.0');
+ensureColumn('todos', 'folder_id', 'TEXT');
+ensureColumn('todos', 'notebook_id', 'TEXT');
+ensureColumn('todos', 'reminder_at', 'DATETIME');
 
 console.log('Database connected & tables ready!');
 

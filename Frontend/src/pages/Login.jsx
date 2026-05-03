@@ -4,6 +4,11 @@ import { apiRequest } from '../lib/api'
 import { useAuth } from '../lib/AuthContext'
 import Navbar from '../components/Navbar'
 
+const DEMO_CREDENTIALS = {
+  email: 'demo@notable.local',
+  password: 'demo1234',
+}
+
 function Login() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -31,6 +36,12 @@ function Login() {
     }
   }
 
+  function useDemoAccount() {
+    setEmail(DEMO_CREDENTIALS.email)
+    setPassword(DEMO_CREDENTIALS.password)
+    setError('')
+  }
+
   return (
     <div className="auth-page">
       <Navbar />
@@ -39,6 +50,25 @@ function Login() {
         <section className="auth-card">
           <div className="auth-card-title">Login to your Account</div>
           <div className="auth-card-subtitle">Enter your email and password</div>
+          <div className="demo-login-card">
+            <div>
+              <strong>Demo account</strong>
+              <p>Preloaded with notebooks, chapters, todos, resources, and focus sessions.</p>
+            </div>
+            <dl>
+              <div>
+                <dt>Email</dt>
+                <dd>{DEMO_CREDENTIALS.email}</dd>
+              </div>
+              <div>
+                <dt>Password</dt>
+                <dd>{DEMO_CREDENTIALS.password}</dd>
+              </div>
+            </dl>
+            <button type="button" className="demo-login-button" onClick={useDemoAccount}>
+              Use demo account
+            </button>
+          </div>
           <form onSubmit={handleLogin}>
             <div>
               <label className="auth-form-label">Email</label>

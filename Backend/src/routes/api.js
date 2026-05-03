@@ -27,6 +27,7 @@ router.post('/auth/reset-password', PasswordController.resetPassword);
 // User profile routes (protected)
 router.get('/user/profile', authMiddleware, UserController.getProfile);
 router.patch('/user/profile', authMiddleware, UserController.updateProfile);
+router.patch('/user/password', authMiddleware, UserController.changePassword);
 
 // Todo routes (protected)
 router.get('/todos', authMiddleware, TodoController.getAll);

@@ -2,7 +2,7 @@
 
 function FolderCard({ title, taskCount }) {
   return (
-    <div className="folder-card-wrapper">
+    <div className="folder-card-wrapper dashboard-folder-card">
       <div className="folder-tab"></div>
       <div className="folder-card">
         <strong>{title}</strong>

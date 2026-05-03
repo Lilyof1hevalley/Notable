@@ -24,7 +24,7 @@ class User {
 
   static findPublicById(id) {
     return db.prepare(`
-      SELECT id, name, email, display_name, role, created_at
+      SELECT id, name, email, display_name, gcal_url, role, created_at
       FROM users
       WHERE id = ?
     `).get(id);
@@ -51,11 +51,11 @@ class User {
     `).run(passwordHash, id);
   }
 
-  static updateProfile(id, name, displayName) {
+  static updateProfile(id, name, displayName, gcalUrl = null) {
     db.prepare(`
-      UPDATE users SET name = ?, display_name = ?
+      UPDATE users SET name = ?, display_name = ?, gcal_url = ?
       WHERE id = ?
-    `).run(name, displayName, id);
+    `).run(name, displayName, gcalUrl, id);
   }
 }
 
