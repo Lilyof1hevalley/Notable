@@ -1,40 +1,104 @@
-const express = require('express');
-const router = express.Router();
-const AuthController = require('../controllers/authController');
-const TodoController = require('../controllers/todoController');
-const NoteController = require('../controllers/noteController');
-const PasswordController = require('../controllers/passwordController');
-const FocusSessionController = require('../controllers/focusSessionController');
-const authMiddleware = require('../utils/authMiddleware');
-const { validate, registerRules, loginRules, todoRules, noteRules } = require('../utils/validator');
-const { authLimiter } = require('../utils/rateLimiter');
+// Frontend API client — drop this in src/utils/api.js
 
-// Auth routes (public)
-router.post('/auth/register', authLimiter, registerRules, validate, AuthController.register);
-router.post('/auth/login', authLimiter, loginRules, validate, AuthController.login);
+const BASE = 'http://localhost:3000/api'
 
-// Password reset routes (public)
-router.post('/auth/forgot-password', authLimiter, PasswordController.forgotPassword);
-router.post('/auth/reset-password', PasswordController.resetPassword);
+function getToken() {
+  return localStorage.getItem('token')
+}
 
-// Todo routes (protected)
-router.get('/todos', authMiddleware, TodoController.getAll);
-router.post('/todos', authMiddleware, todoRules, validate, TodoController.create);
-router.patch('/todos/:id', authMiddleware, todoRules, validate, TodoController.update);
-router.patch('/todos/:id/complete', authMiddleware, TodoController.markComplete);
-router.delete('/todos/:id', authMiddleware, TodoController.delete);
+async function request(path, options = {}) {
+  const token = getToken()
+  const headers = {
+    'Content-Type': 'application/json',
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    ...options.headers,
+  }
 
-// Note routes (protected)
-router.get('/notes', authMiddleware, NoteController.getAll);
-router.post('/notes', authMiddleware, noteRules, validate, NoteController.create);
-router.patch('/notes/:id', authMiddleware, noteRules, validate, NoteController.update);
-router.delete('/notes/:id', authMiddleware, NoteController.delete);
+  const res = await fetch(`${BASE}${path}`, { ...options, headers })
+  const data = await res.json()
 
-// Focus session routes (protected)
-router.get('/focus-sessions', authMiddleware, FocusSessionController.getAll);
-router.get('/focus-sessions/recommended', authMiddleware, FocusSessionController.getRecommended);
-router.post('/focus-sessions', authMiddleware, FocusSessionController.start);
-router.patch('/focus-sessions/:id/end', authMiddleware, FocusSessionController.end);
-router.get('/focus-sessions/:id/summary', authMiddleware, FocusSessionController.getSummary);
+  if (!res.ok) {
+    // Surface backend error message
+    throw new Error(data.message || `Request failed: ${res.status}`)
+  }
 
-module.exports = router;
+  return data
+}
+
+export const api = {
+  // Auth
+  login: (email, password) =>
+    request('/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) }),
+
+  register: (name, email, password, display_name) =>
+    request('/auth/register', { method: 'POST', body: JSON.stringify({ name, email, password, display_name }) }),
+
+  forgotPassword: (email) =>
+    request('/auth/forgot-password', { method: 'POST', body: JSON.stringify({ email }) }),
+
+  resetPassword: (token, password) =>
+    request('/auth/reset-password', { method: 'POST', body: JSON.stringify({ token, password }) }),
+
+  // Todos
+  getTodos: (params = {}) => {
+    const qs = new URLSearchParams(params).toString()
+    return request(`/todos${qs ? '?' + qs : ''}`)
+  },
+
+  createTodo: (data) =>
+    request('/todos', { method: 'POST', body: JSON.stringify(data) }),
+
+  updateTodo: (id, data) =>
+    request(`/todos/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+
+  completeTodo: (id) =>
+    request(`/todos/${id}/complete`, { method: 'PATCH' }),
+
+  deleteTodo: (id) =>
+    request(`/todos/${id}`, { method: 'DELETE' }),
+
+  // Notes
+  getNotes: () => request('/notes'),
+
+  createNote: (data) =>
+    request('/notes', { method: 'POST', body: JSON.stringify(data) }),
+
+  updateNote: (id, data) =>
+    request(`/notes/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
+
+  deleteNote: (id) =>
+    request(`/notes/${id}`, { method: 'DELETE' }),
+
+  // Focus sessions
+  getFocusSessions: () => request('/focus-sessions'),
+  getRecommendedTodos: () => request('/focus-sessions/recommended'),
+  startFocusSession: (data) =>
+    request('/focus-sessions', { method: 'POST', body: JSON.stringify(data) }),
+  endFocusSession: (id) =>
+    request(`/focus-sessions/${id}/end`, { method: 'PATCH' }),
+  getFocusSummary: (id) =>
+    request(`/focus-sessions/${id}/summary`),
+}
+
+// Auth helpers
+export function saveAuth(token, user) {
+  localStorage.setItem('token', token)
+  localStorage.setItem('user', JSON.stringify(user))
+}
+
+export function getUser() {
+  try {
+    return JSON.parse(localStorage.getItem('user'))
+  } catch {
+    return null
+  }
+}
+
+export function logout() {
+  localStorage.removeItem('token')
+  localStorage.removeItem('user')
+}
+
+export function isLoggedIn() {
+  return !!getToken()
+}
