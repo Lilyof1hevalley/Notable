@@ -1,51 +1,45 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import ProtectedTopbar from '../../../shared/components/ui/ProtectedTopbar'
+import { formatTime } from '../../../utils/date'
+import {
+  formatBhpsScore,
+  getFocusCue,
+  getLoadMeta,
+  getPriorityMeta,
+} from '../../../utils/priority'
+import { formatCountdown, useFocusSession } from '../FocusSessionContext'
+import { getFocusRecommendations } from '../focus.api'
 
-const sampleBlock = {
-  title: 'Data Mining focus block',
-  description:
-    'Prepare Data Mining quiz summary has the highest BHPS score, then related work is grouped to reduce context switching.',
-  duration: 50,
-  load: 'Light load',
-  folder: 'Data Mining',
-  steps: [
-    { id: 1, title: 'Review context', desc: 'Skim linked notes and resources before starting the main task.' },
-    { id: 2, title: 'Do the highest-impact task', desc: 'Prepare Data Mining quiz summary' },
-    { id: 3, title: 'Reflect briefly', desc: 'Capture one short note about what changed, what remains, and the next action.' },
-  ],
-  tasks: [
-    { id: 1, title: 'Prepare Data Mining quiz summary', time: '06:02 PM', load: 'Moderate focus block', priority: 81 },
-  ],
-  notes: ['Quick Note 2'],
-  resources: ['Dataset_sam...'],
+function getBhpsLabel(todo) {
+  const priority = getPriorityMeta(todo)
+  if (priority.tone === 'medium') return 'Moderate'
+  return priority.label
 }
 
-const allTasks = [
-  { id: 1, title: 'Prepare Data Mining quiz summary', time: '06:02 PM' },
-  { id: 2, title: 'Archive completed coursework notes', time: '05:02 AM' },
-  { id: 3, title: 'Create mobile app wireframe notes', time: '08:02 PM' },
-  { id: 4, title: 'Practice machine learning evaluation metrics', time: '01:02 AM' },
-]
+function FocusTags({ block }) {
+  if (!block) return null
 
-function Tags() {
+  const topic = block.topic?.title || 'Today'
+  const load = block.cognitive_load ? `${block.cognitive_load} load` : 'Focus block'
+
   return (
     <div className="focus-page-tags">
-      <span>{sampleBlock.duration} min</span>
-      <span>{sampleBlock.load}</span>
-      <span>{sampleBlock.folder}</span>
+      <span>{block.duration_minutes || 50} min</span>
+      <span>{load}</span>
+      <span>{topic}</span>
     </div>
   )
 }
 
-function FocusSteps() {
+function FocusSteps({ steps = [] }) {
   return (
     <div className="focus-page-step-list">
-      {sampleBlock.steps.map((step) => (
-        <article className="focus-page-step" key={step.id}>
-          <span>{step.id}</span>
+      {steps.map((step, index) => (
+        <article className="focus-page-step" key={step.key || step.title}>
+          <span>{index + 1}</span>
           <div>
             <strong>{step.title}</strong>
-            <p>{step.desc}</p>
+            <p>{step.detail}</p>
           </div>
         </article>
       ))}
@@ -53,228 +47,251 @@ function FocusSteps() {
   )
 }
 
-function FocusTasks({ selectedTaskIds = [1] }) {
-  const selected = allTasks.filter((task) => selectedTaskIds.includes(task.id))
+function FocusTasks({ onCompleteTodo, todos = [] }) {
+  if (todos.length === 0) {
+    return <p className="muted">No active tasks available for this block.</p>
+  }
 
   return (
     <div className="focus-page-task-list">
-      {selected.map((task, index) => (
-        <article className="focus-page-task" key={task.id}>
-          <span>{index + 1}</span>
-          <div>
-            <strong>{task.title}</strong>
-            <p>{task.time} / Moderate focus block</p>
-            <div className="focus-page-badges">
-              <span className="priority-badge priority-badge--high">High 81</span>
-              <span className="load-badge load-badge--moderate">Moderate</span>
+      {todos.map((todo, index) => {
+        const isComplete = todo.is_completed === 1
+        const priority = getPriorityMeta(todo)
+        const load = getLoadMeta(todo)
+        const checkClass = isComplete ? 'focus-page-task__check is-complete' : 'focus-page-task__check'
+
+        return (
+          <article className={isComplete ? 'focus-page-task is-complete' : 'focus-page-task'} key={todo.id}>
+            {onCompleteTodo ? (
+              <button
+                aria-label={isComplete ? `${todo.title} completed` : `Complete ${todo.title}`}
+                className={checkClass}
+                disabled={isComplete}
+                onClick={() => onCompleteTodo(todo.id)}
+                type="button"
+              >
+                {index + 1}
+              </button>
+            ) : (
+              <span>{index + 1}</span>
+            )}
+            <div>
+              <strong>{todo.title}</strong>
+              <p>{formatTime(todo.deadline)} / {getFocusCue(todo)}</p>
+              <div className="focus-page-badges">
+                <span className={`focus-page-bhps focus-page-bhps--${priority.tone}`}>
+                  {getBhpsLabel(todo)} {formatBhpsScore(todo)}
+                </span>
+                <span className={`focus-page-load focus-page-load--${load.tone}`}>
+                  {load.label}
+                </span>
+              </div>
             </div>
-          </div>
-        </article>
-      ))}
+          </article>
+        )
+      })}
     </div>
   )
 }
 
-function SupportGrid() {
+function SupportGrid({
+  notes = [],
+  onDownloadResource,
+  onOpenNote,
+  resources = [],
+}) {
   return (
     <div className="focus-page-support-grid">
       <section>
         <span>Notes</span>
-        {sampleBlock.notes.map((note) => <strong key={note}>{note}</strong>)}
+        {notes.length > 0 ? notes.map((note) => (
+          <button className="focus-page-support-link" key={note.id} onClick={() => onOpenNote?.(note)} type="button">
+            {note.title}
+          </button>
+        )) : <p className="muted">No linked notes yet.</p>}
       </section>
       <section>
         <span>Resources</span>
-        {sampleBlock.resources.map((resource) => <strong key={resource}>{resource}</strong>)}
+        {resources.length > 0 ? resources.map((resource) => (
+          <button
+            className="focus-page-support-link"
+            key={resource.id}
+            onClick={() => onDownloadResource?.(resource)}
+            type="button"
+          >
+            {resource.original_name}
+          </button>
+        )) : <p className="muted">No linked resources yet.</p>}
       </section>
     </div>
   )
 }
 
-function PrepareModal({ onClose, onStart }) {
-  const [title, setTitle] = useState(sampleBlock.title)
-  const [duration, setDuration] = useState(sampleBlock.duration)
-  const [notes, setNotes] = useState(sampleBlock.description)
-  const [selected, setSelected] = useState([1])
-
-  function toggleTask(taskId) {
-    setSelected((current) => (
-      current.includes(taskId)
-        ? current.filter((id) => id !== taskId)
-        : [...current, taskId]
-    ))
+function ActiveSession({
+  activeSession,
+  completeTodo,
+  downloadSupportResource,
+  endFocus,
+  isExpired,
+  openOverlay,
+  openSupportNote,
+  progress,
+  remainingSeconds,
+  supportContext,
+}) {
+  const todos = activeSession.todos || []
+  const completedCount = todos.filter((todo) => todo.is_completed === 1).length
+  const progressPercent = Math.round(progress * 100)
+  const block = {
+    cognitive_load: todos.length > 0 ? getLoadMeta(todos[0]).label : 'Focus',
+    duration_minutes: activeSession.duration_minutes,
+    topic: { title: activeSession.title || 'Focus block' },
   }
 
   return (
-    <div className="focus-page-modal-backdrop">
-      <div className="focus-page-modal" role="dialog" aria-modal="true" aria-labelledby="prepare-focus-title">
-        <header>
-          <h2 id="prepare-focus-title">Prepare Focus Session</h2>
-          <button aria-label="Close prepare focus" onClick={onClose} type="button">x</button>
-        </header>
-        <div className="focus-page-modal-body">
-          <div className="focus-page-modal-intro">
-            <strong>Review this block before starting.</strong>
-            <p>Tune the duration, notes, and task list now. Once the timer starts, the session stays simple.</p>
-          </div>
-          <div className="focus-page-form-grid">
-            <label className="auth-form-label">
-              Session title
-              <input className="auth-form-input" onChange={(event) => setTitle(event.target.value)} value={title} />
-            </label>
-            <label className="auth-form-label">
-              Duration
-              <input
-                className="auth-form-input"
-                min="5"
-                onChange={(event) => setDuration(event.target.value)}
-                type="number"
-                value={duration}
-              />
-            </label>
-          </div>
-          <label className="auth-form-label">
-            Session notes
-            <textarea
-              className="auth-form-input focus-page-textarea"
-              onChange={(event) => setNotes(event.target.value)}
-              value={notes}
-            />
-          </label>
-          <div className="focus-page-picker">
-            <div>
-              <strong>Tasks in this block</strong>
-              <span>{selected.length} selected</span>
-            </div>
-            {allTasks.map((task) => (
-              <label className="focus-page-task-option" key={task.id}>
-                <input
-                  checked={selected.includes(task.id)}
-                  onChange={() => toggleTask(task.id)}
-                  type="checkbox"
-                />
-                <span>
-                  <strong>{task.title}</strong>
-                  <small>{task.time}</small>
-                </span>
-              </label>
-            ))}
-          </div>
-        </div>
-        <footer>
-          <button className="ghost-button" onClick={onClose} type="button">Cancel</button>
-          <button
-            disabled={selected.length === 0}
-            onClick={() => onStart({ duration: Number(duration) || sampleBlock.duration, notes, selected, title })}
-            type="button"
-          >
-            Start Focus
-          </button>
-        </footer>
-      </div>
-    </div>
-  )
-}
-
-function ActiveSession({ config, onEnd }) {
-  const totalSeconds = Math.max(60, Number(config.duration) * 60)
-  const [elapsedSeconds, setElapsedSeconds] = useState(0)
-
-  useEffect(() => {
-    const timer = window.setInterval(() => {
-      setElapsedSeconds((current) => Math.min(current + 1, totalSeconds))
-    }, 1000)
-
-    return () => window.clearInterval(timer)
-  }, [totalSeconds])
-
-  const remainingSeconds = totalSeconds - elapsedSeconds
-  const minutes = String(Math.floor(remainingSeconds / 60)).padStart(2, '0')
-  const seconds = String(remainingSeconds % 60).padStart(2, '0')
-  const progress = Math.min(100, (elapsedSeconds / totalSeconds) * 100)
-
-  return (
     <div className="focus-page-layout focus-page-layout--active">
-      <section className="focus-page-timer-card">
-        <span>Now focusing</span>
-        <h2>{minutes}:{seconds}</h2>
-        <div className="focus-page-progress" aria-hidden="true">
-          <span style={{ width: `${progress}%` }} />
+      <section className={isExpired ? 'focus-page-timer-card is-expired' : 'focus-page-timer-card'}>
+        <span>{isExpired ? "Time's up" : 'Now focusing'}</span>
+        <h2>{formatCountdown(remainingSeconds)}</h2>
+        <div className="focus-page-progress" aria-label={`${progressPercent}% elapsed`}>
+          <span style={{ width: `${progressPercent}%` }} />
         </div>
-        <p>{config.title} / 0 of {config.selected.length} tasks complete</p>
+        <p>{activeSession.title || 'Focus block'} / {completedCount} of {todos.length} tasks complete</p>
         <div className="focus-page-actions">
-          <button className="ghost-button" type="button">Minimize</button>
-          <button onClick={onEnd} type="button">End Session</button>
+          <button className="ghost-button" onClick={openOverlay} type="button">Open Popup</button>
+          <button onClick={() => endFocus(activeSession.id)} type="button">
+            {isExpired ? 'Finish Session' : 'End Session'}
+          </button>
         </div>
       </section>
       <section className="focus-page-card focus-page-card--span">
         <div className="focus-page-section-header">
           <h2>Session Context</h2>
-          <Tags />
+          <FocusTags block={block} />
         </div>
-        <p>{config.notes}</p>
+        <p>{activeSession.session_notes || 'Keep this block narrow and finish the selected tasks first.'}</p>
       </section>
       <section className="focus-page-card">
         <div className="focus-page-section-header">
           <h2>Tasks</h2>
+          <span>{completedCount}/{todos.length}</span>
         </div>
-        <FocusTasks selectedTaskIds={config.selected} />
+        <FocusTasks onCompleteTodo={completeTodo} todos={todos} />
       </section>
       <section className="focus-page-card">
         <div className="focus-page-section-header">
           <h2>Support</h2>
         </div>
-        <SupportGrid />
+        <SupportGrid
+          notes={supportContext.notes}
+          onDownloadResource={downloadSupportResource}
+          onOpenNote={openSupportNote}
+          resources={supportContext.resources}
+        />
       </section>
     </div>
   )
 }
 
-function IdleSession({ onPrepare }) {
+function IdleSession({ block, error, isLoading, onPrepare }) {
+  if (isLoading) {
+    return <div className="notebook-loading">Loading focus recommendation...</div>
+  }
+
+  if (!block) {
+    return (
+      <div className="focus-page-layout">
+        <section className="focus-page-hero focus-page-hero--empty">
+          <div>
+            <span>No focus block yet</span>
+            <h2>Nothing urgent to focus on</h2>
+            <p>{error || 'Add active tasks with deadlines and effort estimates to unlock BHPS recommendations.'}</p>
+          </div>
+        </section>
+      </div>
+    )
+  }
+
   return (
     <div className="focus-page-layout">
       <section className="focus-page-hero">
         <div>
           <span>Recommended focus block</span>
-          <h2>{sampleBlock.title}</h2>
-          <p>Review this block before starting. {sampleBlock.description}</p>
-          <Tags />
+          <h2>{block.title}</h2>
+          <p>Review this block before starting. {block.reason}</p>
+          <FocusTags block={block} />
         </div>
-        <button onClick={onPrepare} type="button">Prepare Focus</button>
+        <button onClick={() => onPrepare(block)} type="button">Prepare Focus</button>
       </section>
       <section className="focus-page-card">
         <div className="focus-page-section-header">
           <h2>Study Sequence</h2>
         </div>
-        <FocusSteps />
+        <FocusSteps steps={block.steps} />
       </section>
       <section className="focus-page-card">
         <div className="focus-page-section-header">
           <h2>Priority Task</h2>
         </div>
-        <FocusTasks />
+        <FocusTasks todos={block.todos} />
       </section>
       <section className="focus-page-card focus-page-card--span">
         <div className="focus-page-section-header">
           <h2>Support Materials</h2>
         </div>
-        <SupportGrid />
+        <SupportGrid notes={block.notes} resources={block.resources} />
       </section>
     </div>
   )
 }
 
 export default function FocusSession() {
-  const [isPrepareOpen, setIsPrepareOpen] = useState(false)
-  const [activeConfig, setActiveConfig] = useState(null)
+  const {
+    activeSession,
+    completeTodo,
+    downloadSupportResource,
+    endFocus,
+    focusError,
+    isExpired,
+    openOverlay,
+    openPrepareFocus,
+    openSupportNote,
+    progress,
+    refreshFocus,
+    remainingSeconds,
+    supportContext,
+  } = useFocusSession()
+  const [recommendedBlock, setRecommendedBlock] = useState(null)
+  const [recommendationError, setRecommendationError] = useState('')
+  const [isLoadingRecommendation, setIsLoadingRecommendation] = useState(true)
+
+  const loadRecommendation = useCallback(async () => {
+    setRecommendationError('')
+    setIsLoadingRecommendation(true)
+    try {
+      const data = await getFocusRecommendations()
+      setRecommendedBlock(data.recommended_block || null)
+    } catch (err) {
+      setRecommendationError(err.message)
+    } finally {
+      setIsLoadingRecommendation(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      refreshFocus()
+      loadRecommendation()
+    }, 0)
+
+    return () => window.clearTimeout(timer)
+  }, [loadRecommendation, refreshFocus])
 
   const title = useMemo(() => (
-    activeConfig ? 'Active Focus' : 'Focus Session'
-  ), [activeConfig])
+    activeSession ? formatCountdown(remainingSeconds) : 'Focus Session'
+  ), [activeSession, remainingSeconds])
 
-  function startFocus(config) {
-    setActiveConfig(config)
-    setIsPrepareOpen(false)
-  }
+  const mergedError = focusError || recommendationError
 
   return (
     <main className="app-shell focus-page">
@@ -285,15 +302,26 @@ export default function FocusSession() {
         showSettings={false}
         title={title}
       />
-      {activeConfig ? (
-        <ActiveSession config={activeConfig} onEnd={() => setActiveConfig(null)} />
+      {mergedError && <div className="auth-error focus-page-error">{mergedError}</div>}
+      {activeSession ? (
+        <ActiveSession
+          activeSession={activeSession}
+          completeTodo={completeTodo}
+          downloadSupportResource={downloadSupportResource}
+          endFocus={endFocus}
+          isExpired={isExpired}
+          openOverlay={openOverlay}
+          openSupportNote={openSupportNote}
+          progress={progress}
+          remainingSeconds={remainingSeconds}
+          supportContext={supportContext}
+        />
       ) : (
-        <IdleSession onPrepare={() => setIsPrepareOpen(true)} />
-      )}
-      {isPrepareOpen && (
-        <PrepareModal
-          onClose={() => setIsPrepareOpen(false)}
-          onStart={startFocus}
+        <IdleSession
+          block={recommendedBlock}
+          error={recommendationError}
+          isLoading={isLoadingRecommendation}
+          onPrepare={openPrepareFocus}
         />
       )}
     </main>

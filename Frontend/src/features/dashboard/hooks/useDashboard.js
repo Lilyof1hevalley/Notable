@@ -145,11 +145,13 @@ export function useDashboard(auth) {
       type: 'folder',
       taskCount: todoCountsByFolderId.get(folder.id) || 0,
     }))
-    const notebookItems = data.notebooks.map((notebook) => ({
-      ...notebook,
-      type: 'notebook',
-      taskCount: todoCountsByNotebookId.get(notebook.id) || 0,
-    }))
+    const notebookItems = data.notebooks
+      .filter((notebook) => !notebook.folder_id)
+      .map((notebook) => ({
+        ...notebook,
+        type: 'notebook',
+        taskCount: todoCountsByNotebookId.get(notebook.id) || 0,
+      }))
 
     return [...folderItems, ...notebookItems]
       .filter((item) => typeFilter === 'all' || item.type === typeFilter)
