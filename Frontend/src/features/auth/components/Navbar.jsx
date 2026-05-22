@@ -39,6 +39,7 @@ function Navbar() {
       <div style={styles.links}>
         <Link to="/" style={styles.link}>Login</Link>
         <Link to="/register" style={styles.link}>Register</Link>
+        <Link to="/focus-session" style={styles.link}>Focus</Link>
       </div>
     </nav>
   )

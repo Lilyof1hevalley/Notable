@@ -9,54 +9,21 @@ import Settings from '../features/settings/pages/Settings'
 import EditChapter from '../features/chapter/pages/EditChapter'
 import FolderDetail from '../features/workspace/pages/FolderDetail'
 import { ProtectedRoute } from './providers/AuthContext'
+import FocusSession from '../features/focus/pages/FocusSession'
 
 function AppRoutes() {
   return (
     <Routes>
+      <Route path="/focus-session" element={<ProtectedRoute><FocusSession /></ProtectedRoute>} />
       <Route path="/notebook" element={<Navigate to="/dashboard" replace />} />
-      <Route
-        path="/notebook/:id"
-        element={(
-          <ProtectedRoute>
-            <Notebook />
-          </ProtectedRoute>
-        )}
-      />
-      <Route
-        path="/notebook/:notebookId/chapter/:chapterId/edit"
-        element={(
-          <ProtectedRoute>
-            <EditChapter />
-          </ProtectedRoute>
-        )}
-      />
+      <Route path="/notebook/:id" element={<ProtectedRoute><Notebook /></ProtectedRoute>} />
+      <Route path="/notebook/:notebookId/chapter/:chapterId/edit" element={<ProtectedRoute><EditChapter /></ProtectedRoute>} />
       <Route path="/register" element={<Register />} />
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/new-password" element={<NewPassword />} />
-      <Route
-        path="/folder/:id"
-        element={(
-          <ProtectedRoute>
-            <FolderDetail />
-          </ProtectedRoute>
-        )}
-      />
-      <Route
-        path="/settings"
-        element={(
-          <ProtectedRoute>
-            <Settings />
-          </ProtectedRoute>
-        )}
-      />
-      <Route
-        path="/dashboard"
-        element={(
-          <ProtectedRoute>
-            <Dashboard />
-          </ProtectedRoute>
-        )}
-      />
+      <Route path="/folder/:id" element={<ProtectedRoute><FolderDetail /></ProtectedRoute>} />
+      <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+      <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
       <Route path="/" element={<Login />} />
     </Routes>
   )

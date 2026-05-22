@@ -11,9 +11,9 @@
 
 .notebook-page {
   min-height: 100vh;
-  width: min(1280px, calc(100% - 32px));
-  margin: 0 auto;
-  padding: 28px 0 48px;
+  width: auto;
+  margin: 0;
+  padding: 0 0 48px;
   background: #FFFFFF;
   color: #1A1A1A;
 }

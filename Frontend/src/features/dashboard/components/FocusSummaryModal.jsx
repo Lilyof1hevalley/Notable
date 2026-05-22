@@ -1,81 +1,51 @@
+import { useNavigate } from 'react-router-dom'
 import Modal from '../../../shared/components/ui/Modal'
-import { formatTime } from '../../../utils/date'
-import { formatBhpsScore, getFocusCue, getPriorityMeta } from '../../../utils/priority'
-
-function formatDuration(minutes) {
-  const value = Number(minutes) || 0
-  if (value < 60) return `${value} min`
-
-  const hours = Math.floor(value / 60)
-  const remainingMinutes = value % 60
-  return remainingMinutes ? `${hours}h ${remainingMinutes}m` : `${hours}h`
-}
 
 function FocusSummaryModal({ onClose, summary }) {
+  const navigate = useNavigate()
   const isOpen = Boolean(summary)
-  const todos = summary?.todos || []
-  const completionRate = Number(summary?.completion_rate) || 0
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="wide" title="Focus Summary">
-      {summary && (
-        <section className="focus-summary" aria-label="Focus session summary">
-          <div className="focus-summary__hero">
-            <div>
-              <span className="focus-summary__eyebrow">Session complete</span>
-              <h3>{summary.completed_todos} of {summary.total_todos} tasks completed</h3>
-              <p>
-                Actual focus time {formatDuration(summary.actual_duration_minutes)} from a planned {formatDuration(summary.planned_duration_minutes)} block.
-              </p>
-            </div>
-            <div className="focus-summary__score" aria-label={`${completionRate}% complete`}>
-              <strong>{completionRate}%</strong>
-              <span>complete</span>
-            </div>
-          </div>
-
-          <div className="focus-summary__progress" aria-hidden="true">
-            <span style={{ width: `${Math.min(100, Math.max(0, completionRate))}%` }} />
-          </div>
-
-          <div className="focus-summary__stats">
-            <span>{summary.remaining_todos} remaining</span>
-            <span>{summary.completed_estimated_effort}/{summary.total_estimated_effort} effort cleared</span>
-            <span>{summary.cognitive_load} load</span>
-          </div>
-
-          <div className="focus-summary__next">
-            <strong>{summary.next_action?.title}</strong>
-            <p>{summary.next_action?.detail}</p>
-          </div>
-
-          <div className="focus-summary__tasks" aria-label="Focus session task outcomes">
-            {todos.map((todo) => {
-              const priority = getPriorityMeta(todo)
-              const isComplete = todo.is_completed === 1
-
-              return (
-                <article className={isComplete ? 'focus-summary-task is-complete' : 'focus-summary-task'} key={todo.id}>
-                  <span className={isComplete ? 'focus-summary-task__status is-complete' : 'focus-summary-task__status'}>
-                    {isComplete ? 'Done' : 'Next'}
-                  </span>
-                  <div>
-                    <strong>{todo.title}</strong>
-                    <p>{formatTime(todo.deadline)} / {getFocusCue(todo)}</p>
-                  </div>
-                  <span className={`priority-badge priority-badge--${priority.tone}`}>
-                    {priority.label} {formatBhpsScore(todo)}
-                  </span>
-                </article>
-              )
-            })}
-          </div>
-
-          <div className="focus-summary__actions">
-            <button onClick={onClose} type="button">Back to Dashboard</button>
-          </div>
-        </section>
-      )}
+    <Modal isOpen={isOpen} onClose={onClose} title="Focus Session">
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', padding: '8px 0' }}>
+        <p style={{ margin: 0, fontSize: '13px', color: '#68768D', fontFamily: "'Inter', sans-serif" }}>
+          Ready to start a focus session?
+        </p>
+        <button
+          onClick={() => { onClose(); navigate('/focus-session') }}
+          style={{
+            padding: '10px 16px',
+            background: '#1A1A1A',
+            color: '#FFF',
+            border: 'none',
+            borderRadius: '6px',
+            fontSize: '13px',
+            fontWeight: 600,
+            cursor: 'pointer',
+            fontFamily: "'Inter', sans-serif",
+          }}
+          type="button"
+        >
+          Go to Focus Session
+        </button>
+        <button
+          onClick={onClose}
+          style={{
+            padding: '10px 16px',
+            background: 'transparent',
+            color: '#1A1A1A',
+            border: '1px solid #E5E5E5',
+            borderRadius: '6px',
+            fontSize: '13px',
+            fontWeight: 600,
+            cursor: 'pointer',
+            fontFamily: "'Inter', sans-serif",
+          }}
+          type="button"
+        >
+          Cancel
+        </button>
+      </div>
     </Modal>
   )
 }

@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import ActionPopover from '../../../shared/components/ui/ActionPopover'
 import { FilterIcon, SortIcon } from '../../../shared/components/ui/Icons'
 import ProtectedTopbar from '../../../shared/components/ui/ProtectedTopbar'
@@ -88,19 +89,33 @@ function DashboardHeader({
     <ProtectedTopbar
       actions={(
         <>
-        <GlobalSearch className="dashboard-search" />
-        <ActionPopover
-          ariaLabel="Dashboard filters"
-          icon={<FilterIcon className="ui-icon" />}
-        >
-          {filterActions}
-        </ActionPopover>
-        <ActionPopover
-          ariaLabel="Dashboard sort options"
-          icon={<SortIcon className="ui-icon" />}
-        >
-          <div className="dashboard-menu__content--compact-inner">{sortActions}</div>
-        </ActionPopover>
+      <Link
+        to="/focus-session"
+        style={{
+          textDecoration: 'none',
+          fontSize: '13px',
+          fontWeight: 600,
+          color: '#4F5E6B',
+          fontFamily: "'Inria Sans', 'Inter', sans-serif",
+          letterSpacing: '0.01em',
+          whiteSpace: 'nowrap',
+        }}
+      >
+            Focus Session
+          </Link>
+          <GlobalSearch className="dashboard-search" />
+          <ActionPopover
+            ariaLabel="Dashboard filters"
+            icon={<FilterIcon className="ui-icon" />}
+          >
+            {filterActions}
+          </ActionPopover>
+          <ActionPopover
+            ariaLabel="Dashboard sort options"
+            icon={<SortIcon className="ui-icon" />}
+          >
+            <div className="dashboard-menu__content--compact-inner">{sortActions}</div>
+          </ActionPopover>
         </>
       )}
       className="dashboard-topbar"

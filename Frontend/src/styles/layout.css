@@ -1,7 +1,8 @@
-.app-shell {
-  width: min(1220px, calc(100% - 32px));
-  margin: 0 auto;
-  padding: 28px 0 48px;
+@media (max-width: 620px) {
+  .app-shell {
+    width: 100%;
+    padding-top: 16px;
+  }
 }
 
 .topbar {
@@ -177,10 +178,11 @@
 }
 
 @media (max-width: 620px) {
-  .app-shell {
-      width: min(100% - 20px, 1220px);
-      padding-top: 16px;
-    }
+      .app-shell {
+        width: 100%;
+        padding-top: 16px;
+      }
+    
 
     .topbar,
     .notebook-topbar,

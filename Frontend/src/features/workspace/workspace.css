@@ -105,14 +105,14 @@
 
 .folder-detail-page,
 .chapter-detail-page {
-  width: min(1280px, calc(100% - 32px));
-  margin: 0 auto;
-  padding: 28px 0 48px;
+  width: auto;
+  margin: 0;
+  padding: 0 0 48px;
 }
 
 .folder-detail-topbar,
 .chapter-detail-topbar {
-  margin-bottom: 24px;
+  margin-bottom: 0;
 }
 
 .folder-detail-layout {
