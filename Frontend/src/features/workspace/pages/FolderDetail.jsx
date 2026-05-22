@@ -207,7 +207,7 @@ function FolderDetail() {
   }
 
   return (
-    <main className="folder-detail-page">
+    <main className="app-shell folder-detail-page">
       <ProtectedTopbar
         actions={(
           <button
@@ -230,18 +230,11 @@ function FolderDetail() {
         <div className="notebook-loading">Loading folder...</div>
       ) : (
         <div className="folder-detail-layout">
-          <section>
+          <section className="folder-detail-workspace">
             <div className="folder-detail-section-header">
               <h2>Notebooks</h2>
               <div className="inline-actions">
                 <span>{notebooks.length} items</span>
-                <button
-                  className="ghost-button ghost-button--small"
-                  onClick={() => setIsCreateNotebookOpen(true)}
-                  type="button"
-                >
-                  Add Notebook
-                </button>
               </div>
             </div>
             <div className="folder-notebook-grid">
@@ -269,37 +262,48 @@ function FolderDetail() {
                   />
                 </div>
               ))}
+              <button
+                aria-label="Create notebook"
+                className="add-card-button add-card-button--dashboard folder-detail-add-card"
+                onClick={() => setIsCreateNotebookOpen(true)}
+                type="button"
+              >
+                <span aria-hidden="true">+</span>
+                <span className="add-card-button__action">Notebook</span>
+              </button>
               {notebooks.length === 0 && <p className="muted">No notebooks in this folder yet.</p>}
             </div>
           </section>
 
-          <aside className="notebook-panel folder-detail-timeline">
-            <div className="notebook-panel-header">
+          <aside className="dashboard-panel dashboard-panel--timeline folder-detail-timeline">
+            <div className="dashboard-panel__header">
               <h2>Timeline</h2>
             </div>
-            {todoGroups.length === 0 ? (
-              <p className="muted notebook-panel__empty">No folder tasks yet.</p>
-            ) : (
-              <div className="notebook-panel__scroller">
-                {todoGroups.map(([date, groupTodos]) => (
-                  <div key={date}>
-                    <div className="date-header">{date}</div>
-                    {groupTodos.map((todo) => (
-                      <article className={`pill-card${todo.is_completed ? ' pill-card--completed' : ''}`} key={todo.id}>
-                        <span className="pill-card__status" />
-                        <div className="pill-card__copy">
-                          <p className="pill-card-title">{todo.title}</p>
-                          <p className="pill-card-subtitle">{formatTime(todo.deadline)}</p>
-                        </div>
-                        <span className="pill-card-meta">
-                          {notebookTitleById.get(String(todo.notebook_id)) || folder.title}
-                        </span>
-                      </article>
-                    ))}
-                  </div>
-                ))}
-              </div>
-            )}
+            <div className="dashboard-panel__body">
+              {todoGroups.length === 0 ? (
+                <p className="muted dashboard-panel__empty">No folder tasks yet.</p>
+              ) : (
+                <div className="dashboard-panel__scroller folder-detail-timeline__scroller">
+                  {todoGroups.map(([date, groupTodos]) => (
+                    <div key={date}>
+                      <div className="dashboard-date-header">{date}</div>
+                      {groupTodos.map((todo) => (
+                        <article className={`pill-card folder-detail-task${todo.is_completed ? ' pill-card--completed' : ''}`} key={todo.id}>
+                          <span className="pill-card__status" />
+                          <div className="pill-card__copy">
+                            <p className="pill-card-title">{todo.title}</p>
+                            <p className="pill-card-subtitle">{formatTime(todo.deadline)}</p>
+                          </div>
+                          <span className="pill-card-meta">
+                            {notebookTitleById.get(String(todo.notebook_id)) || folder.title}
+                          </span>
+                        </article>
+                      ))}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </aside>
         </div>
       )}
