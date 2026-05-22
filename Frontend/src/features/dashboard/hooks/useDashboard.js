@@ -6,6 +6,7 @@ import {
   createFolder,
   createNotebook,
   createTodo,
+  deleteFolder as deleteFolderRequest,
   deleteNotebook as deleteNotebookRequest,
   deleteTodo as deleteTodoRequest,
   getFolders,
@@ -308,11 +309,21 @@ export function useDashboard(auth) {
     )
   }, [runMutation])
 
+  const deleteFolder = useCallback((folderId) => {
+    if (!window.confirm('Are you sure you want to delete this folder? Notebooks and tasks inside it will stay in your workspace.')) return undefined
+
+    return runMutation(
+      () => deleteFolderRequest(folderId),
+      'Folder deleted.',
+    )
+  }, [runMutation])
+
   return {
     activeModal,
     closeModal,
     completeTodo,
     data,
+    deleteFolder,
     deleteNotebook,
     deleteTodo,
     error,

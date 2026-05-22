@@ -36,6 +36,10 @@ export function getFolderNotebooks(folderId) {
   return apiRequest(`/folders/${folderId}/notebooks`)
 }
 
+export function deleteFolder(folderId) {
+  return apiRequest(`/folders/${folderId}`, { method: 'DELETE' })
+}
+
 export function getNotebooks() {
   return apiRequest('/notebooks')
 }

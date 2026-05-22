@@ -23,6 +23,15 @@ function deleteUploadedFile(file) {
   }
 }
 
+function deleteResourceFiles(resources) {
+  resources.forEach((resource) => {
+    const filePath = path.join(uploadDir, resource.filename);
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+    }
+  });
+}
+
 function resolveCoverInput(req, { preserveWhenMissing = false } = {}) {
   const rawType = req.file
     ? 'image'
@@ -174,7 +183,9 @@ class NotebookController {
       if (!notebook) {
         return res.status(404).json({ message: 'Notebook not found!' });
       }
+      const resources = Notebook.findResourcesForDelete(req.params.id, req.userId);
       deleteCoverFile(notebook);
+      deleteResourceFiles(resources);
       Notebook.delete(req.params.id, req.userId);
       res.json({ message: 'Notebook deleted!' });
     } catch (error) {
