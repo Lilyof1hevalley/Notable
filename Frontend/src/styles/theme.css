@@ -221,6 +221,12 @@ textarea:focus-visible {
   color: #1a1a1a;
 }
 
+.reminder-badge--overdue {
+  border-color: #C43D3D;
+  background: #C43D3D;
+  color: #FFFFFF;
+}
+
 .workspace-grid,
 .dashboard-page .workspace-grid {
   border-color: #dddbd6;

@@ -1,10 +1,8 @@
 import { useAuth } from '../../../app/providers/AuthContext'
 import FeedbackBanner from '../../../shared/components/ui/FeedbackBanner'
-import { useFocusSession } from '../../focus/FocusSessionContext'
 import CalendarPanel from '../components/CalendarPanel'
 import DashboardHeader from '../components/DashboardHeader'
 import DashboardModals from '../components/DashboardModals'
-import FocusPanel from '../components/FocusPanel'
 import RemindersPanel from '../components/RemindersPanel'
 import TimelinePanel from '../components/TimelinePanel'
 import WorkspaceGrid from '../components/WorkspaceGrid'
@@ -18,13 +16,6 @@ const styles = `
     color: #1a1a1a;
     display: flex;
     flex-direction: column;
-  }
-
-  .dashboard-grid {
-    display: grid;
-    grid-template-columns: 1fr 300px;
-    flex: 1;
-    min-height: 0;
   }
 
   .dashboard-sidebar {
@@ -45,7 +36,6 @@ const styles = `
 
 function Dashboard() {
   const auth = useAuth()
-  const focus = useFocusSession()
   const dashboard = useDashboard(auth)
   const {
     activeModal,
@@ -131,20 +121,6 @@ function Dashboard() {
                 onDeleteTodo={deleteTodo}
                 onOpenModal={openModal}
                 todos={visibleTimelineTodos}
-              />
-              <FocusPanel
-                activeSession={focus.activeSession}
-                isExpired={focus.isExpired}
-                onCompleteTodo={focus.completeTodo}
-                onDownloadSupportResource={focus.downloadSupportResource}
-                onEndFocus={focus.endFocus}
-                onOpenFocus={focus.openOverlay}
-                onOpenSupportNote={focus.openSupportNote}
-                onPrepareFocus={focus.openPrepareFocus}
-                progress={focus.progress}
-                recommendedBlock={data.recommendedBlock}
-                recommendedTodos={data.recommendedTodos}
-                remainingSeconds={focus.remainingSeconds}
               />
             </div>
           </div>

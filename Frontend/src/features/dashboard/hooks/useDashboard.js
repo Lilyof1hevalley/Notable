@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { getDefaultReminderAt, getReminderMeta, toIsoOrNull } from '../../../utils/reminders'
-import { getFocusRecommendations } from '../../focus/focus.api'
 import {
   completeTodo as completeTodoRequest,
   createFolder,
@@ -45,8 +44,6 @@ function getDefaultState(user) {
     folders: [],
     notebooks: [],
     profile: user,
-    recommendedBlock: null,
-    recommendedTodos: [],
     todos: [],
   }
 }
@@ -84,13 +81,11 @@ export function useDashboard(auth) {
         foldersData,
         notebooksData,
         todosData,
-        recommendedData,
       ] = await Promise.all([
         getProfile(),
         getFolders(),
         getNotebooks(),
         getTodos('?limit=100'),
-        getFocusRecommendations(),
       ])
 
       updateUser(profileData.user)
@@ -98,8 +93,6 @@ export function useDashboard(auth) {
         folders: foldersData.folders || [],
         notebooks: notebooksData.notebooks || [],
         profile: profileData.user,
-        recommendedBlock: recommendedData.recommended_block || null,
-        recommendedTodos: recommendedData.recommended_todos || [],
         todos: todosData.todos || [],
       })
     } catch (err) {
