@@ -1207,6 +1207,7 @@
 .dashboard-task-row__actions .priority-badge,
 .dashboard-task-row__actions .load-badge,
 .dashboard-task-row__actions .reminder-badge,
+.dashboard-task-row__actions .note-count-badge,
 .focus-recommendation-card__meta .priority-badge,
 .focus-recommendation-card__meta .load-badge {
   max-width: none;
@@ -1219,7 +1220,8 @@
 
 .dashboard-panel--timeline .dashboard-task-row__actions .priority-badge,
 .dashboard-panel--timeline .dashboard-task-row__actions .load-badge,
-.dashboard-panel--timeline .dashboard-task-row__actions .reminder-badge {
+.dashboard-panel--timeline .dashboard-task-row__actions .reminder-badge,
+.dashboard-panel--timeline .dashboard-task-row__actions .note-count-badge {
   padding: 3px 7px;
   font-size: 10px;
 }
@@ -1302,9 +1304,16 @@
   color: #5E5E5B;
 }
 
+.note-count-badge {
+  border-color: #C7D0C8;
+  background: #F4FAF4;
+  color: #3F5B43;
+}
+
 .dashboard-task-row--completed .priority-badge,
 .dashboard-task-row--completed .load-badge,
-.dashboard-task-row--completed .reminder-badge {
+.dashboard-task-row--completed .reminder-badge,
+.dashboard-task-row--completed .note-count-badge {
   border-color: #D0D0CE;
   background: #F2F2F2;
   color: #777774;

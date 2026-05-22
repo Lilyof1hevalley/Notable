@@ -35,6 +35,7 @@ export const DASHBOARD_MODAL = {
   FOLDER: 'folder',
   NOTEBOOK: 'notebook',
   NOTEBOOK_COVER: 'notebook-cover',
+  NOTEBOOK_MOVE: 'notebook-move',
   TODO: 'todo',
   GCAL: 'gcal',
 }
@@ -63,6 +64,8 @@ export function useDashboard(auth) {
   const [notebookTitle, setNotebookTitle] = useState('')
   const [notebookCover, setNotebookCover] = useState(EMPTY_NOTEBOOK_COVER)
   const [editingNotebook, setEditingNotebook] = useState(null)
+  const [movingNotebook, setMovingNotebook] = useState(null)
+  const [moveTargetFolder, setMoveTargetFolder] = useState('')
   const [selectedFolder, setSelectedFolder] = useState('')
   const [todoForm, setTodoForm] = useState(EMPTY_TODO)
   const [typeFilter, setTypeFilter] = useState('all')
@@ -208,6 +211,8 @@ export function useDashboard(auth) {
   const closeModal = useCallback(() => {
     setActiveModal(null)
     setEditingNotebook(null)
+    setMovingNotebook(null)
+    setMoveTargetFolder('')
     setNotebookCover(EMPTY_NOTEBOOK_COVER)
   }, [])
   const openModal = useCallback((modal) => setActiveModal(modal), [])
@@ -216,6 +221,12 @@ export function useDashboard(auth) {
     setEditingNotebook(notebook)
     setNotebookCover(getNotebookCoverForm(notebook))
     setActiveModal(DASHBOARD_MODAL.NOTEBOOK_COVER)
+  }, [])
+
+  const openNotebookMoveModal = useCallback((notebook) => {
+    setMovingNotebook(notebook)
+    setMoveTargetFolder(notebook.folder_id || '')
+    setActiveModal(DASHBOARD_MODAL.NOTEBOOK_MOVE)
   }, [])
 
   const submitFolder = useCallback((event) => {
@@ -265,6 +276,20 @@ export function useDashboard(auth) {
       },
     )
   }, [closeModal, editingNotebook, notebookCover, runMutation])
+
+  const submitNotebookMove = useCallback((event) => {
+    event.preventDefault()
+    if (!movingNotebook) return undefined
+
+    return runMutation(
+      () => updateNotebook(movingNotebook.id, {
+        title: movingNotebook.title,
+        folder_id: moveTargetFolder || null,
+      }),
+      'Notebook moved.',
+      closeModal,
+    )
+  }, [closeModal, moveTargetFolder, movingNotebook, runMutation])
 
   const submitTodo = useCallback((event) => {
     event.preventDefault()
@@ -331,12 +356,16 @@ export function useDashboard(auth) {
     folderTitle,
     isLoading,
     message,
+    moveTargetFolder,
+    movingNotebook,
     notebookTitle,
     notebookCover,
     openModal,
     openNotebookCoverModal,
+    openNotebookMoveModal,
     selectedFolder,
     setFolderTitle,
+    setMoveTargetFolder,
     setNotebookTitle,
     setNotebookCover,
     setSelectedFolder,
@@ -349,6 +378,7 @@ export function useDashboard(auth) {
     submitFolder,
     submitNotebook,
     submitNotebookCover,
+    submitNotebookMove,
     submitTodo,
     todoForm,
     typeFilter,

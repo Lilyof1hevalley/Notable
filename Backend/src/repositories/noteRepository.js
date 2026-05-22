@@ -2,14 +2,13 @@ const db = require('../db');
 const { randomUUID } = require('crypto');
 
 class Note {
-
-// Create a new note, optionally linked to a todo
-  static create(userId, title, content, todoId = null) {
+// Create a new note inside a notebook, optionally linked to a todo
+  static create(userId, title, content, notebookId = null, todoId = null) {
     const id = randomUUID();
     db.prepare(`
-      INSERT INTO notes (id, user_id, todo_id, title, content)
-      VALUES (?, ?, ?, ?, ?)
-    `).run(id, userId, todoId, title, content);
+      INSERT INTO notes (id, user_id, notebook_id, todo_id, title, content)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `).run(id, userId, notebookId, todoId, title, content);
     return id;
   }
 
@@ -33,11 +32,11 @@ class Note {
   }
 
 // Update note content
-  static update(id, userId, title, content) {
+  static update(id, userId, title, content, todoId = null) {
     db.prepare(`
-      UPDATE notes SET title = ?, content = ?, updated_at = CURRENT_TIMESTAMP
+      UPDATE notes SET title = ?, content = ?, todo_id = ?, updated_at = CURRENT_TIMESTAMP
       WHERE id = ? AND user_id = ?
-    `).run(title, content, id, userId);
+    `).run(title, content, todoId, id, userId);
   }
 
 // Delete a note by ID

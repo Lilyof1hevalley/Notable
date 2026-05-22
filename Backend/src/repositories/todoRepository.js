@@ -50,6 +50,25 @@ class Todo {
     return db.prepare('SELECT COUNT(*) as total FROM todos WHERE user_id = ?').get(userId);
   }
 
+  static withNoteCounts(userId, todos) {
+    if (!todos.length) return todos;
+
+    const todoIds = todos.map((todo) => todo.id);
+    const placeholders = todoIds.map(() => '?').join(',');
+    const noteCounts = db.prepare(`
+      SELECT todo_id, COUNT(*) AS note_count
+      FROM notes
+      WHERE user_id = ? AND todo_id IN (${placeholders})
+      GROUP BY todo_id
+    `).all(userId, ...todoIds);
+    const countByTodoId = new Map(noteCounts.map((row) => [String(row.todo_id), row.note_count]));
+
+    return todos.map((todo) => ({
+      ...todo,
+      note_count: countByTodoId.get(String(todo.id)) || 0
+    }));
+  }
+
   // Find a single todo by its ID
   static findById(id) {
     return db.prepare('SELECT * FROM todos WHERE id = ?').get(id);
@@ -75,7 +94,13 @@ class Todo {
 
   // Delete a todo by ID
   static delete(id, userId) {
-    db.prepare('DELETE FROM todos WHERE id = ? AND user_id = ?').run(id, userId);
+    const deleteTodo = db.transaction(() => {
+      db.prepare('UPDATE notes SET todo_id = NULL WHERE todo_id = ? AND user_id = ?').run(id, userId);
+      db.prepare('DELETE FROM session_todos WHERE todo_id = ?').run(id);
+      db.prepare('DELETE FROM todos WHERE id = ? AND user_id = ?').run(id, userId);
+    });
+
+    deleteTodo();
   }
 }
 

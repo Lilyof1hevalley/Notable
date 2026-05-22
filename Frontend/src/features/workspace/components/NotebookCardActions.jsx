@@ -1,7 +1,7 @@
 import ActionPopover from '../../../shared/components/ui/ActionPopover'
 import { MoreIcon } from '../../../shared/components/ui/Icons'
 
-function NotebookCardActions({ notebook, onDelete, onEditCover }) {
+function NotebookCardActions({ notebook, onDelete, onEditCover, onMove }) {
   return (
     <ActionPopover
       ariaLabel={`Notebook actions for ${notebook.title}`}
@@ -12,6 +12,11 @@ function NotebookCardActions({ notebook, onDelete, onEditCover }) {
         <button onClick={() => onEditCover(notebook)} role="menuitem" type="button">
           Edit Cover
         </button>
+        {onMove && (
+          <button onClick={() => onMove(notebook)} role="menuitem" type="button">
+            Move
+          </button>
+        )}
         <button
           className="workspace-item__menu-danger"
           onClick={() => onDelete(notebook.id)}

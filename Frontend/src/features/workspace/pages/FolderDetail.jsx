@@ -34,13 +34,17 @@ function FolderDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
   const [folder, setFolder] = useState(null)
+  const [folders, setFolders] = useState([])
   const [notebooks, setNotebooks] = useState([])
   const [todos, setTodos] = useState([])
   const [notebookTitle, setNotebookTitle] = useState('')
   const [notebookCover, setNotebookCover] = useState(EMPTY_NOTEBOOK_COVER)
   const [editingNotebook, setEditingNotebook] = useState(null)
+  const [movingNotebook, setMovingNotebook] = useState(null)
+  const [moveTargetFolder, setMoveTargetFolder] = useState('')
   const [isCreateNotebookOpen, setIsCreateNotebookOpen] = useState(false)
   const [isEditCoverOpen, setIsEditCoverOpen] = useState(false)
+  const [isMoveNotebookOpen, setIsMoveNotebookOpen] = useState(false)
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
   const [isLoading, setIsLoading] = useState(true)
@@ -66,6 +70,7 @@ function FolderDetail() {
       ))
 
       setFolder(currentFolder)
+      setFolders(foldersData.folders || [])
       setNotebooks(folderNotebooks)
       setTodos(folderTodos)
     } catch (err) {
@@ -127,6 +132,18 @@ function FolderDetail() {
     setIsEditCoverOpen(true)
   }
 
+  function openMoveNotebook(notebook) {
+    setMovingNotebook(notebook)
+    setMoveTargetFolder(notebook.folder_id || '')
+    setIsMoveNotebookOpen(true)
+  }
+
+  function closeMoveNotebook() {
+    setMovingNotebook(null)
+    setMoveTargetFolder('')
+    setIsMoveNotebookOpen(false)
+  }
+
   function closeEditCover() {
     setEditingNotebook(null)
     setNotebookCover(EMPTY_NOTEBOOK_COVER)
@@ -148,6 +165,26 @@ function FolderDetail() {
       })
       closeEditCover()
       setMessage('Notebook cover updated.')
+      await loadFolder()
+    } catch (err) {
+      setError(err.message)
+    }
+  }
+
+  async function submitNotebookMove(event) {
+    event.preventDefault()
+    if (!movingNotebook) return
+
+    setError('')
+    setMessage('')
+
+    try {
+      await updateNotebook(movingNotebook.id, {
+        title: movingNotebook.title,
+        folder_id: moveTargetFolder || null,
+      })
+      closeMoveNotebook()
+      setMessage('Notebook moved.')
       await loadFolder()
     } catch (err) {
       setError(err.message)
@@ -228,6 +265,7 @@ function FolderDetail() {
                     notebook={notebook}
                     onDelete={deleteNotebook}
                     onEditCover={openEditCover}
+                    onMove={openMoveNotebook}
                   />
                 </div>
               ))}
@@ -306,6 +344,41 @@ function FolderDetail() {
             value={notebookCover}
           />
           <button className="auth-submit-btn" type="submit">Save Cover</button>
+        </form>
+      </Modal>
+
+      <Modal
+        isOpen={isMoveNotebookOpen}
+        onClose={closeMoveNotebook}
+        size="dialog"
+        title="Move Notebook"
+      >
+        <form className="stack modal-form" onSubmit={submitNotebookMove}>
+          <label className="auth-form-label">
+            Notebook
+            <input
+              className="auth-form-input"
+              disabled
+              readOnly
+              value={movingNotebook?.title || ''}
+            />
+          </label>
+          <label className="auth-form-label">
+            Folder
+            <select
+              className="auth-form-input"
+              onChange={(event) => setMoveTargetFolder(event.target.value)}
+              value={moveTargetFolder}
+            >
+              <option value="">No folder</option>
+              {folders.map((folderOption) => (
+                <option key={folderOption.id} value={folderOption.id}>
+                  {folderOption.title}
+                </option>
+              ))}
+            </select>
+          </label>
+          <button className="auth-submit-btn" type="submit">Move Notebook</button>
         </form>
       </Modal>
     </main>

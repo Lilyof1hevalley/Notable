@@ -37,9 +37,14 @@ class SearchRepository {
 
   static searchNotes(userId, query) {
     return db.prepare(`
-      SELECT notes.*, todos.notebook_id, todos.folder_id, todos.title AS todo_title
+      SELECT
+        notes.*,
+        COALESCE(notes.notebook_id, todos.notebook_id) AS notebook_id,
+        notebooks.folder_id,
+        todos.title AS todo_title
       FROM notes
       LEFT JOIN todos ON todos.id = notes.todo_id
+      LEFT JOIN notebooks ON notebooks.id = COALESCE(notes.notebook_id, todos.notebook_id)
       WHERE notes.user_id = ? AND (notes.title LIKE ? OR notes.content LIKE ?)
       ORDER BY notes.created_at DESC
       LIMIT 8

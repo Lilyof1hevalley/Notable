@@ -113,6 +113,16 @@ class Notebook {
           )
       `).run(userId, id, id, userId);
 
+      db.prepare(`
+        DELETE FROM notes
+        WHERE user_id = ?
+          AND (
+            notebook_id = ?
+            OR todo_id IN (
+              SELECT id FROM todos WHERE notebook_id = ? AND user_id = ?
+            )
+          )
+      `).run(userId, id, id, userId);
       db.prepare('DELETE FROM chapters WHERE notebook_id = ? AND user_id = ?').run(id, userId);
       db.prepare('UPDATE todos SET notebook_id = NULL WHERE notebook_id = ? AND user_id = ?').run(id, userId);
       db.prepare('DELETE FROM notebooks WHERE id = ? AND user_id = ?').run(id, userId);

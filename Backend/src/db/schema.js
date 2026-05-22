@@ -76,12 +76,14 @@ function initializeSchema(db) {
     CREATE TABLE IF NOT EXISTS notes (
       id TEXT PRIMARY KEY,
       user_id TEXT NOT NULL,
+      notebook_id TEXT,
       todo_id TEXT,
       title TEXT NOT NULL,
       content TEXT,
       updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (user_id) REFERENCES users(id),
+      FOREIGN KEY (notebook_id) REFERENCES notebooks(id) ON DELETE CASCADE,
       FOREIGN KEY (todo_id) REFERENCES todos(id)
     );
 
@@ -128,6 +130,7 @@ function initializeSchema(db) {
   ensureColumn(db, 'todos', 'folder_id', 'TEXT');
   ensureColumn(db, 'todos', 'notebook_id', 'TEXT');
   ensureColumn(db, 'todos', 'reminder_at', 'DATETIME');
+  ensureColumn(db, 'notes', 'notebook_id', 'TEXT');
   ensureColumn(db, 'focus_sessions', 'title', 'TEXT');
   ensureColumn(db, 'focus_sessions', 'session_notes', 'TEXT');
   ensureColumn(db, 'notebooks', 'cover_type', "TEXT DEFAULT 'default'");

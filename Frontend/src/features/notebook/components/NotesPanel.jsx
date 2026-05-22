@@ -24,7 +24,10 @@ function NotesPanel({ notes, onDeleteNote, onEditNote, onOpenModal }) {
               <strong>{note.title}</strong>
               <p>{note.content}</p>
               <div className="note-row__footer">
-                <span>Updated {formatShortDate(note.updated_at || note.created_at)}</span>
+                <span>
+                  {note.todo_title ? `${note.todo_title} / ` : ''}
+                  Updated {formatShortDate(note.updated_at || note.created_at)}
+                </span>
                 <div className="note-row__actions">
                   <button
                     className="ghost-button ghost-button--small"

@@ -91,19 +91,17 @@ function NotebookModals({
               value={noteForm.content}
             />
           </label>
-          {!editingNoteId && (
-            <label className="auth-form-label">
-              Linked todo
-              <select
-                className="auth-form-input"
-                onChange={(event) => onNoteFormChange({ ...noteForm, todo_id: event.target.value })}
-                value={noteForm.todo_id}
-              >
-                <option value="">No linked todo</option>
-                {todos.map((todo) => <option key={todo.id} value={todo.id}>{todo.title}</option>)}
-              </select>
-            </label>
-          )}
+          <label className="auth-form-label">
+            Linked todo
+            <select
+              className="auth-form-input"
+              onChange={(event) => onNoteFormChange({ ...noteForm, todo_id: event.target.value })}
+              value={noteForm.todo_id}
+            >
+              <option value="">No linked todo</option>
+              {todos.map((todo) => <option key={todo.id} value={todo.id}>{todo.title}</option>)}
+            </select>
+          </label>
           <button className="auth-submit-btn" type="submit">
             {editingNoteId ? 'Save Note' : 'Create Note'}
           </button>

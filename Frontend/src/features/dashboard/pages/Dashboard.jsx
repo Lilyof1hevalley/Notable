@@ -60,13 +60,17 @@ function Dashboard() {
     folderTitle,
     isLoading,
     message,
+    moveTargetFolder,
+    movingNotebook,
     notebookTitle,
     notebookCover,
     openModal,
     openNotebookCoverModal,
+    openNotebookMoveModal,
     selectedFolder,
     reminderTodos,
     setFolderTitle,
+    setMoveTargetFolder,
     setNotebookTitle,
     setNotebookCover,
     setSelectedFolder,
@@ -79,6 +83,7 @@ function Dashboard() {
     submitFolder,
     submitNotebook,
     submitNotebookCover,
+    submitNotebookMove,
     submitTodo,
     todoForm,
     typeFilter,
@@ -109,6 +114,7 @@ function Dashboard() {
               onEditNotebookCover={openNotebookCoverModal}
               onDeleteFolder={deleteFolder}
               onDeleteNotebook={deleteNotebook}
+              onMoveNotebook={openNotebookMoveModal}
               onOpenModal={openModal}
               workspaceItems={visibleWorkspaceItems}
             />
@@ -149,20 +155,24 @@ function Dashboard() {
           editingNotebook={editingNotebook}
           folderTitle={folderTitle}
           folders={data.folders}
+          movingNotebook={movingNotebook}
           notebooks={data.notebooks}
           notebookTitle={notebookTitle}
           notebookCover={notebookCover}
           onClose={closeModal}
           onFolderTitleChange={setFolderTitle}
+          onMoveTargetFolderChange={setMoveTargetFolder}
           onNotebookTitleChange={setNotebookTitle}
           onNotebookCoverChange={setNotebookCover}
           onSelectedFolderChange={setSelectedFolder}
           onSubmitFolder={submitFolder}
           onSubmitNotebook={submitNotebook}
           onSubmitNotebookCover={submitNotebookCover}
+          onSubmitNotebookMove={submitNotebookMove}
           onSubmitTodo={submitTodo}
           onTodoFormChange={setTodoForm}
           selectedFolder={selectedFolder}
+          moveTargetFolder={moveTargetFolder}
           todoForm={todoForm}
         />
       </main>

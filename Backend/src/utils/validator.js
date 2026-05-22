@@ -45,6 +45,7 @@ const todoRules = [
 const noteRules = [
   body('title').notEmpty().withMessage('Title is required!'),
   body('content').notEmpty().withMessage('Content is required!'),
+  body('notebook_id').optional({ nullable: true, checkFalsy: true }).isString(),
   body('todo_id').optional()
 ];
 

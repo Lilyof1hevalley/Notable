@@ -63,7 +63,7 @@ class TodoService {
     }
 
     const { total } = Todo.countByUser(userId);
-    const rankedTodos = BHPSLogic.rankTodos(todos);
+    const rankedTodos = Todo.withNoteCounts(userId, BHPSLogic.rankTodos(todos));
 
     return {
       status: 200,

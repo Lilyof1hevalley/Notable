@@ -82,12 +82,22 @@ export function useNotebook({ id, onChapterCreated, onMissingNotebook }) {
 
       const notebookTodos = (todosData.todos || []).filter((todo) => String(todo.notebook_id) === String(id))
       const notebookTodoIds = new Set(notebookTodos.map((todo) => String(todo.id)))
+      const todoTitleById = new Map(notebookTodos.map((todo) => [String(todo.id), todo.title]))
+      const notebookNotes = (notesData.notes || [])
+        .filter((note) => (
+          String(note.notebook_id) === String(id)
+          || (note.todo_id && notebookTodoIds.has(String(note.todo_id)))
+        ))
+        .map((note) => ({
+          ...note,
+          todo_title: note.todo_id ? todoTitleById.get(String(note.todo_id)) : '',
+        }))
 
       setNotebook(currentNotebook)
       setChapters(chaptersData.chapters || [])
       setResources(resourcesData.resources || [])
       setTodos(notebookTodos)
-      setNotes((notesData.notes || []).filter((note) => notebookTodoIds.has(String(note.todo_id))))
+      setNotes(notebookNotes)
     } catch (err) {
       setError(err.message)
     } finally {
@@ -171,10 +181,12 @@ export function useNotebook({ id, onChapterCreated, onMissingNotebook }) {
         ? updateNote(editingNoteId, {
           title: noteForm.title,
           content: noteForm.content,
+          todo_id: noteForm.todo_id || null,
         })
         : createNote({
           title: noteForm.title,
           content: noteForm.content,
+          notebook_id: id,
           todo_id: noteForm.todo_id || null,
         })),
       editingNoteId ? 'Note updated.' : 'Note created.',
@@ -184,7 +196,7 @@ export function useNotebook({ id, onChapterCreated, onMissingNotebook }) {
         closeModal()
       },
     )
-  }, [closeModal, editingNoteId, noteForm, runMutation])
+  }, [closeModal, editingNoteId, id, noteForm, runMutation])
 
   const submitResource = useCallback((event) => {
     event.preventDefault()

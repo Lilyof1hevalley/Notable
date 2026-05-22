@@ -63,6 +63,11 @@ function TimelinePanel({ onCompleteTodo, onDeleteTodo, onOpenModal, todos }) {
                           {reminder.label}
                         </span>
                       )}
+                      {todo.note_count > 0 && (
+                        <span className="note-count-badge">
+                          {todo.note_count} note{todo.note_count > 1 ? 's' : ''}
+                        </span>
+                      )}
                       <span className={`priority-badge priority-badge--${priority.tone}`}>
                         {priority.label} {formatBhpsScore(todo)}
                       </span>

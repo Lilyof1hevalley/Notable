@@ -5,7 +5,14 @@ import NotebookCard from '../../workspace/components/NotebookCard'
 import NotebookCardActions from '../../workspace/components/NotebookCardActions'
 import { DASHBOARD_MODAL } from '../hooks/useDashboard'
 
-function WorkspaceGrid({ onDeleteFolder, onDeleteNotebook, onEditNotebookCover, onOpenModal, workspaceItems }) {
+function WorkspaceGrid({
+  onDeleteFolder,
+  onDeleteNotebook,
+  onEditNotebookCover,
+  onMoveNotebook,
+  onOpenModal,
+  workspaceItems,
+}) {
   return (
     <section className="workspace-grid" aria-label="Workspace items">
       {workspaceItems.map((item) => (
@@ -37,6 +44,7 @@ function WorkspaceGrid({ onDeleteFolder, onDeleteNotebook, onEditNotebookCover, 
                 notebook={item}
                 onDelete={onDeleteNotebook}
                 onEditCover={onEditNotebookCover}
+                onMove={onMoveNotebook}
               />
             </>
           )}

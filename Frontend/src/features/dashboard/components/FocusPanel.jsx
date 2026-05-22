@@ -27,18 +27,19 @@ function FocusPanel({
     ? new Date(activeSession.started_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     : null
   const progressPercent = Math.round((Number(progress) || 0) * 100)
+  const countdown = formatCountdown(remainingSeconds)
 
   return (
     <aside className="dashboard-panel dashboard-panel--focus">
         <div className="dashboard-panel__header">
-          <h2>Focus Session</h2>
+          <h2>{activeSession ? countdown : 'Focus Session'}</h2>
         </div>
         <div className="dashboard-panel__body focus-panel__body">
           {activeSession ? (
             <div className="focus-panel__content focus-panel__content--recommendations">
               <div className={isExpired ? 'focus-panel-timer is-expired' : 'focus-panel-timer'}>
                 <span>{isExpired ? "Time's up" : 'Active block'}</span>
-                <strong>{formatCountdown(remainingSeconds)}</strong>
+                <strong>{countdown}</strong>
                 <p>{activeSession.title || `Started at ${startedAt}`}. Finish one step at a time.</p>
                 <div className="focus-panel-timer__bar" aria-hidden="true">
                   <span style={{ width: `${progressPercent}%` }} />

@@ -8,17 +8,21 @@ function DashboardModals({
   editingNotebook,
   folderTitle,
   folders,
+  moveTargetFolder,
+  movingNotebook,
   notebooks,
   notebookCover,
   notebookTitle,
   onClose,
   onFolderTitleChange,
+  onMoveTargetFolderChange,
   onNotebookCoverChange,
   onNotebookTitleChange,
   onSelectedFolderChange,
   onSubmitFolder,
   onSubmitNotebook,
   onSubmitNotebookCover,
+  onSubmitNotebookMove,
   onSubmitTodo,
   onTodoFormChange,
   selectedFolder,
@@ -121,6 +125,39 @@ function DashboardModals({
             value={notebookCover}
           />
           <button className="auth-submit-btn" type="submit">Save Cover</button>
+        </form>
+      </Modal>
+
+      <Modal
+        isOpen={activeModal === DASHBOARD_MODAL.NOTEBOOK_MOVE}
+        onClose={onClose}
+        size="dialog"
+        title="Move Notebook"
+      >
+        <form className="stack modal-form" onSubmit={onSubmitNotebookMove}>
+          <label className="auth-form-label">
+            Notebook
+            <input
+              className="auth-form-input"
+              disabled
+              readOnly
+              value={movingNotebook?.title || ''}
+            />
+          </label>
+          <label className="auth-form-label">
+            Folder
+            <select
+              className="auth-form-input"
+              onChange={(event) => onMoveTargetFolderChange(event.target.value)}
+              value={moveTargetFolder}
+            >
+              <option value="">No folder</option>
+              {folders.map((folder) => (
+                <option key={folder.id} value={folder.id}>{folder.title}</option>
+              ))}
+            </select>
+          </label>
+          <button className="auth-submit-btn" type="submit">Move Notebook</button>
         </form>
       </Modal>
 

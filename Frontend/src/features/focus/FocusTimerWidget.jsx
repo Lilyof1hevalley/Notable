@@ -14,14 +14,15 @@ function FocusTimerWidget() {
   const activeTodo = todos.find((todo) => todo.is_completed !== 1) || todos[0]
   const completedCount = todos.filter((todo) => todo.is_completed === 1).length
   const progressPercent = Math.round(progress * 100)
+  const countdown = formatCountdown(remainingSeconds)
 
   if (!activeSession) return null
 
   return (
     <aside className={isExpired ? 'focus-timer-widget is-expired' : 'focus-timer-widget'} aria-label="Active focus timer">
       <div className="focus-timer-widget__header">
-        <span>{isExpired ? "Time's up" : 'Focus Session'}</span>
-        <strong>{formatCountdown(remainingSeconds)}</strong>
+        <strong>{countdown}</strong>
+        <span>{isExpired ? "Time's up" : 'Active focus'}</span>
       </div>
       <div className="focus-timer-widget__progress" aria-hidden="true">
         <span style={{ width: `${progressPercent}%` }} />
