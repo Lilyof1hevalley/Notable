@@ -33,7 +33,13 @@ class Folder {
 
   // Delete folder
   static delete(id, userId) {
-    db.prepare('DELETE FROM folders WHERE id = ? AND user_id = ?').run(id, userId);
+    const deleteFolder = db.transaction(() => {
+      db.prepare('UPDATE todos SET folder_id = NULL WHERE folder_id = ? AND user_id = ?').run(id, userId);
+      db.prepare('UPDATE notebooks SET folder_id = NULL WHERE folder_id = ? AND user_id = ?').run(id, userId);
+      db.prepare('DELETE FROM folders WHERE id = ? AND user_id = ?').run(id, userId);
+    });
+
+    deleteFolder();
   }
 }
 

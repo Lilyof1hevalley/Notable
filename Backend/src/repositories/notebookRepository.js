@@ -89,9 +89,36 @@ class Notebook {
     );
   }
 
+  static findResourcesForDelete(id, userId) {
+    return db.prepare(`
+      SELECT DISTINCT r.*
+      FROM resources r
+      LEFT JOIN chapters c ON r.chapter_id = c.id
+      WHERE r.user_id = ?
+        AND (r.notebook_id = ? OR c.notebook_id = ?)
+    `).all(userId, id, id);
+  }
+
   // Delete notebook
   static delete(id, userId) {
-    db.prepare('DELETE FROM notebooks WHERE id = ? AND user_id = ?').run(id, userId);
+    const deleteNotebook = db.transaction(() => {
+      db.prepare(`
+        DELETE FROM resources
+        WHERE user_id = ?
+          AND (
+            notebook_id = ?
+            OR chapter_id IN (
+              SELECT id FROM chapters WHERE notebook_id = ? AND user_id = ?
+            )
+          )
+      `).run(userId, id, id, userId);
+
+      db.prepare('DELETE FROM chapters WHERE notebook_id = ? AND user_id = ?').run(id, userId);
+      db.prepare('UPDATE todos SET notebook_id = NULL WHERE notebook_id = ? AND user_id = ?').run(id, userId);
+      db.prepare('DELETE FROM notebooks WHERE id = ? AND user_id = ?').run(id, userId);
+    });
+
+    deleteNotebook();
   }
 }
 

@@ -52,6 +52,7 @@ function Dashboard() {
     closeModal,
     completeTodo,
     data,
+    deleteFolder,
     deleteNotebook,
     deleteTodo,
     editingNotebook,
@@ -106,6 +107,7 @@ function Dashboard() {
           <div className="dashboard-grid">
             <WorkspaceGrid
               onEditNotebookCover={openNotebookCoverModal}
+              onDeleteFolder={deleteFolder}
               onDeleteNotebook={deleteNotebook}
               onOpenModal={openModal}
               workspaceItems={visibleWorkspaceItems}

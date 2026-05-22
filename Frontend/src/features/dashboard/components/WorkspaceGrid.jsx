@@ -1,18 +1,22 @@
 import { Link } from 'react-router-dom'
 import FolderCard from '../../workspace/components/FolderCard'
+import FolderCardActions from '../../workspace/components/FolderCardActions'
 import NotebookCard from '../../workspace/components/NotebookCard'
 import NotebookCardActions from '../../workspace/components/NotebookCardActions'
 import { DASHBOARD_MODAL } from '../hooks/useDashboard'
 
-function WorkspaceGrid({ onDeleteNotebook, onEditNotebookCover, onOpenModal, workspaceItems }) {
+function WorkspaceGrid({ onDeleteFolder, onDeleteNotebook, onEditNotebookCover, onOpenModal, workspaceItems }) {
   return (
     <section className="workspace-grid" aria-label="Workspace items">
       {workspaceItems.map((item) => (
         <div className="workspace-item" key={`${item.type}-${item.id}`}>
           {item.type === 'folder' ? (
-            <Link className="workspace-item__link" to={`/folder/${item.id}`}>
-              <FolderCard title={item.title} taskCount={item.taskCount} />
-            </Link>
+            <>
+              <Link className="workspace-item__link" to={`/folder/${item.id}`}>
+                <FolderCard title={item.title} taskCount={item.taskCount} />
+              </Link>
+              <FolderCardActions folder={item} onDelete={onDeleteFolder} />
+            </>
           ) : (
             <>
               <Link
