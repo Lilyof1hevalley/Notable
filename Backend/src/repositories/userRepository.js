@@ -12,9 +12,22 @@ class User {
     return id;
   }
 
+  static createGoogleUser(name, email, googleId, displayName) {
+    const id = randomUUID();
+    db.prepare(`
+      INSERT INTO users (id, name, email, password_hash, display_name, google_id)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `).run(id, name, email, `google:${randomUUID()}`, displayName, googleId);
+    return id;
+  }
+
   // Find user by email
   static findByEmail(email) {
     return db.prepare('SELECT * FROM users WHERE email = ?').get(email);
+  }
+
+  static findByGoogleId(googleId) {
+    return db.prepare('SELECT * FROM users WHERE google_id = ?').get(googleId);
   }
 
   // Find user by ID
@@ -56,6 +69,10 @@ class User {
       UPDATE users SET name = ?, display_name = ?, gcal_url = ?
       WHERE id = ?
     `).run(name, displayName, gcalUrl, id);
+  }
+
+  static attachGoogleId(id, googleId) {
+    db.prepare('UPDATE users SET google_id = ? WHERE id = ?').run(googleId, id);
   }
 }
 

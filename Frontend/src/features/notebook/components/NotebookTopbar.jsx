@@ -30,6 +30,13 @@ function NotebookTopbar({
         >
           Add Chapter
         </button>
+        <button
+          className="dashboard-tool-button dashboard-tool-button--text"
+          onClick={() => onOpenModal(NOTEBOOK_MODAL.RENAME)}
+          type="button"
+        >
+          Rename Notebook
+        </button>
         </>
       )}
       backLabel={backLabel}

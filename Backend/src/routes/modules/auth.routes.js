@@ -8,6 +8,7 @@ const router = express.Router();
 
 router.post('/register', authLimiter, registerRules, validate, AuthController.register);
 router.post('/login', authLimiter, loginRules, validate, AuthController.login);
+router.post('/google', authLimiter, AuthController.google);
 router.post('/forgot-password', authLimiter, PasswordController.forgotPassword);
 router.post('/reset-password', PasswordController.resetPassword);
 

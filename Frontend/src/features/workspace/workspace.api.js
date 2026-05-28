@@ -32,6 +32,13 @@ export function createFolder(payload) {
   })
 }
 
+export function updateFolder(folderId, payload) {
+  return apiRequest(`/folders/${folderId}`, {
+    method: 'PATCH',
+    body: JSON.stringify(payload),
+  })
+}
+
 export function getFolderNotebooks(folderId) {
   return apiRequest(`/folders/${folderId}/notebooks`)
 }

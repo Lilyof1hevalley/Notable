@@ -46,6 +46,7 @@ function Notebook() {
     noteForm,
     notes,
     notebook: notebookData,
+    notebookForm,
     openModal,
     openEditNote,
     resourceForm,
@@ -53,11 +54,13 @@ function Notebook() {
     search,
     setChapterForm,
     setNoteForm,
+    setNotebookForm,
     setResourceForm,
     setSearch,
     setTodoForm,
     submitChapter,
     submitNote,
+    submitNotebookRename,
     submitResource,
     submitTodo,
     todoForm,
@@ -121,13 +124,16 @@ function Notebook() {
         chapterForm={chapterForm}
         chapters={chapters}
         noteForm={noteForm}
+        notebookForm={notebookForm}
         editingNoteId={editingNoteId}
         onChapterFormChange={setChapterForm}
         onClose={closeModal}
         onNoteFormChange={setNoteForm}
+        onNotebookFormChange={setNotebookForm}
         onResourceFormChange={setResourceForm}
         onSubmitChapter={submitChapter}
         onSubmitNote={submitNote}
+        onSubmitNotebookRename={submitNotebookRename}
         onSubmitResource={submitResource}
         onSubmitTodo={submitTodo}
         onTodoFormChange={setTodoForm}

@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import Modal from '../../../shared/components/ui/Modal'
-import { normalizeGoogleCalendarEmbedUrl } from '../../../utils/calendar'
+import { getStyledGoogleCalendarEmbedUrl } from '../../../utils/calendar'
 import { DASHBOARD_MODAL } from '../hooks/useDashboard'
 
 function CalendarEmptyState() {
@@ -14,10 +14,18 @@ function CalendarEmptyState() {
 }
 
 function GoogleCalendarFrame({ gcalUrl, title }) {
-  const safeUrl = normalizeGoogleCalendarEmbedUrl(gcalUrl)
+  const safeUrl = getStyledGoogleCalendarEmbedUrl(gcalUrl)
   if (!safeUrl) return <CalendarEmptyState />
 
-  return <iframe className="calendar-frame" src={safeUrl} title={title} />
+  return (
+    <div className="calendar-frame-shell">
+      <div className="calendar-frame-shell__bar">
+        <span>Google Calendar</span>
+        <strong>Agenda</strong>
+      </div>
+      <iframe className="calendar-frame" src={safeUrl} title={title} />
+    </div>
+  )
 }
 
 function CalendarPanel({ activeModal, onCloseModal, onOpenModal, profile }) {

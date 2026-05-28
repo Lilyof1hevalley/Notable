@@ -3,7 +3,7 @@ const { google } = require('googleapis');
 const oauth2Client = new google.auth.OAuth2(
   process.env.GOOGLE_CLIENT_ID,
   process.env.GOOGLE_CLIENT_SECRET,
-  'http://localhost:3000/api/calendar/callback'
+  process.env.GOOGLE_CALENDAR_REDIRECT_URI || 'http://localhost:3000/api/calendar/callback'
 );
 
 class GoogleCalendarController {

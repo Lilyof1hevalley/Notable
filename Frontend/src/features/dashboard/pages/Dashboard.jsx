@@ -45,6 +45,7 @@ function Dashboard() {
     deleteFolder,
     deleteNotebook,
     deleteTodo,
+    editingFolder,
     editingNotebook,
     error,
     folderTitle,
@@ -55,8 +56,10 @@ function Dashboard() {
     notebookTitle,
     notebookCover,
     openModal,
+    openFolderRenameModal,
     openNotebookCoverModal,
     openNotebookMoveModal,
+    openNotebookRenameModal,
     selectedFolder,
     reminderTodos,
     setFolderTitle,
@@ -71,9 +74,11 @@ function Dashboard() {
     sortMode,
     statusFilter,
     submitFolder,
+    submitFolderRename,
     submitNotebook,
     submitNotebookCover,
     submitNotebookMove,
+    submitNotebookRename,
     submitTodo,
     todoForm,
     typeFilter,
@@ -106,6 +111,8 @@ function Dashboard() {
               onDeleteNotebook={deleteNotebook}
               onMoveNotebook={openNotebookMoveModal}
               onOpenModal={openModal}
+              onRenameFolder={openFolderRenameModal}
+              onRenameNotebook={openNotebookRenameModal}
               workspaceItems={visibleWorkspaceItems}
             />
             <div className="dashboard-sidebar">
@@ -128,6 +135,7 @@ function Dashboard() {
 
         <DashboardModals
           activeModal={activeModal}
+          editingFolder={editingFolder}
           editingNotebook={editingNotebook}
           folderTitle={folderTitle}
           folders={data.folders}
@@ -142,9 +150,11 @@ function Dashboard() {
           onNotebookCoverChange={setNotebookCover}
           onSelectedFolderChange={setSelectedFolder}
           onSubmitFolder={submitFolder}
+          onSubmitFolderRename={submitFolderRename}
           onSubmitNotebook={submitNotebook}
           onSubmitNotebookCover={submitNotebookCover}
           onSubmitNotebookMove={submitNotebookMove}
+          onSubmitNotebookRename={submitNotebookRename}
           onSubmitTodo={submitTodo}
           onTodoFormChange={setTodoForm}
           selectedFolder={selectedFolder}

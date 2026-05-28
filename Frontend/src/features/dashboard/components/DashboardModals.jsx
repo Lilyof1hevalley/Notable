@@ -5,6 +5,7 @@ import { DASHBOARD_MODAL } from '../hooks/useDashboard'
 
 function DashboardModals({
   activeModal,
+  editingFolder,
   editingNotebook,
   folderTitle,
   folders,
@@ -20,9 +21,11 @@ function DashboardModals({
   onNotebookTitleChange,
   onSelectedFolderChange,
   onSubmitFolder,
+  onSubmitFolderRename,
   onSubmitNotebook,
   onSubmitNotebookCover,
   onSubmitNotebookMove,
+  onSubmitNotebookRename,
   onSubmitTodo,
   onTodoFormChange,
   selectedFolder,
@@ -79,6 +82,29 @@ function DashboardModals({
       </Modal>
 
       <Modal
+        isOpen={activeModal === DASHBOARD_MODAL.FOLDER_RENAME}
+        onClose={onClose}
+        size="dialog"
+        title="Rename Folder"
+      >
+        <form className="stack modal-form" onSubmit={onSubmitFolderRename}>
+          <label className="auth-form-label">
+            Folder title
+            <input
+              className="auth-form-input"
+              onChange={(event) => onFolderTitleChange(event.target.value)}
+              required
+              value={folderTitle}
+            />
+          </label>
+          <p className="muted folder-detail-modal-note">
+            Current folder: {editingFolder?.title || 'Folder'}
+          </p>
+          <button className="auth-submit-btn" type="submit">Save Folder Name</button>
+        </form>
+      </Modal>
+
+      <Modal
         isOpen={activeModal === DASHBOARD_MODAL.NOTEBOOK}
         onClose={onClose}
         size="dialog"
@@ -109,6 +135,26 @@ function DashboardModals({
           </label>
           <NotebookCoverPicker onChange={onNotebookCoverChange} value={notebookCover} />
           <button className="auth-submit-btn" type="submit">Create Notebook</button>
+        </form>
+      </Modal>
+
+      <Modal
+        isOpen={activeModal === DASHBOARD_MODAL.NOTEBOOK_RENAME}
+        onClose={onClose}
+        size="dialog"
+        title="Rename Notebook"
+      >
+        <form className="stack modal-form" onSubmit={onSubmitNotebookRename}>
+          <label className="auth-form-label">
+            Notebook title
+            <input
+              className="auth-form-input"
+              onChange={(event) => onNotebookTitleChange(event.target.value)}
+              required
+              value={notebookTitle}
+            />
+          </label>
+          <button className="auth-submit-btn" type="submit">Save Notebook Name</button>
         </form>
       </Modal>
 

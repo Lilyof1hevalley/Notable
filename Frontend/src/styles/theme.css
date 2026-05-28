@@ -80,6 +80,7 @@ strong {
 .note-row,
 .chapter-card-new,
 .demo-login-card,
+.calendar-frame-shell,
 .calendar-empty-state {
   border-color: #dddbd6 !important;
   background: #faf9f7 !important;

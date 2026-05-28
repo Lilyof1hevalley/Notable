@@ -11,6 +11,7 @@ import {
   getFolders,
   getNotebooks,
   getTodos,
+  updateFolder,
   updateNotebook,
 } from '../../workspace/workspace.api'
 import {
@@ -32,9 +33,11 @@ const EMPTY_TODO = {
 
 export const DASHBOARD_MODAL = {
   FOLDER: 'folder',
+  FOLDER_RENAME: 'folder-rename',
   NOTEBOOK: 'notebook',
   NOTEBOOK_COVER: 'notebook-cover',
   NOTEBOOK_MOVE: 'notebook-move',
+  NOTEBOOK_RENAME: 'notebook-rename',
   TODO: 'todo',
   GCAL: 'gcal',
 }
@@ -60,6 +63,7 @@ export function useDashboard(auth) {
   const [folderTitle, setFolderTitle] = useState('')
   const [notebookTitle, setNotebookTitle] = useState('')
   const [notebookCover, setNotebookCover] = useState(EMPTY_NOTEBOOK_COVER)
+  const [editingFolder, setEditingFolder] = useState(null)
   const [editingNotebook, setEditingNotebook] = useState(null)
   const [movingNotebook, setMovingNotebook] = useState(null)
   const [moveTargetFolder, setMoveTargetFolder] = useState('')
@@ -205,12 +209,27 @@ export function useDashboard(auth) {
 
   const closeModal = useCallback(() => {
     setActiveModal(null)
+    setEditingFolder(null)
     setEditingNotebook(null)
     setMovingNotebook(null)
+    setFolderTitle('')
+    setNotebookTitle('')
     setMoveTargetFolder('')
     setNotebookCover(EMPTY_NOTEBOOK_COVER)
   }, [])
   const openModal = useCallback((modal) => setActiveModal(modal), [])
+
+  const openFolderRenameModal = useCallback((folder) => {
+    setEditingFolder(folder)
+    setFolderTitle(folder.title || '')
+    setActiveModal(DASHBOARD_MODAL.FOLDER_RENAME)
+  }, [])
+
+  const openNotebookRenameModal = useCallback((notebook) => {
+    setEditingNotebook(notebook)
+    setNotebookTitle(notebook.title || '')
+    setActiveModal(DASHBOARD_MODAL.NOTEBOOK_RENAME)
+  }, [])
 
   const openNotebookCoverModal = useCallback((notebook) => {
     setEditingNotebook(notebook)
@@ -235,6 +254,17 @@ export function useDashboard(auth) {
       },
     )
   }, [closeModal, folderTitle, runMutation])
+
+  const submitFolderRename = useCallback((event) => {
+    event.preventDefault()
+    if (!editingFolder) return undefined
+
+    return runMutation(
+      () => updateFolder(editingFolder.id, { title: folderTitle }),
+      'Folder renamed.',
+      closeModal,
+    )
+  }, [closeModal, editingFolder, folderTitle, runMutation])
 
   const submitNotebook = useCallback((event) => {
     event.preventDefault()
@@ -271,6 +301,20 @@ export function useDashboard(auth) {
       },
     )
   }, [closeModal, editingNotebook, notebookCover, runMutation])
+
+  const submitNotebookRename = useCallback((event) => {
+    event.preventDefault()
+    if (!editingNotebook) return undefined
+
+    return runMutation(
+      () => updateNotebook(editingNotebook.id, {
+        title: notebookTitle,
+        folder_id: editingNotebook.folder_id || null,
+      }),
+      'Notebook renamed.',
+      closeModal,
+    )
+  }, [closeModal, editingNotebook, notebookTitle, runMutation])
 
   const submitNotebookMove = useCallback((event) => {
     event.preventDefault()
@@ -347,6 +391,7 @@ export function useDashboard(auth) {
     deleteNotebook,
     deleteTodo,
     error,
+    editingFolder,
     editingNotebook,
     folderTitle,
     isLoading,
@@ -356,8 +401,10 @@ export function useDashboard(auth) {
     notebookTitle,
     notebookCover,
     openModal,
+    openFolderRenameModal,
     openNotebookCoverModal,
     openNotebookMoveModal,
+    openNotebookRenameModal,
     selectedFolder,
     setFolderTitle,
     setMoveTargetFolder,
@@ -371,9 +418,11 @@ export function useDashboard(auth) {
     sortMode,
     statusFilter,
     submitFolder,
+    submitFolderRename,
     submitNotebook,
     submitNotebookCover,
     submitNotebookMove,
+    submitNotebookRename,
     submitTodo,
     todoForm,
     typeFilter,

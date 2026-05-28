@@ -14,6 +14,13 @@ export function register(payload) {
   })
 }
 
+export function loginWithGoogle(credential) {
+  return apiRequest('/auth/google', {
+    method: 'POST',
+    body: JSON.stringify({ credential }),
+  })
+}
+
 export function requestPasswordReset(payload) {
   return apiRequest('/auth/forgot-password', {
     method: 'POST',

@@ -16,6 +16,7 @@ import {
   getNotebooks,
   getNotes,
   getTodos,
+  updateNotebook,
   updateNote,
   uploadResource,
 } from '../notebook.api'
@@ -23,6 +24,7 @@ import {
 const EMPTY_CHAPTER_FORM = { title: '', content: '' }
 const EMPTY_NOTE_FORM = { title: '', content: '', todo_id: '' }
 const EMPTY_RESOURCE_FORM = { file: null, chapter_id: '' }
+const EMPTY_NOTEBOOK_FORM = { title: '' }
 const EMPTY_TODO_FORM = {
   title: '',
   deadline: '',
@@ -35,6 +37,7 @@ export const NOTEBOOK_MODAL = {
   CHAPTER: 'chapter',
   NOTE: 'note',
   RESOURCE: 'resource',
+  RENAME: 'rename',
   TODO: 'todo',
 }
 
@@ -56,6 +59,7 @@ export function useNotebook({ id, onChapterCreated, onMissingNotebook }) {
   const [search, setSearch] = useState('')
   const [chapterForm, setChapterForm] = useState(EMPTY_CHAPTER_FORM)
   const [noteForm, setNoteForm] = useState(EMPTY_NOTE_FORM)
+  const [notebookForm, setNotebookForm] = useState(EMPTY_NOTEBOOK_FORM)
   const [editingNoteId, setEditingNoteId] = useState(null)
   const [resourceForm, setResourceForm] = useState(EMPTY_RESOURCE_FORM)
   const [todoForm, setTodoForm] = useState(EMPTY_TODO_FORM)
@@ -144,8 +148,14 @@ export function useNotebook({ id, onChapterCreated, onMissingNotebook }) {
     setActiveModal(null)
     setEditingNoteId(null)
     setNoteForm(EMPTY_NOTE_FORM)
+    setNotebookForm(EMPTY_NOTEBOOK_FORM)
   }, [])
-  const openModal = useCallback((modal) => setActiveModal(modal), [])
+  const openModal = useCallback((modal) => {
+    if (modal === NOTEBOOK_MODAL.RENAME) {
+      setNotebookForm({ title: notebook?.title || '' })
+    }
+    setActiveModal(modal)
+  }, [notebook?.title])
   const openEditNote = useCallback((note) => {
     setEditingNoteId(note.id)
     setNoteForm({
@@ -197,6 +207,20 @@ export function useNotebook({ id, onChapterCreated, onMissingNotebook }) {
       },
     )
   }, [closeModal, editingNoteId, id, noteForm, runMutation])
+
+  const submitNotebookRename = useCallback((event) => {
+    event.preventDefault()
+    if (!notebook) return undefined
+
+    return runMutation(
+      () => updateNotebook(id, {
+        title: notebookForm.title,
+        folder_id: notebook.folder_id || null,
+      }),
+      'Notebook renamed.',
+      closeModal,
+    )
+  }, [closeModal, id, notebook, notebookForm.title, runMutation])
 
   const submitResource = useCallback((event) => {
     event.preventDefault()
@@ -312,6 +336,7 @@ export function useNotebook({ id, onChapterCreated, onMissingNotebook }) {
     noteForm,
     notes,
     notebook,
+    notebookForm,
     openModal,
     openEditNote,
     resourceForm,
@@ -319,11 +344,13 @@ export function useNotebook({ id, onChapterCreated, onMissingNotebook }) {
     search,
     setChapterForm,
     setNoteForm,
+    setNotebookForm,
     setResourceForm,
     setSearch,
     setTodoForm,
     submitChapter,
     submitNote,
+    submitNotebookRename,
     submitResource,
     submitTodo,
     todoForm,

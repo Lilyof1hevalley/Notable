@@ -11,12 +11,15 @@ function NotebookModals({
   chapters,
   editingNoteId,
   noteForm,
+  notebookForm,
   onChapterFormChange,
   onClose,
   onNoteFormChange,
+  onNotebookFormChange,
   onResourceFormChange,
   onSubmitChapter,
   onSubmitNote,
+  onSubmitNotebookRename,
   onSubmitResource,
   onSubmitTodo,
   resourceForm,
@@ -62,6 +65,26 @@ function NotebookModals({
             </Suspense>
           </label>
           <button className="auth-submit-btn" type="submit">Create Chapter</button>
+        </form>
+      </Modal>
+
+      <Modal
+        isOpen={activeModal === NOTEBOOK_MODAL.RENAME}
+        onClose={onClose}
+        size="dialog"
+        title="Rename Notebook"
+      >
+        <form className="stack modal-form" onSubmit={onSubmitNotebookRename}>
+          <label className="auth-form-label">
+            Notebook title
+            <input
+              className="auth-form-input"
+              onChange={(event) => onNotebookFormChange({ ...notebookForm, title: event.target.value })}
+              required
+              value={notebookForm.title}
+            />
+          </label>
+          <button className="auth-submit-btn" type="submit">Save Notebook Name</button>
         </form>
       </Modal>
 

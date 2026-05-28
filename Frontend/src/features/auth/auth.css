@@ -31,6 +31,40 @@
   box-shadow: none;
 }
 
+.google-auth-area {
+  display: grid;
+  justify-items: center;
+  gap: 20px;
+  margin-bottom: 22px;
+}
+
+.google-auth-area:not(.is-ready) {
+  min-height: 44px;
+}
+
+.auth-divider {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 12px;
+}
+
+.auth-divider span {
+  flex: 1;
+  height: 1px;
+  background: #dddbd6;
+}
+
+.auth-divider strong {
+  color: #bbb;
+  font-family: 'Geist Mono', monospace !important;
+  font-size: 0.6rem !important;
+  font-style: normal !important;
+  font-weight: 400 !important;
+  letter-spacing: 0.1em !important;
+  text-transform: uppercase;
+}
+
 .auth-card-title {
   font-size: 16px;
   font-weight: 700;

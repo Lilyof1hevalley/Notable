@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react'
+import { useCallback, useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../../app/providers/AuthContext'
-import { login, register } from '../auth.api'
+import GoogleAuthButton from '../components/GoogleAuthButton'
+import { login, loginWithGoogle, register } from '../auth.api'
 
 const styles = `
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -183,6 +184,20 @@ function Register() {
     }
   }
 
+  const handleGoogleRegister = useCallback(async (credential) => {
+    setError('')
+    setIsSubmitting(true)
+    try {
+      const data = await loginWithGoogle(credential)
+      auth.login(data.token, data.user)
+      navigate('/dashboard', { replace: true })
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setIsSubmitting(false)
+    }
+  }, [auth, navigate])
+
   return (
     <>
       <style>{styles}</style>
@@ -195,6 +210,8 @@ function Register() {
           <div className="reg-panel">
             <p className="reg-eyebrow">Get started</p>
             <h1 className="reg-heading">Create your account</h1>
+
+            <GoogleAuthButton label="signup_with" onError={setError} onSuccess={handleGoogleRegister} />
 
             <form onSubmit={handleRegister}>
               <div className="reg-field">

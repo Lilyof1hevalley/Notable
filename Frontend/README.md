@@ -41,10 +41,17 @@ The default app URL is:
 http://127.0.0.1:5173
 ```
 
-The frontend expects the backend API at:
+For local development, the frontend falls back to:
 
 ```text
 http://localhost:3000/api
+```
+
+For deployment, set:
+
+```bash
+VITE_API_BASE_URL=https://your-backend.example.com/api
+VITE_GOOGLE_CLIENT_ID=your-google-oauth-client-id.apps.googleusercontent.com
 ```
 
 ## Scripts

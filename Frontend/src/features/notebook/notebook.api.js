@@ -4,6 +4,13 @@ export function getNotebooks() {
   return apiRequest('/notebooks')
 }
 
+export function updateNotebook(notebookId, payload) {
+  return apiRequest(`/notebooks/${notebookId}`, {
+    method: 'PATCH',
+    body: JSON.stringify(payload),
+  })
+}
+
 export function getNotebookChapters(notebookId) {
   return apiRequest(`/notebooks/${notebookId}/chapters`)
 }

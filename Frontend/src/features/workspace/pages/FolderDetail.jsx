@@ -18,6 +18,7 @@ import {
   getFolderNotebooks,
   getFolders,
   getTodos,
+  updateFolder,
   updateNotebook,
 } from '../workspace.api'
 
@@ -38,12 +39,17 @@ function FolderDetail() {
   const [notebooks, setNotebooks] = useState([])
   const [todos, setTodos] = useState([])
   const [notebookTitle, setNotebookTitle] = useState('')
+  const [renameFolderTitle, setRenameFolderTitle] = useState('')
+  const [renameNotebookTitle, setRenameNotebookTitle] = useState('')
   const [notebookCover, setNotebookCover] = useState(EMPTY_NOTEBOOK_COVER)
   const [editingNotebook, setEditingNotebook] = useState(null)
+  const [renamingNotebook, setRenamingNotebook] = useState(null)
   const [movingNotebook, setMovingNotebook] = useState(null)
   const [moveTargetFolder, setMoveTargetFolder] = useState('')
   const [isCreateNotebookOpen, setIsCreateNotebookOpen] = useState(false)
   const [isEditCoverOpen, setIsEditCoverOpen] = useState(false)
+  const [isRenameFolderOpen, setIsRenameFolderOpen] = useState(false)
+  const [isRenameNotebookOpen, setIsRenameNotebookOpen] = useState(false)
   const [isMoveNotebookOpen, setIsMoveNotebookOpen] = useState(false)
   const [error, setError] = useState('')
   const [message, setMessage] = useState('')
@@ -132,6 +138,17 @@ function FolderDetail() {
     setIsEditCoverOpen(true)
   }
 
+  function openRenameFolder() {
+    setRenameFolderTitle(folder?.title || '')
+    setIsRenameFolderOpen(true)
+  }
+
+  function openRenameNotebook(notebook) {
+    setRenamingNotebook(notebook)
+    setRenameNotebookTitle(notebook.title || '')
+    setIsRenameNotebookOpen(true)
+  }
+
   function openMoveNotebook(notebook) {
     setMovingNotebook(notebook)
     setMoveTargetFolder(notebook.folder_id || '')
@@ -148,6 +165,27 @@ function FolderDetail() {
     setEditingNotebook(null)
     setNotebookCover(EMPTY_NOTEBOOK_COVER)
     setIsEditCoverOpen(false)
+  }
+
+  function closeRenameNotebook() {
+    setRenamingNotebook(null)
+    setRenameNotebookTitle('')
+    setIsRenameNotebookOpen(false)
+  }
+
+  async function submitFolderRename(event) {
+    event.preventDefault()
+    setError('')
+    setMessage('')
+
+    try {
+      await updateFolder(id, { title: renameFolderTitle })
+      setIsRenameFolderOpen(false)
+      setMessage('Folder renamed.')
+      await loadFolder()
+    } catch (err) {
+      setError(err.message)
+    }
   }
 
   async function submitNotebookCover(event) {
@@ -191,6 +229,26 @@ function FolderDetail() {
     }
   }
 
+  async function submitNotebookRename(event) {
+    event.preventDefault()
+    if (!renamingNotebook) return
+
+    setError('')
+    setMessage('')
+
+    try {
+      await updateNotebook(renamingNotebook.id, {
+        title: renameNotebookTitle,
+        folder_id: renamingNotebook.folder_id || null,
+      })
+      closeRenameNotebook()
+      setMessage('Notebook renamed.')
+      await loadFolder()
+    } catch (err) {
+      setError(err.message)
+    }
+  }
+
   async function deleteNotebook(notebookId) {
     if (!window.confirm('Are you sure you want to delete this notebook?')) return
 
@@ -210,13 +268,22 @@ function FolderDetail() {
     <main className="app-shell folder-detail-page">
       <ProtectedTopbar
         actions={(
-          <button
-            className="dashboard-tool-button dashboard-tool-button--text"
-            onClick={() => setIsCreateNotebookOpen(true)}
-            type="button"
-          >
-            Add Notebook
-          </button>
+          <>
+            <button
+              className="dashboard-tool-button dashboard-tool-button--text"
+              onClick={() => setIsCreateNotebookOpen(true)}
+              type="button"
+            >
+              Add Notebook
+            </button>
+            <button
+              className="dashboard-tool-button dashboard-tool-button--text"
+              onClick={openRenameFolder}
+              type="button"
+            >
+              Rename Folder
+            </button>
+          </>
         )}
         backLabel="Dashboard"
         backTo="/dashboard"
@@ -259,6 +326,7 @@ function FolderDetail() {
                     onDelete={deleteNotebook}
                     onEditCover={openEditCover}
                     onMove={openMoveNotebook}
+                    onRename={openRenameNotebook}
                   />
                 </div>
               ))}
@@ -348,6 +416,46 @@ function FolderDetail() {
             value={notebookCover}
           />
           <button className="auth-submit-btn" type="submit">Save Cover</button>
+        </form>
+      </Modal>
+
+      <Modal
+        isOpen={isRenameFolderOpen}
+        onClose={() => setIsRenameFolderOpen(false)}
+        size="dialog"
+        title="Rename Folder"
+      >
+        <form className="stack modal-form" onSubmit={submitFolderRename}>
+          <label className="auth-form-label">
+            Folder title
+            <input
+              className="auth-form-input"
+              onChange={(event) => setRenameFolderTitle(event.target.value)}
+              required
+              value={renameFolderTitle}
+            />
+          </label>
+          <button className="auth-submit-btn" type="submit">Save Folder Name</button>
+        </form>
+      </Modal>
+
+      <Modal
+        isOpen={isRenameNotebookOpen}
+        onClose={closeRenameNotebook}
+        size="dialog"
+        title="Rename Notebook"
+      >
+        <form className="stack modal-form" onSubmit={submitNotebookRename}>
+          <label className="auth-form-label">
+            Notebook title
+            <input
+              className="auth-form-input"
+              onChange={(event) => setRenameNotebookTitle(event.target.value)}
+              required
+              value={renameNotebookTitle}
+            />
+          </label>
+          <button className="auth-submit-btn" type="submit">Save Notebook Name</button>
         </form>
       </Modal>
 

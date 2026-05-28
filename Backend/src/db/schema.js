@@ -13,6 +13,7 @@ function initializeSchema(db) {
       email TEXT UNIQUE NOT NULL,
       password_hash TEXT NOT NULL,
       display_name TEXT,
+      google_id TEXT,
       gcal_url TEXT,
       role TEXT DEFAULT 'user' CHECK(role IN ('user', 'admin')),
       reset_token TEXT,
@@ -125,6 +126,7 @@ function initializeSchema(db) {
 
   ensureColumn(db, 'users', 'reset_token', 'TEXT');
   ensureColumn(db, 'users', 'reset_token_expiry', 'DATETIME');
+  ensureColumn(db, 'users', 'google_id', 'TEXT');
   ensureColumn(db, 'users', 'gcal_url', 'TEXT');
   ensureColumn(db, 'todos', 'estimated_effort', 'REAL DEFAULT 1.0');
   ensureColumn(db, 'todos', 'folder_id', 'TEXT');

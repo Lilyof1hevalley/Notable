@@ -11,6 +11,8 @@ function WorkspaceGrid({
   onEditNotebookCover,
   onMoveNotebook,
   onOpenModal,
+  onRenameFolder,
+  onRenameNotebook,
   workspaceItems,
 }) {
   return (
@@ -22,7 +24,7 @@ function WorkspaceGrid({
               <Link className="workspace-item__link" to={`/folder/${item.id}`}>
                 <FolderCard title={item.title} taskCount={item.taskCount} />
               </Link>
-              <FolderCardActions folder={item} onDelete={onDeleteFolder} />
+              <FolderCardActions folder={item} onDelete={onDeleteFolder} onRename={onRenameFolder} />
             </>
           ) : (
             <>
@@ -45,6 +47,7 @@ function WorkspaceGrid({
                 onDelete={onDeleteNotebook}
                 onEditCover={onEditNotebookCover}
                 onMove={onMoveNotebook}
+                onRename={onRenameNotebook}
               />
             </>
           )}
